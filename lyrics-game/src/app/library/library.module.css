@@ -1,0 +1,161 @@
+.main {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 48px;
+  padding: 48px clamp(20px, 5vw, 72px) 72px;
+  max-width: 1260px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.sidebar {
+  flex: 1 1 200px;
+  max-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebarTitle {
+  font: 600 14px var(--font-sans);
+  color: var(--grey-500);
+  padding: 0 12px 12px;
+}
+
+.source {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font: 400 15px var(--font-sans);
+  color: var(--black);
+}
+
+.source:hover {
+  background: var(--grey-100);
+}
+
+.sourceActive {
+  background: var(--grey-100);
+  font-weight: 600;
+}
+
+.count {
+  font: 400 13px var(--font-mono);
+  color: var(--grey-500);
+}
+
+.content {
+  flex: 999 1 480px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.heading h1 {
+  margin: 0;
+  font: 500 clamp(28px, 4.5vw, 40px) / 1.19 var(--font-sans);
+  letter-spacing: -1px;
+  color: var(--black);
+}
+
+.hint {
+  font: 400 16px var(--font-sans);
+  color: var(--grey-500);
+  padding: 24px 12px;
+}
+
+.errorBox {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px;
+  font: 400 14px var(--font-sans);
+  color: var(--grey-500);
+}
+
+.errorPanel {
+  background: var(--grey-100);
+  border-radius: 16px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.errorPanel h2 {
+  margin: 0;
+  font: 500 28px / 1.19 var(--font-sans);
+  letter-spacing: -0.5px;
+  color: var(--black);
+}
+
+.errorPanel p {
+  margin: 0;
+  font: 400 16px/1.6 var(--font-sans);
+  color: var(--text-body);
+}
+
+.tracks {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.track {
+  display: grid;
+  grid-template-columns: 28px 48px minmax(0, 1fr) 48px;
+  gap: 16px;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.trackN {
+  font: 400 13px var(--font-mono);
+  color: var(--grey-500);
+  text-align: right;
+}
+
+.trackCover {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  background: var(--grey-100) center / cover no-repeat;
+}
+
+.trackInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.trackTitle {
+  font: 600 15px/1.4 var(--font-sans);
+  color: var(--black);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trackArtist {
+  font: 400 14px/1.4 var(--font-sans);
+  color: var(--grey-500);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trackDur {
+  font: 400 13px var(--font-mono);
+  color: var(--grey-500);
+  text-align: right;
+}

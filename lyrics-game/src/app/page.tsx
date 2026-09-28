@@ -1,0 +1,43 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getSession, hasActiveSession } from "@/lib/session";
+import styles from "./page.module.css";
+
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ expired?: string }>;
+}) {
+  const session = await getSession();
+  if (hasActiveSession(session)) {
+    redirect("/library");
+  }
+
+  const { expired } = await searchParams;
+
+  return (
+    <main className={styles.main}>
+      <div className={styles.logo}>Lyrics Game</div>
+
+      {expired && (
+        <div className={styles.banner}>
+          Your session expired. Reconnect and you&apos;ll land right back in your library.
+        </div>
+      )}
+
+      <h1 className={styles.headline}>Finish the line. Your songs this time.</h1>
+      <p className={styles.description}>
+        Connect your Spotify Premium account, pick anything from your playlists or liked songs,
+        and type the missing words as the song plays.
+      </p>
+
+      <Link href="/api/auth/login" className="btn btn--lg">
+        Connect with Spotify
+      </Link>
+
+      <p className={styles.note}>
+        Premium is required for full-song playback. Only your account can sign in to this build.
+      </p>
+    </main>
+  );
+}

@@ -1,0 +1,36 @@
+import type { NextRequest } from "next/server";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { exchangeCodeForTokens } from "@/lib/spotify";
+import { getSession } from "@/lib/session";
+
+export async function GET(request: NextRequest) {
+  const { searchParams } = request.nextUrl;
+  const error = searchParams.get("error");
+  const code = searchParams.get("code");
+  const state = searchParams.get("state");
+
+  const cookieStore = await cookies();
+  const storedState = cookieStore.get("spotify_auth_state")?.value;
+  cookieStore.delete("spotify_auth_state");
+
+  // Cancelled/denied on Spotify's consent screen, or a tampered/missing state
+  // (CSRF check) — either way there's nothing to recover, send them to the
+  // dedicated "login is required" screen per the spec's error handling.
+  if (error || !code || !state || !storedState || state !== storedState) {
+    redirect("/denied");
+  }
+
+  try {
+    const tokens = await exchangeCodeForTokens(code);
+    const session = await getSession();
+    session.accessToken = tokens.access_token;
+    session.refreshToken = tokens.refresh_token;
+    session.expiresAt = Date.now() + tokens.expires_in * 1000;
+    await session.save();
+  } catch {
+    redirect("/denied");
+  }
+
+  redirect("/library");
+}

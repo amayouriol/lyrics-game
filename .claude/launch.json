@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "lyrics-game-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "lyrics-game", "run", "dev"],
+      "port": 3000
+    }
+  ]
+}
