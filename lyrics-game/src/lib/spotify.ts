@@ -126,6 +126,11 @@ interface SpotifyPlaylist {
   id: string;
   name: string;
   tracks: { total: number };
+  owner: { id: string };
+}
+
+interface SpotifyUser {
+  id: string;
 }
 
 interface SpotifyPage<T> {
@@ -156,18 +161,39 @@ function mapTrack(track: SpotifyTrack): Track {
   };
 }
 
-/** Liked Songs first, then every playlist, each with its track count. */
+/**
+ * Liked Songs first, then every playlist you own, each with its track count.
+ *
+ * Playlists you merely follow (Discover Weekly, Release Radar, Daily Mix, or
+ * anyone else's playlist) are deliberately excluded: Spotify's API returns a
+ * 403 when asked for the actual track list of a playlist you don't own, even
+ * with the right scopes granted. There's no way to fix that from this side,
+ * so rather than list a playlist that then fails the moment you open it,
+ * Phase 1 only shows playlists you created.
+ */
 export async function listSources(accessToken: string): Promise<Source[]> {
   const sources: Source[] = [];
 
-  const liked = await spotifyGet("/me/tracks?limit=1", accessToken);
+  const [liked, me]: [{ total: number }, SpotifyUser] = await Promise.all([
+    spotifyGet("/me/tracks?limit=1", accessToken),
+    spotifyGet("/me", accessToken),
+  ]);
   sources.push({ id: "liked", name: "Liked Songs", count: liked.total });
 
   let path: string | null = "/me/playlists?limit=50";
   while (path) {
     const page: SpotifyPage<SpotifyPlaylist> = await spotifyGet(path, accessToken);
     for (const playlist of page.items) {
-      sources.push({ id: playlist.id, name: playlist.name, count: playlist.tracks.total });
+      // Some playlists (e.g. ones you no longer have access to) come back
+      // with fields missing instead of a full object; skip those rather
+      // than crash the whole library load over one bad entry.
+      if (!playlist || !playlist.id) continue;
+      if (playlist.owner?.id !== me.id) continue;
+      sources.push({
+        id: playlist.id,
+        name: playlist.name ?? "Untitled playlist",
+        count: playlist.tracks?.total ?? 0,
+      });
     }
     path = page.next ? page.next.replace(API_URL, "") : null;
   }

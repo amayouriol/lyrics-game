@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
     const tracks = await listTracks(accessToken, source);
     return NextResponse.json({ tracks });
   } catch (error) {
+    console.error("[/api/library/tracks]", error);
     if (error instanceof SpotifySessionExpiredError) {
       return NextResponse.json({ error: "session_expired" }, { status: 401 });
     }

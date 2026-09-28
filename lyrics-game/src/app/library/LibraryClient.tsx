@@ -101,6 +101,10 @@ export function LibraryClient() {
     <main className={styles.main}>
       <nav className={styles.sidebar}>
         <div className={styles.sidebarTitle}>Your library</div>
+        <p className={styles.sidebarNote}>
+          Only playlists you own — Spotify doesn&apos;t let apps read the tracks of playlists you
+          just follow (like Discover Weekly).
+        </p>
 
         {sourcesState === "loading" && <div className={styles.hint}>Loading…</div>}
 

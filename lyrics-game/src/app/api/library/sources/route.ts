@@ -8,6 +8,7 @@ export async function GET() {
     const sources = await listSources(accessToken);
     return NextResponse.json({ sources });
   } catch (error) {
+    console.error("[/api/library/sources]", error);
     if (error instanceof SpotifySessionExpiredError) {
       return NextResponse.json({ error: "session_expired" }, { status: 401 });
     }
