@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { getValidAccessToken } from "@/lib/session";
+import { getSession, getValidAccessToken } from "@/lib/session";
 import { listTracks, SpotifySessionExpiredError } from "@/lib/spotify";
 
 export async function GET(request: NextRequest) {
@@ -15,6 +15,8 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("[/api/library/tracks]", error);
     if (error instanceof SpotifySessionExpiredError) {
+      const session = await getSession();
+      await session.destroy();
       return NextResponse.json({ error: "session_expired" }, { status: 401 });
     }
     return NextResponse.json({ error: "library_unavailable" }, { status: 502 });

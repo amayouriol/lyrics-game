@@ -85,6 +85,12 @@ async function spotifyGet(path: string, accessToken: string) {
     cache: "no-store",
   });
   if (!res.ok) {
+    // A 401 here means the access token itself is invalid (e.g. revoked
+    // from Spotify's end) even though it hadn't expired by our own clock.
+    // Retrying won't fix that, so treat it the same as a failed refresh.
+    if (res.status === 401) {
+      throw new SpotifySessionExpiredError(`Spotify API error 401 for ${path}`);
+    }
     throw new Error(`Spotify API error ${res.status} for ${path}`);
   }
   return res.json();
