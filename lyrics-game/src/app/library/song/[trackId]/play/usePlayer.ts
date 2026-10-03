@@ -123,9 +123,10 @@ export function usePlayer({
     };
 
     /** Pauses the game where the music stopped, so Resume continues from there. */
-    const markDropped = (atPositionMs = clockPosition(clockRef.current)) => {
+    const markDropped = (reason: string, atPositionMs = clockPosition(clockRef.current)) => {
       if (cancelled || dropped || !startedRef.current || endedRef.current) return;
       dropped = true;
+      console.info(`[player] game paused (${reason}) at ${Math.round(atPositionMs / 1000)}s`);
       clockRef.current = { positionMs: atPositionMs, at: performance.now(), paused: true };
       setPaused(true);
       setStatus((s) => (s.kind === "error" ? s : { kind: "dropped" }));
@@ -141,7 +142,7 @@ export function usePlayer({
       if (cancelled) return;
       // A null state means this browser is no longer the active player
       // (e.g. Spotify started playing on another device).
-      if (!state) return markDropped();
+      if (!state) return markDropped("player inactive");
 
       const { current_track, previous_tracks } = state.track_window;
       const finished =
@@ -150,8 +151,15 @@ export function usePlayer({
         state.position === 0 &&
         previous_tracks.some((t) => isTrack(t, trackId));
       if (finished) return end();
-      // The shared player may still report the previous song until this one starts.
-      if (!isTrack(current_track, trackId)) return;
+      if (!isTrack(current_track, trackId)) {
+        // Before this song starts, the shared player may still report the
+        // previous one: ignore that. After it started, another song means
+        // the music moved on: Spotify autoplaying at the very end, or
+        // playback taken over elsewhere.
+        if (!startedRef.current) return;
+        if (clockPosition(clockRef.current) > durationMs - END_ZONE_MS) return end();
+        return markDropped(`now playing another song: ${current_track?.name ?? "unknown"}`);
+      }
 
       dropped = false;
       missedChecks = 0;
@@ -181,12 +189,12 @@ export function usePlayer({
     const onReady = ({ device_id }: Spotify.WebPlaybackInstance) => {
       if (!cancelled) startOn(device_id);
     };
-    const onNotReady = () => markDropped();
+    const onNotReady = () => markDropped("player went offline");
     const onInitError = () => fail("unsupported");
     const onAuthError = () => fail("permissions");
     const onAccountError = () => fail("premium");
     const onPlaybackError = () => {
-      if (startedRef.current) markDropped();
+      if (startedRef.current) markDropped("playback error");
       else fail("start_failed");
     };
     const onAutoplayFailed = () => {
@@ -231,7 +239,9 @@ export function usePlayer({
           if (missedChecks === 0) positionAtFirstMiss = clockPosition(clockRef.current);
           missedChecks++;
           const nearEnd = positionAtFirstMiss > durationMs - END_ZONE_MS;
-          if (missedChecks >= DROP_CONFIRM_CHECKS && !nearEnd) markDropped(positionAtFirstMiss);
+          if (missedChecks >= DROP_CONFIRM_CHECKS && !nearEnd) {
+            markDropped("player inactive for 2 checks", positionAtFirstMiss);
+          }
         });
       }, RESYNC_MS);
 
