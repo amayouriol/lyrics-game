@@ -36,10 +36,11 @@ Confirmed scope: in-browser playback (Web Playback SDK, tested on the user's acc
 - [x] Delete the temporary `/playback-test` page.
 
 ## Found in testing (2026-10-03)
-- "The player didn't start" on every attempt: Spotify answered `404 Device not found` because the app asked it to play the instant the browser player reported "ready", before Spotify's servers had registered the new device. One retry after 0.8s wasn't enough. Now retries for about 7s (0.5s, 1s, 1.5s, 2s, 2s) and logs how many retries it took.
+- "The player didn't start" for every song after the first. First diagnosis (device not registered yet, so retry longer) was wrong: diagnostic logging showed Spotify only ever registers the **first** player a page creates. The app made a new player per song, so every later device id got `404 Device not found` no matter how long it waited, while Spotify kept listing the first one. **Fix:** one shared player per page (`sharedPlayer.ts`), reused for every song; leaving a song pauses it instead of disconnecting; Retry reloads the page (the only way to get a fresh, registrable player). The "not found" retry is back to a short ~3s. Verified on a real account: 4 songs in a row on the same device, each starting in under half a second, one played to the end.
+- Side effect to know: after you play a song, this browser stays listed as a Spotify device ("Lyrics Game") until the tab is closed.
 
 ## Acceptance check (tied to phase-3-spec.md's Success section)
-- [ ] "Play the song" starts the song in the browser within a few seconds
+- [x] "Play the song" starts the song in the browser within a few seconds (4 songs in a row, 2026-10-03)
 - [ ] Elapsed time counts up; the line counter changes as each new line starts (by ear), including after a pause and through to the end
 - [ ] Pause and resume work
 - [ ] "Quit song" stops the music and returns to the song screen

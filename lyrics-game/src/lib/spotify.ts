@@ -109,11 +109,12 @@ export class SpotifyApiError extends Error {
 }
 
 /**
- * Waits between "Device not found" retries. A browser player reports
- * "ready" before Spotify's servers know about it; one 800ms retry wasn't
- * enough on a real account, so this allows about 7 seconds.
+ * Waits between "Device not found" retries, in case a just-connected player
+ * isn't registered yet. On a real account the first player registered
+ * instantly; persistent 404s came from creating extra players per page,
+ * which the shared player now avoids.
  */
-const DEVICE_REGISTER_WAITS_MS = [500, 1_000, 1_500, 2_000, 2_000];
+const DEVICE_REGISTER_WAITS_MS = [500, 1_000, 1_500];
 
 /**
  * Starts a song on a specific player (this browser's), retrying while the

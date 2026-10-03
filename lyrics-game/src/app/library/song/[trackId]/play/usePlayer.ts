@@ -2,14 +2,14 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { fetchToken, getSharedPlayer, type PlayerError } from "./sharedPlayer";
 
-const SDK_URL = "https://sdk.scdn.co/spotify-player.js";
+export type { PlayerError };
+
 const READY_TIMEOUT_MS = 10_000;
 const RESYNC_MS = 1_000;
 /** If no "song ended" event arrives, treat the song as over this long after its length. */
 const END_GRACE_MS = 1_500;
-
-export type PlayerError = "permissions" | "premium" | "unsupported" | "start_failed";
 
 export type PlayerStatus =
   | { kind: "connecting" }
@@ -23,38 +23,6 @@ interface Clock {
   /** performance.now() when positionMs was true */
   at: number;
   paused: boolean;
-}
-
-let sdkPromise: Promise<void> | null = null;
-
-/** Loads Spotify's player script once per page. */
-function loadSdk(): Promise<void> {
-  if ("Spotify" in window && window.Spotify) return Promise.resolve();
-  sdkPromise ??= new Promise<void>((resolve, reject) => {
-    window.onSpotifyWebPlaybackSDKReady = () => resolve();
-    const script = document.createElement("script");
-    script.src = SDK_URL;
-    script.async = true;
-    script.onerror = () => {
-      sdkPromise = null;
-      script.remove();
-      reject(new Error("Could not load Spotify's player script"));
-    };
-    document.body.appendChild(script);
-  });
-  return sdkPromise;
-}
-
-async function fetchToken(): Promise<
-  { accessToken: string; missingScopes: string[] } | "expired" | null
-> {
-  try {
-    const res = await fetch("/api/player/token");
-    if (res.status === 401) return "expired";
-    return res.ok ? await res.json() : null;
-  } catch {
-    return null;
-  }
 }
 
 function isTrack(t: Spotify.Track | undefined, trackId: string): boolean {
@@ -75,8 +43,8 @@ function linesStarted(lineTimesMs: number[], positionMs: number): number {
 }
 
 /**
- * Plays one song in this browser with Spotify's Web Playback SDK and tracks
- * its position. Re-renders only when the shown second or line changes.
+ * Plays one song on the page's shared Spotify player and tracks its
+ * position. Re-renders only when the shown second or line changes.
  */
 export function usePlayer({
   trackId,
@@ -90,7 +58,6 @@ export function usePlayer({
   onEnded: () => void;
 }) {
   const router = useRouter();
-  const [attempt, setAttempt] = useState(0);
   const [status, setStatus] = useState<PlayerStatus>({ kind: "connecting" });
   const [paused, setPaused] = useState(true);
   const [positionSec, setPositionSec] = useState(0);
@@ -130,7 +97,7 @@ export function usePlayer({
     [trackId]
   );
 
-  // Connect a player in this browser and start the song.
+  // Attach to the shared player and start this song on it.
   useEffect(() => {
     let cancelled = false;
     let player: Spotify.Player | null = null;
@@ -178,6 +145,7 @@ export function usePlayer({
         state.position === 0 &&
         previous_tracks.some((t) => isTrack(t, trackId));
       if (finished) return end();
+      // The shared player may still report the previous song until this one starts.
       if (!isTrack(current_track, trackId)) return;
 
       clockRef.current = { positionMs: state.position, at: performance.now(), paused: state.paused };
@@ -189,6 +157,36 @@ export function usePlayer({
       }
     };
 
+    const startOn = async (deviceId: string) => {
+      deviceRef.current = deviceId;
+      clearTimeout(readyTimeout);
+      if (playRequested) return;
+      playRequested = true;
+      player?.activateElement();
+      const result = await requestPlay(0);
+      if (cancelled) return;
+      if (result === "expired") expire();
+      else if (result === "premium") fail("premium");
+      else if (result === "failed") fail("start_failed");
+    };
+
+    // Named so they can be removed: the player outlives this song.
+    const onReady = ({ device_id }: Spotify.WebPlaybackInstance) => {
+      if (!cancelled) startOn(device_id);
+    };
+    const onNotReady = () => markDropped();
+    const onInitError = () => fail("unsupported");
+    const onAuthError = () => fail("permissions");
+    const onAccountError = () => fail("premium");
+    const onPlaybackError = () => {
+      if (startedRef.current) markDropped();
+      else fail("start_failed");
+    };
+    const onAutoplayFailed = () => {
+      if (!cancelled) setStatus({ kind: "blocked" });
+    };
+    const onState = (state: Spotify.PlaybackState) => handleState(state);
+
     (async () => {
       const token = await fetchToken();
       if (cancelled) return;
@@ -196,54 +194,25 @@ export function usePlayer({
       if (!token) return fail("start_failed");
       if (token.missingScopes.length > 0) return fail("permissions");
 
+      let shared;
       try {
-        await loadSdk();
+        shared = await getSharedPlayer();
       } catch {
         return fail("start_failed");
       }
       if (cancelled) return;
+      if (shared.failure) return fail(shared.failure);
 
-      player = new window.Spotify.Player({
-        name: "Lyrics Game",
-        volume: 0.8,
-        getOAuthToken: (cb) => {
-          fetchToken().then((t) => {
-            if (t && t !== "expired") cb(t.accessToken);
-          });
-        },
-      });
+      player = shared.player;
       playerRef.current = player;
-
-      readyTimeout = setTimeout(() => {
-        if (!deviceRef.current) fail("start_failed");
-      }, READY_TIMEOUT_MS);
-
-      player.addListener("ready", async ({ device_id }) => {
-        if (cancelled) return;
-        deviceRef.current = device_id;
-        clearTimeout(readyTimeout);
-        // The player can reconnect mid-song; only the first ready starts it.
-        if (playRequested) return;
-        playRequested = true;
-        player?.activateElement();
-        const result = await requestPlay(0);
-        if (cancelled) return;
-        if (result === "expired") expire();
-        else if (result === "premium") fail("premium");
-        else if (result === "failed") fail("start_failed");
-      });
-      player.addListener("not_ready", markDropped);
-      player.addListener("initialization_error", () => fail("unsupported"));
-      player.addListener("authentication_error", () => fail("permissions"));
-      player.addListener("account_error", () => fail("premium"));
-      player.addListener("playback_error", () => {
-        if (startedRef.current) markDropped();
-        else fail("start_failed");
-      });
-      player.addListener("autoplay_failed", () => {
-        if (!cancelled) setStatus({ kind: "blocked" });
-      });
-      player.addListener("player_state_changed", handleState);
+      player.addListener("ready", onReady);
+      player.addListener("not_ready", onNotReady);
+      player.addListener("initialization_error", onInitError);
+      player.addListener("authentication_error", onAuthError);
+      player.addListener("account_error", onAccountError);
+      player.addListener("playback_error", onPlaybackError);
+      player.addListener("autoplay_failed", onAutoplayFailed);
+      player.addListener("player_state_changed", onState);
 
       resync = setInterval(() => {
         player?.getCurrentState().then((state) => {
@@ -251,20 +220,40 @@ export function usePlayer({
         });
       }, RESYNC_MS);
 
-      const connected = await player.connect();
-      if (!connected) fail("start_failed");
+      readyTimeout = setTimeout(() => {
+        if (!deviceRef.current) fail("start_failed");
+      }, READY_TIMEOUT_MS);
+
+      if (shared.deviceId) {
+        startOn(shared.deviceId);
+      } else if (!shared.connectStarted) {
+        shared.connectStarted = true;
+        const connected = await player.connect();
+        if (!connected) fail("start_failed");
+      }
+      // Otherwise another screen started connecting; onReady will fire.
     })();
 
     return () => {
       cancelled = true;
       clearTimeout(readyTimeout);
       clearInterval(resync);
-      // Disconnecting removes this browser as a Spotify device, which stops the music.
-      player?.disconnect();
+      if (player) {
+        player.removeListener("ready", onReady);
+        player.removeListener("not_ready", onNotReady);
+        player.removeListener("initialization_error", onInitError);
+        player.removeListener("authentication_error", onAuthError);
+        player.removeListener("account_error", onAccountError);
+        player.removeListener("playback_error", onPlaybackError);
+        player.removeListener("player_state_changed", onState);
+        // The SDK's types can't remove "autoplay_failed"; the cancelled flag makes it inert.
+        // Pause rather than disconnect: the next song reuses this player.
+        player.pause().catch(() => {});
+      }
       playerRef.current = null;
       deviceRef.current = null;
     };
-  }, [attempt, trackId, requestPlay, expire]);
+  }, [trackId, requestPlay, expire]);
 
   // Advance the clock between player events.
   useEffect(() => {
@@ -319,17 +308,20 @@ export function usePlayer({
     setStatus({ kind: "playing" });
   }, []);
 
+  /**
+   * A fresh player in the same page never registers with Spotify, so
+   * retrying means reloading the page, which gives it a new first player.
+   */
   const retry = useCallback(() => {
-    setStatus({ kind: "connecting" });
-    setAttempt((a) => a + 1);
+    window.location.reload();
   }, []);
 
-  /** Pauses before leaving, so the music stops even if disconnecting lags. */
+  /** Pauses before leaving, so the music stops right away. */
   const stop = useCallback(async () => {
     try {
       await playerRef.current?.pause();
     } catch {
-      // Leaving the page disconnects the player anyway.
+      // Leaving the screen pauses the player anyway.
     }
   }, []);
 
