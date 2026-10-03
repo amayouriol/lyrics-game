@@ -73,8 +73,8 @@ And on Spotify's side (after the March 2026 changes): `GET /tracks/{id}` (one tr
 - [x] Reopen Liked Songs (and after restarting the dev server): tags appear instantly, with no new LRCLIB requests in the log
 - [x] Click a tagged song: song screen shows cover, title, artist and "N lines · m:ss"; the lyrics text is not in the page or in any network response
 - [x] Greyed-out songs can't be opened
-- [ ] "Back to library" returns to the same list with tags in place
-- [ ] Lyrics service unreachable (server side verified 2026-10-03: songs come back unchecked and nothing is cached; the on-screen notice is not yet seen on a real account) (simulate by temporarily pointing the LRCLIB URL at an unreachable host): list shows the "couldn't be checked" notice with Retry and greys nothing out; song screen shows the error panel with Retry
+- [x] "Back to library" returns to the same list with tags in place
+- [ ] Lyrics service unreachable (simulate by temporarily pointing the LRCLIB URL at an unreachable host): list shows the "couldn't be checked" notice with Retry and greys nothing out; song screen shows the error panel with Retry. *Server side verified 2026-10-03 (songs come back unchecked, nothing cached); the on-screen notice hasn't been seen on a real account yet.*
 - [x] Spot checks (verified 2026-10-03 via the API against live LRCLIB, plus: a wrong-length version is unavailable, a "(feat. …)" title is found): a well-known song with lyrics is available; an instrumental track is unavailable; a remastered track (title with " - Remastered") is still found
 - [x] `npm run lint` and `npm run build` pass
 
