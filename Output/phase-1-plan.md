@@ -70,6 +70,11 @@ The earlier conclusion that the 403 came only from *followed* playlists was wron
 
 Source: [Spotify February 2026 migration guide](https://developer.spotify.com/documentation/web-api/tutorials/february-2026-migration-guide)
 
+## Bug — RESOLVED 2026-10-03: "Login is required" after logging out and back in
+Log out redirected to `localhost:3000` instead of `127.0.0.1:3000` (in dev, the server reports its own URL as `localhost`). Connecting from `localhost` stored the login's anti-forgery cookie for `localhost`, but Spotify returns to `127.0.0.1`, which didn't have it, so the login was rejected and the denied screen appeared even though nothing was cancelled. The Phase 1 review spotted the host switch but wrongly dismissed it as a test-browser quirk.
+
+**Fix:** logout redirects to a relative `/` (stays on the current host), and the login route moves any other host to the redirect URI's host before setting the cookie. Verified: logout stays on `127.0.0.1`; starting login on `localhost` hops to `127.0.0.1` first.
+
 ## Before starting Phase 2
 - [x] Confirm every box above is checked and manually verified against a real Spotify Premium account
 - [x] Confirm no Phase 2/3 behavior (lyrics, disabled tracks, playback) quietly crept into this phase's code
