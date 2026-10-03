@@ -1,11 +1,14 @@
 const ACCOUNTS_URL = "https://accounts.spotify.com";
 const API_URL = "https://api.spotify.com/v1";
 
+/** Scopes Spotify's in-browser player (Web Playback SDK) refuses to start without. */
+export const PLAYER_SCOPES = ["streaming", "user-read-email", "user-read-private"];
+
 export const SPOTIFY_SCOPES = [
   "playlist-read-private",
   "playlist-read-collaborative",
   "user-library-read",
-  "streaming",
+  ...PLAYER_SCOPES,
   "user-read-playback-state",
   "user-modify-playback-state",
 ].join(" ");

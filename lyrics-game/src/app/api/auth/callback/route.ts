@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
     session.accessToken = tokens.access_token;
     session.refreshToken = tokens.refresh_token;
     session.expiresAt = Date.now() + tokens.expires_in * 1000;
+    session.scope = tokens.scope;
     await session.save();
   } catch {
     redirect("/denied");

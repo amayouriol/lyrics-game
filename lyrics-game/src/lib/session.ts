@@ -7,6 +7,8 @@ export interface SessionData {
   refreshToken?: string;
   /** epoch ms when accessToken stops being valid */
   expiresAt?: number;
+  /** Space-separated scopes Spotify actually granted (absent on sessions from before it was stored). */
+  scope?: string;
 }
 
 const sessionOptions: SessionOptions = {
@@ -53,6 +55,7 @@ export async function getValidAccessToken(): Promise<string> {
     session.accessToken = tokens.access_token;
     session.expiresAt = Date.now() + tokens.expires_in * 1000;
     if (tokens.refresh_token) session.refreshToken = tokens.refresh_token;
+    if (tokens.scope) session.scope = tokens.scope;
     await session.save();
     return session.accessToken;
   } catch {
