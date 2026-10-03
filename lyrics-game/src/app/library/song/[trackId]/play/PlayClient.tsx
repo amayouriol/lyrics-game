@@ -12,9 +12,12 @@ import {
   blankState,
   computeStats,
   DIFFICULTIES,
+  isFullLengthMiss,
   isMatch,
+  MAX_TRIES,
   nextDifficulty,
   pickBlanks,
+  pointsFor,
   tokenize,
   verdict,
   type Answer,
@@ -46,7 +49,8 @@ const ERRORS: Record<PlayerError, { title: string; body: string }> = {
   },
 };
 
-const HELP_DEFAULT = "Type the missing word. It checks as you go. Enter on an empty blank skips it.";
+const HELP_DEFAULT =
+  "Type the missing word. A wrong word costs a try (3 per word). Enter on an empty blank skips it.";
 const HELP_WAITING =
   "The song waits for you. Type the word, or press Enter on an empty blank to skip.";
 /** On the last line, the song waits this close to its end. */
@@ -228,32 +232,58 @@ function PlayScreen({
 
   function onType(blank: Blank, value: string) {
     if (hidden || blank.id !== activeId) return;
+    const wrongTries = answers[blank.id]?.wrongTries ?? 0;
     if (isMatch(value, blank.answer)) {
-      const next: Record<string, Answer> = { ...answers, [blank.id]: { value, status: "correct" } };
+      const next: Record<string, Answer> = {
+        ...answers,
+        [blank.id]: { value, status: "correct", wrongTries },
+      };
       setAnswers(next);
       const { streak } = computeStats(blanks, next, currentLine, level);
       setLastEvent({
         line: currentLine,
-        text: streak >= 3 ? `Got it. ${streak} in a row.` : "Got it.",
+        text:
+          wrongTries > 0
+            ? `Got it on try ${wrongTries + 1}. +${pointsFor(level, wrongTries)}`
+            : streak >= 3
+              ? `Got it. ${streak} in a row.`
+              : "Got it.",
         bad: false,
       });
+    } else if (isFullLengthMiss(value, blank.answer)) {
+      wrongTry(blank, value);
     } else {
-      setAnswers({ ...answers, [blank.id]: { value, status: "typing" } });
+      setAnswers({ ...answers, [blank.id]: { value, status: "typing", wrongTries } });
     }
   }
 
   function onSubmit(blank: Blank, value: string) {
     if (hidden || blank.id !== activeId) return;
+    const wrongTries = answers[blank.id]?.wrongTries ?? 0;
     if (!value.trim()) {
-      setAnswers({ ...answers, [blank.id]: { value: "", status: "skipped" } });
+      setAnswers({ ...answers, [blank.id]: { value: "", status: "skipped", wrongTries } });
       setLastEvent({ line: currentLine, text: `Skipped. It was “${blank.answer}”.`, bad: true });
     } else if (!isMatch(value, blank.answer)) {
-      setLastEvent({
-        line: currentLine,
-        text: "Not it. Keep trying before the line moves on.",
-        bad: true,
-      });
+      wrongTry(blank, value);
     }
+  }
+
+  /** A wrong guess: costs a try; after the last one the word is missed and the song moves on. */
+  function wrongTry(blank: Blank, value: string) {
+    const wrongTries = (answers[blank.id]?.wrongTries ?? 0) + 1;
+    if (wrongTries >= MAX_TRIES) {
+      setAnswers({ ...answers, [blank.id]: { value, status: "missed", wrongTries } });
+      setLastEvent({ line: currentLine, text: `Out of tries. It was “${blank.answer}”.`, bad: true });
+      return;
+    }
+    // Clear the box for the next try.
+    setAnswers({ ...answers, [blank.id]: { value: "", status: "typing", wrongTries } });
+    const left = MAX_TRIES - wrongTries;
+    setLastEvent({
+      line: currentLine,
+      text: `Not “${value.trim()}”. ${left} ${left === 1 ? "try" : "tries"} left.`,
+      bad: true,
+    });
   }
 
   function help(): { text: string; tone: "muted" | "good" | "bad" } {
@@ -279,13 +309,17 @@ function PlayScreen({
       const blank = blankById.get(`${li}-${wi}`);
       if (!blank) return <span key={wi}>{token.raw}</span>;
       const state = blankState(blank, answers[blank.id], currentLine, activeId);
+      const wrongTries = answers[blank.id]?.wrongTries ?? 0;
       return (
         <span key={wi} className={styles.word}>
           {token.lead}
           <LyricBlank
+            // A new key per wrong try remounts the box, replaying its shake.
+            key={`${blank.id}-${wrongTries}`}
             answer={blank.answer}
             value={answers[blank.id]?.value ?? ""}
             state={state === "future" ? "waiting" : state}
+            wrongTries={wrongTries}
             onChange={(v) => onType(blank, v)}
             onSubmit={(v) => onSubmit(blank, v)}
           />
@@ -439,7 +473,12 @@ function Results({
             You got {stats.correct} of {stats.total} words in {track.title}.
           </p>
           <div className={styles.stats}>
-            <StatBlock label="Score" value={stats.score} tone="primary" hint={`${info.points} per word`} />
+            <StatBlock
+              label="Score"
+              value={stats.score}
+              tone="primary"
+              hint={`Up to ${info.points} per word`}
+            />
             <StatBlock
               label="Accuracy"
               value={`${stats.accuracy}%`}

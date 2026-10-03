@@ -6,12 +6,15 @@ export function LyricBlank({
   answer,
   value = "",
   state,
+  wrongTries = 0,
   onChange,
   onSubmit,
 }: {
   answer: string;
   value?: string;
   state: Exclude<BlankState, "future">;
+  /** Wrong tries so far: the active box shakes and turns red after one. */
+  wrongTries?: number;
   onChange?: (value: string) => void;
   onSubmit?: (value: string) => void;
 }) {
@@ -20,7 +23,7 @@ export function LyricBlank({
   if (state === "active") {
     return (
       <input
-        className={`${styles.blank} ${styles.input}`}
+        className={`${styles.blank} ${styles.input} ${wrongTries > 0 ? styles.retry : ""}`}
         style={{ width, minWidth: width }}
         value={value}
         autoFocus

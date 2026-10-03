@@ -41,6 +41,13 @@ Derived from: Output/phase-4-spec.md. Replaces plan.md's Phase 4 section and tak
 - [x] While waiting: lyrics stay visible (unlike a normal pause), play/pause disabled, help line "The song waits for you…".
 - [x] A dropped playback during a wait clears the wait; after Resume, it waits again at the line end if the word is still open.
 
+## Change after second play-test (2026-10-03): 3 tries per word, with a penalty
+- [x] A try = a full-length (or longer) non-matching guess, counted automatically, or Enter on a shorter wrong guess.
+- [x] Wrong try: box shakes and turns red (respects reduced-motion), clears, "Not “x”. N tries left."
+- [x] 3rd wrong try: word missed (shown wrong with the last guess), streak reset, wait released so the song continues.
+- [x] Points halve per wrong try (`pointsFor`); streak counts first-try words only; results' Score hint reads "Up to N per word".
+- [x] 6 new rule checks (26 total) pass.
+
 ## Verified while building (2026-10-03)
 - 20 rule checks pass: accent/ñ/case/apostrophe matching, punctuation kept outside words, blanks per level, filler skipped, deterministic picks, blank states, score/streak/accuracy, verdicts.
 - On 4 real songs from the cache (Spanish and English), Medium hides sensible words ("corazón", "esperanza", "terminó", "somebody") and keeps trailing apostrophes outside the blank ("Tú [sabe]'").
@@ -48,7 +55,8 @@ Derived from: Output/phase-4-spec.md. Replaces plan.md's Phase 4 section and tak
 ## Acceptance check (tied to phase-4-spec.md's Success section)
 - [ ] Each difficulty: number of blanks matches the song screen's summary
 - [ ] Typing a hidden word (without accents on a Spanish song) turns it green and adds the level's points
-- [ ] With a word still open, the song pauses at the end of its line and continues by itself once it's answered; Enter on empty skips it (revealed, streak reset)
+- [x] With a word still open, the song pauses at the end of its line and continues by itself once it's answered; Enter on empty skips it (revealed, streak reset)
+- [ ] A wrong guess shakes the box red and costs a try; after 3, the word is revealed and the song continues; a word right on try 2 scores half
 - [ ] The next line's text never appears before the song reaches it
 - [ ] Pausing hides the lyrics and blocks typing
 - [ ] Results: score, accuracy, best streak and guess list match what happened

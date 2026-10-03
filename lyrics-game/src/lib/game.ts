@@ -44,6 +44,22 @@ export function isMatch(guess: string, answer: string): boolean {
   return g !== "" && g === normalize(answer);
 }
 
+/** Wrong tries allowed per word; the next wrong one after this is a miss. */
+export const MAX_TRIES = 3;
+
+/**
+ * A guess that's already wrong without pressing Enter: as long as the word
+ * (or longer) and not a match. Counts as a try on its own.
+ */
+export function isFullLengthMiss(guess: string, answer: string): boolean {
+  return normalize(guess).length >= normalize(answer).length && !isMatch(guess, answer);
+}
+
+/** Points for a word, halved for each wrong try before getting it. */
+export function pointsFor(level: Difficulty, wrongTries: number): number {
+  return Math.round(DIFFICULTIES[level].points / 2 ** wrongTries);
+}
+
 export interface Token {
   /** The word exactly as written, punctuation included. */
   raw: string;
@@ -123,7 +139,13 @@ export function pickBlanks(lines: TimedLine[], level: Difficulty): Blank[] {
 
 export interface Answer {
   value: string;
-  status: "typing" | "correct" | "skipped";
+  /** "missed": out of tries. */
+  status: "typing" | "correct" | "skipped" | "missed";
+  wrongTries: number;
+}
+
+function isResolvedByYou(answer: Answer | undefined): boolean {
+  return answer?.status === "correct" || answer?.status === "skipped" || answer?.status === "missed";
 }
 
 export type BlankState = "future" | "waiting" | "active" | "correct" | "wrong" | "revealed";
@@ -134,9 +156,7 @@ export function activeBlankId(
   answers: Record<string, Answer>,
   currentLine: number
 ): string | null {
-  const open = blanks.find(
-    (b) => b.line === currentLine && answers[b.id]?.status !== "correct" && answers[b.id]?.status !== "skipped"
-  );
+  const open = blanks.find((b) => b.line === currentLine && !isResolvedByYou(answers[b.id]));
   return open?.id ?? null;
 }
 
@@ -149,6 +169,7 @@ export function blankState(
 ): BlankState {
   if (answer?.status === "correct") return "correct";
   if (answer?.status === "skipped") return "revealed";
+  if (answer?.status === "missed") return "wrong";
   if (blank.line < currentLine) return answer?.value ? "wrong" : "revealed";
   if (blank.line === currentLine) return blank.id === activeId ? "active" : "waiting";
   return "future";
@@ -166,7 +187,8 @@ export interface Stats {
 
 /**
  * Score and streaks so far. A blank counts once it's resolved: guessed,
- * skipped, or its line has passed. Pass Infinity at the end of the song.
+ * skipped, out of tries, or its line has passed. Pass Infinity at the end
+ * of the song. The streak only counts words right on the first try.
  */
 export function computeStats(
   blanks: Blank[],
@@ -175,22 +197,27 @@ export function computeStats(
   level: Difficulty
 ): Stats {
   let correct = 0;
+  let score = 0;
   let streak = 0;
   let bestStreak = 0;
   for (const blank of blanks) {
-    const state = blankState(blank, answers[blank.id], currentLine, null);
+    const answer = answers[blank.id];
+    const state = blankState(blank, answer, currentLine, null);
+    const wrongTries = answer?.wrongTries ?? 0;
     if (state === "correct") {
       correct++;
-      streak++;
+      score += pointsFor(level, wrongTries);
+      streak = wrongTries === 0 ? streak + 1 : 0;
       bestStreak = Math.max(bestStreak, streak);
-    } else if (state === "wrong" || state === "revealed") {
+    } else if (state === "wrong" || state === "revealed" || wrongTries > 0) {
+      // A wrong try breaks the streak even while the word is still open.
       streak = 0;
     }
   }
   return {
     total: blanks.length,
     correct,
-    score: correct * DIFFICULTIES[level].points,
+    score,
     streak,
     bestStreak,
     accuracy: blanks.length ? Math.round((correct / blanks.length) * 100) : 0,
