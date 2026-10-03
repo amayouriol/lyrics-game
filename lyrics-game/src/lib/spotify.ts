@@ -108,6 +108,38 @@ export class SpotifyApiError extends Error {
   }
 }
 
+const DEVICE_REGISTER_WAIT_MS = 800;
+
+/**
+ * Starts a song on a specific player (this browser's). Retries once on 404,
+ * since a player that just connected can take a moment to register.
+ */
+export async function startPlayback(
+  accessToken: string,
+  deviceId: string,
+  trackId: string,
+  positionMs: number
+): Promise<void> {
+  const url = `${API_URL}/me/player/play?device_id=${encodeURIComponent(deviceId)}`;
+  const body = JSON.stringify({ uris: [`spotify:track:${trackId}`], position_ms: positionMs });
+
+  for (let attempt = 1; ; attempt++) {
+    const res = await fetch(url, {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+      body,
+      cache: "no-store",
+    });
+    if (res.ok) return;
+    if (res.status === 401) throw new SpotifySessionExpiredError("Spotify API error 401 for play");
+    if (res.status === 404 && attempt === 1) {
+      await new Promise((resolve) => setTimeout(resolve, DEVICE_REGISTER_WAIT_MS));
+      continue;
+    }
+    throw new SpotifyApiError(res.status, `Spotify play failed: ${res.status} ${await res.text()}`);
+  }
+}
+
 export interface Source {
   id: string;
   name: string;

@@ -6,8 +6,8 @@ import { getTrack, SpotifySessionExpiredError } from "@/lib/spotify";
 const SPOTIFY_ID = /^[A-Za-z0-9]{22}$/;
 
 /**
- * Summary for the song screen. Returns the line count only, never the
- * lyrics text: the app must not show a song's lyrics all at once.
+ * Summary for the song and play screens. Returns line start times only,
+ * never the lyrics text: the app must not show a song's lyrics all at once.
  */
 export async function GET(_request: Request, { params }: { params: Promise<{ trackId: string }> }) {
   const { trackId } = await params;
@@ -27,6 +27,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tra
       artist: track.artist,
       cover: track.cover,
       duration: track.duration,
+      durationMs: track.durationMs,
     };
 
     const lyrics = await getLyrics(track);
@@ -41,6 +42,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tra
       track: summary,
       status: lyrics.status,
       lineCount: lyrics.lines.length,
+      lineTimesMs: lyrics.lines.map((line) => line.timeMs),
     });
   } catch (error) {
     console.error("[/api/lyrics/[trackId]]", error);

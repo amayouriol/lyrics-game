@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession, hasActiveSession } from "@/lib/session";
 import styles from "./page.module.css";
@@ -31,9 +30,10 @@ export default async function HomePage({
         and type the missing words as the song plays.
       </p>
 
-      <Link href="/api/auth/login" className="btn btn--lg">
+      {/* Plain link: a server route, not a page Next.js should prefetch. */}
+      <a href="/api/auth/login" className="btn btn--lg">
         Connect with Spotify
-      </Link>
+      </a>
 
       <p className={styles.note}>
         Premium is required for full-song playback. Only your account can sign in to this build.

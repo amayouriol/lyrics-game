@@ -1,4 +1,3 @@
-import Link from "next/link";
 import styles from "./page.module.css";
 
 export default function DeniedPage() {
@@ -10,9 +9,10 @@ export default function DeniedPage() {
         You cancelled the Spotify permission screen, so there&apos;s no library to play from.
         Nothing was saved.
       </p>
-      <Link href="/api/auth/login" className="btn btn--lg">
+      {/* Plain link: a server route, not a page Next.js should prefetch. */}
+      <a href="/api/auth/login" className="btn btn--lg">
         Try again
-      </Link>
+      </a>
     </main>
   );
 }

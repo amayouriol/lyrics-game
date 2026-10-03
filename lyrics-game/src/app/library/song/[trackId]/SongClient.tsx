@@ -3,34 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { loadSong, songHref, type SongResult } from "./loadSong";
 import styles from "./song.module.css";
-
-interface TrackSummary {
-  title: string;
-  artist: string;
-  cover: string | null;
-  duration: string;
-}
-
-type SongResult =
-  | { kind: "ready"; track: TrackSummary; status: "available" | "unavailable"; lineCount: number }
-  | { kind: "lyrics_error"; track: TrackSummary }
-  | { kind: "error" }
-  | { kind: "not_found" };
-
-async function loadSong(trackId: string): Promise<SongResult | "expired"> {
-  try {
-    const res = await fetch(`/api/lyrics/${encodeURIComponent(trackId)}`);
-    if (res.status === 401) return "expired";
-    if (res.status === 404) return { kind: "not_found" };
-    const body = await res.json();
-    if (res.status === 503 && body.track) return { kind: "lyrics_error", track: body.track };
-    if (!res.ok) return { kind: "error" };
-    return { kind: "ready", track: body.track, status: body.status, lineCount: body.lineCount };
-  } catch {
-    return { kind: "error" };
-  }
-}
 
 export function SongClient({ trackId, from }: { trackId: string; from: string | null }) {
   const router = useRouter();
@@ -84,9 +58,17 @@ export function SongClient({ trackId, from }: { trackId: string; from: string | 
           {!song && <div className={styles.hint}>Fetching synced lyrics…</div>}
 
           {song?.kind === "ready" && song.status === "available" && (
-            <div className={styles.meta}>
-              {song.lineCount} lines · {song.track.duration}
-            </div>
+            <>
+              <div className={styles.meta}>
+                {song.lineCount} lines · {song.track.duration}
+              </div>
+              <Link
+                href={`${songHref(trackId, null)}/play${from ? `?from=${encodeURIComponent(from)}` : ""}`}
+                className="btn btn--lg"
+              >
+                Play the song
+              </Link>
+            </>
           )}
 
           {song?.kind === "ready" && song.status === "unavailable" && (
