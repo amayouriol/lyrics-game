@@ -50,10 +50,25 @@ Confirmed scope for this phase: track rows are browse-only (no click behavior), 
 
 ## Acceptance check (tied to phase-1-spec.md's Success section)
 - [x] Log in once, close the app, reopen it later, and land straight on the library — no repeat login
-- [x] Library correctly lists Liked Songs and every playlist **you own** with accurate track counts
+- [ ] Library correctly lists Liked Songs and every playlist **you own** with accurate track counts — blocked by the known issue below
 - [x] Denying consent shows the dedicated denied screen, not a blank/broken state
 - [ ] An expired session sends you back to login with the expiry banner, not a silent failure — not yet exercised against a real expiry
 - [x] A failed library load shows the error state with a working Retry
+
+## Known issue (open, fix later) — 2026-10-03
+Owned playlists show **0 songs** and opening one shows "Spotify didn't answer." Liked Songs works.
+
+**Cause:** Spotify changed its Web API for Development Mode apps (applied to existing apps on 2026-03-09). The code still uses the old names:
+- `GET /playlists/{id}/tracks` was removed → returns 403 for *every* playlist. Replaced by `GET /playlists/{id}/items`.
+- In `/me/playlists`, each playlist's `tracks.total` is now `items.total` → the code reads a missing field and falls back to 0.
+- In the playlist item list, each entry's `track` field is now `item`.
+- `/me/tracks` (Liked Songs) did not change, which is why it still works.
+
+The earlier conclusion that the 403 came only from *followed* playlists was wrong: the endpoint itself is gone. Limiting to owned playlists is still correct, though, because the new `/items` endpoint only works for playlists you own **or collaborate on** (collaborative playlists could be added back).
+
+**Fix (all in `lyrics-game/src/lib/spotify.ts`):** read `playlist.items?.total`, call `/playlists/{id}/items`, read `entry.item` instead of `entry.track`. Then re-check the acceptance item above.
+
+Source: [Spotify February 2026 migration guide](https://developer.spotify.com/documentation/web-api/tutorials/february-2026-migration-guide)
 
 ## Before starting Phase 2
 - [x] Confirm every box above is checked and manually verified against a real Spotify Premium account
