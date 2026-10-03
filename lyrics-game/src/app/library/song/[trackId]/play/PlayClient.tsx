@@ -115,7 +115,6 @@ function PlayScreen({
     router.push(backHref);
   }
 
-  const started = status.kind === "playing" || status.kind === "dropped";
 
   return (
     <main className={styles.main}>
@@ -126,24 +125,25 @@ function PlayScreen({
           </button>
         </div>
 
-        {status.kind === "dropped" && (
-          <div className={styles.dropped}>
-            <div>
-              <div className={styles.droppedTitle}>Playback dropped.</div>
-              <div className={styles.droppedBody}>Spotify lost the connection to this browser.</div>
-            </div>
-            <button className="btn" onClick={resume}>
-              Resume
-            </button>
-          </div>
-        )}
-
         <div className={styles.center}>
           {status.kind === "connecting" && (
             <div className={styles.status}>Getting the player ready…</div>
           )}
 
-          {started && (
+          {status.kind === "dropped" && (
+            <div className={styles.panel}>
+              <h2>Paused: Spotify is playing somewhere else.</h2>
+              <p>
+                The music moved to another device, or the connection to Spotify dropped. Your
+                place in the song is saved.
+              </p>
+              <button className="btn btn--lg" onClick={resume}>
+                Resume here
+              </button>
+            </div>
+          )}
+
+          {status.kind === "playing" && (
             <>
               <div className={styles.line}>
                 {lineIndex === 0 ? "· · ·" : `Line ${lineIndex} of ${lineTimesMs.length}`}

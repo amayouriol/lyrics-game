@@ -8,6 +8,10 @@ export type { PlayerError };
 
 const READY_TIMEOUT_MS = 10_000;
 const RESYNC_MS = 1_000;
+/** Checks in a row where this browser isn't the active player before pausing the game. */
+const DROP_CONFIRM_CHECKS = 2;
+/** Near the end, a missing state is the song finishing, not a drop. */
+const END_ZONE_MS = 3_000;
 /** If no "song ended" event arrives, treat the song as over this long after its length. */
 const END_GRACE_MS = 1_500;
 
@@ -104,6 +108,10 @@ export function usePlayer({
     let readyTimeout: ReturnType<typeof setTimeout> | undefined;
     let resync: ReturnType<typeof setInterval> | undefined;
     let playRequested = false;
+    let dropped = false;
+    let missedChecks = 0;
+    /** Clock position at the first check that found this browser inactive. */
+    let positionAtFirstMiss = 0;
 
     deviceRef.current = null;
     startedRef.current = false;
@@ -114,14 +122,11 @@ export function usePlayer({
       if (!cancelled) setStatus({ kind: "error", error });
     };
 
-    const markDropped = () => {
-      if (cancelled || !startedRef.current || endedRef.current) return;
-      // Freeze the clock where the music stopped, so Resume continues from there.
-      clockRef.current = {
-        positionMs: clockPosition(clockRef.current),
-        at: performance.now(),
-        paused: true,
-      };
+    /** Pauses the game where the music stopped, so Resume continues from there. */
+    const markDropped = (atPositionMs = clockPosition(clockRef.current)) => {
+      if (cancelled || dropped || !startedRef.current || endedRef.current) return;
+      dropped = true;
+      clockRef.current = { positionMs: atPositionMs, at: performance.now(), paused: true };
       setPaused(true);
       setStatus((s) => (s.kind === "error" ? s : { kind: "dropped" }));
     };
@@ -148,6 +153,8 @@ export function usePlayer({
       // The shared player may still report the previous song until this one starts.
       if (!isTrack(current_track, trackId)) return;
 
+      dropped = false;
+      missedChecks = 0;
       clockRef.current = { positionMs: state.position, at: performance.now(), paused: state.paused };
       setPaused(state.paused);
       if (!state.paused) startedRef.current = true;
@@ -216,7 +223,15 @@ export function usePlayer({
 
       resync = setInterval(() => {
         player?.getCurrentState().then((state) => {
-          if (state) handleState(state);
+          if (cancelled) return;
+          if (state) return handleState(state);
+          // No state: this browser isn't the active player any more. When
+          // Spotify moves to another device the SDK doesn't always send an
+          // event, so this check is what catches it (tested 2026-10-03).
+          if (missedChecks === 0) positionAtFirstMiss = clockPosition(clockRef.current);
+          missedChecks++;
+          const nearEnd = positionAtFirstMiss > durationMs - END_ZONE_MS;
+          if (missedChecks >= DROP_CONFIRM_CHECKS && !nearEnd) markDropped(positionAtFirstMiss);
         });
       }, RESYNC_MS);
 
@@ -253,7 +268,7 @@ export function usePlayer({
       playerRef.current = null;
       deviceRef.current = null;
     };
-  }, [trackId, requestPlay, expire]);
+  }, [trackId, durationMs, requestPlay, expire]);
 
   // Advance the clock between player events.
   useEffect(() => {

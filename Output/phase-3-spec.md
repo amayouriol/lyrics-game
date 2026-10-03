@@ -40,13 +40,13 @@ Same as the main spec: a single user (you), using your own Spotify Premium accou
 - **Browser can't play Spotify songs** (it lacks the copy protection Spotify requires): "This browser can't play Spotify songs. Try Chrome, Edge or Firefox." with a button back.
 - **Player doesn't start** within about 10 seconds: "The player didn't start." with Retry and a button back. Never an endless "getting ready".
 - **Login missing the playback permissions** (a login from before Phase 3): "Reconnect Spotify to allow playback." with a button that takes you through Spotify's permission screen again.
-- **Playback dropped mid-song** (Spotify started playing on another device, or the connection to Spotify was lost): the design's banner, "Playback dropped. Spotify lost the connection to this browser.", with Resume, which continues from where it stopped.
+- **Playback dropped mid-song** (Spotify started playing on another device, or the connection to Spotify was lost): within about 2 seconds the game pauses. The line counter freezes where the music stopped, and a big message replaces it in the middle of the screen: "Paused: Spotify is playing somewhere else." with **Resume here**, which brings the song back to this browser from that spot. *(Changed 2026-10-03 from the design's small banner: in testing, the counter kept running after another device took over, and the banner was too easy to miss.)*
 - **Browser blocks sound** despite your click: a "Start the music" button appears, since browsers only allow sound after you click something.
 - **Spotify session problems** behave as in Phases 1 and 2: back to the login screen with the expiry banner.
 - **Privacy:** the browser player needs a short-lived pass to Spotify (valid about an hour). Only that pass reaches the browser; the login itself stays on the server.
 
 ## Success
-Pick a song with lyrics, click "Play the song", and hear it start in the browser within a few seconds. The elapsed time counts up, and the line counter changes as each new line starts (judged by ear), before the first line, after a pause, and through to the end. Pause and resume work. "Quit song" and the song's end both return to the song screen. With another device taking over mid-song, the "Playback dropped" banner appears and Resume continues from the same spot.
+Pick a song with lyrics, click "Play the song", and hear it start in the browser within a few seconds. The elapsed time counts up, and the line counter changes as each new line starts (judged by ear), before the first line, after a pause, and through to the end. Pause and resume work. "Quit song" and the song's end both return to the song screen. With another device taking over mid-song, the game pauses within about 2 seconds (counter frozen, big "Paused" message), and Resume here continues from the same spot.
 
 ## Scope decisions made in this pass
 - **Where the music plays:** in the browser (Spotify's Web Playback SDK), confirmed working with your account before speccing. The fallback (music playing in your Spotify app, controlled remotely) wasn't needed.

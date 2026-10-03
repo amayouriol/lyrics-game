@@ -23,27 +23,6 @@
   gap: 16px;
 }
 
-.dropped {
-  background: var(--grey-100);
-  border-radius: 16px;
-  padding: 24px 32px;
-  display: flex;
-  gap: 24px;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-}
-
-.droppedTitle {
-  font: 600 18px/1.4 var(--font-sans);
-  color: var(--black);
-}
-
-.droppedBody {
-  font: 400 15px/1.5 var(--font-sans);
-  color: var(--text-body);
-}
-
 .center {
   flex: 1;
   display: flex;
