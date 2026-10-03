@@ -1,4 +1,4 @@
-import type { Difficulty, TimedLine } from "@/lib/game";
+import type { Blank, Difficulty, TimedLine } from "@/lib/game";
 
 export interface TrackSummary {
   title: string;
@@ -15,6 +15,8 @@ export type SongResult =
       status: "available" | "unavailable";
       lineCount: number;
       lines: TimedLine[];
+      /** The hidden words per level, picked on the server against the dictionaries. */
+      blanks: Record<Difficulty, Blank[]>;
     }
   | { kind: "lyrics_error"; track: TrackSummary }
   | { kind: "error" }
@@ -35,6 +37,7 @@ export async function loadSong(trackId: string): Promise<SongResult | "expired">
       status: body.status,
       lineCount: body.lineCount,
       lines: body.lines,
+      blanks: body.blanks,
     };
   } catch {
     return { kind: "error" };

@@ -30,13 +30,18 @@ export interface TimedLine {
   text: string;
 }
 
-/** Lower case, no accents (ñ counts as n), no punctuation. */
+/**
+ * The forgiving parts of matching: case, accents (ñ counts as n) and
+ * apostrophes ("dont" for "don't"). Everything else, including other
+ * symbols and digits, stays, so "know!" is not "know".
+ */
 export function normalize(text: string): string {
   return text
+    .trim()
     .normalize("NFD")
     .replace(/\p{M}/gu, "")
     .toLowerCase()
-    .replace(/[^\p{L}\p{N}]/gu, "");
+    .replace(/['’‘ʼ`´]/g, "");
 }
 
 export function isMatch(guess: string, answer: string): boolean {
@@ -100,12 +105,53 @@ const FILLER = new Set(
     "mismo", "misma", "ella", "ellos", "ellas", "nosotros", "usted", "ustedes", "tuyo",
     "tuya", "suyo", "suya", "nuestro", "nuestra", "quien", "cual", "aqui", "alla",
     "ahora", "entonces", "asi", "sino",
+    // Interjections that dictionaries list as words but carry no meaning to learn
+    "whoa", "woah", "okay", "ahem", "oops", "hooray", "yippee", "shush", "guau",
   ].map(normalize)
 );
 
-function isEligible(core: string): boolean {
+/** Whether a word, as written in the lyrics, is a real word. */
+export type IsWord = (word: string) => boolean;
+
+// Spanish pronouns that attach to the end of verbs ("hacerte", "quédate").
+const ENCLITICS = ["nos", "los", "las", "les", "me", "te", "se", "lo", "la", "le"];
+
+/**
+ * Builds the real-word check from a dictionary of normalized words. Beyond
+ * exact entries, it accepts forms dictionaries leave out but lyrics are
+ * full of: Spanish verbs with attached pronouns, and English words with a
+ * dropped "g" ("fallin").
+ */
+export function makeIsWord(dictionary: Set<string>): IsWord {
+  // A verb that takes an attached pronoun is an infinitive (-r), a gerund
+  // (-ndo) or an imperative, which then gets a written accent ("mírala").
+  // Requiring one of those keeps sounds like "lele" (le + le) out.
+  const hasEnclitic = (word: string, accented: boolean, depth: number): boolean =>
+    ENCLITICS.some((pronoun) => {
+      if (!word.endsWith(pronoun)) return false;
+      const base = word.slice(0, -pronoun.length);
+      if (base.length < 3) return false;
+      const verbLike = base.endsWith("r") || base.endsWith("ndo") || accented;
+      if (verbLike && dictionary.has(base)) return true;
+      return depth < 2 && hasEnclitic(base, accented, depth + 1);
+    });
+
+  return (word) => {
+    const n = normalize(word);
+    if (dictionary.has(n)) return true;
+    if (hasEnclitic(n, /[áéíóú]/i.test(word), 1)) return true;
+    return n.endsWith("in") && dictionary.has(`${n}g`);
+  };
+}
+
+/**
+ * Worth hiding: a real word (so not "doo-dooo", "eehh" or a name) of at
+ * least 4 letters that isn't filler. The point is learning vocabulary, not
+ * guessing sounds.
+ */
+function isEligible(core: string, isWord: IsWord): boolean {
   const n = normalize(core);
-  return n.length >= 4 && !/\d/.test(n) && !FILLER.has(n);
+  return /^\p{L}{4,}$/u.test(n) && !FILLER.has(n) && isWord(core);
 }
 
 export interface Blank {
@@ -119,14 +165,14 @@ export interface Blank {
  * The hidden words for a song at a level. Deterministic, so replaying a
  * song at the same level hides the same words and scores compare fairly.
  */
-export function pickBlanks(lines: TimedLine[], level: Difficulty): Blank[] {
+export function pickBlanks(lines: TimedLine[], level: Difficulty, isWord: IsWord): Blank[] {
   const blanks: Blank[] = [];
   lines.forEach((line, li) => {
     const count = level === "hard" ? 2 : level === "medium" ? 1 : li % 2 === 0 ? 1 : 0;
     if (count === 0) return;
     tokenize(line.text)
       .map((token, wi) => ({ token, wi }))
-      .filter(({ token }) => token.core && isEligible(token.core))
+      .filter(({ token }) => token.core && isEligible(token.core, isWord))
       .sort((a, b) => normalize(b.token.core).length - normalize(a.token.core).length || a.wi - b.wi)
       .slice(0, count)
       .sort((a, b) => a.wi - b.wi)

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { DIFFICULTIES, DIFFICULTY_ORDER, pickBlanks, type Difficulty } from "@/lib/game";
+import { DIFFICULTIES, DIFFICULTY_ORDER, type Difficulty } from "@/lib/game";
 import { loadSong, playHref, type SongResult } from "./loadSong";
 import styles from "./song.module.css";
 
@@ -32,7 +32,7 @@ export function SongClient({ trackId, from }: { trackId: string; from: string | 
   const track = song && "track" in song ? song.track : null;
   const backHref = from ? `/library?source=${encodeURIComponent(from)}` : "/library";
   const retry = () => setReloadKey((k) => k + 1);
-  const blankCount = song?.kind === "ready" ? pickBlanks(song.lines, level).length : 0;
+  const blankCount = song?.kind === "ready" ? song.blanks[level].length : 0;
 
   return (
     <main className={styles.main}>

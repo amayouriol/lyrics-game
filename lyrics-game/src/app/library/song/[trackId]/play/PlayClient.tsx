@@ -16,7 +16,6 @@ import {
   isMatch,
   MAX_TRIES,
   nextDifficulty,
-  pickBlanks,
   pointsFor,
   tokenize,
   verdict,
@@ -126,6 +125,7 @@ export function PlayClient({
         trackId={trackId}
         track={song.track}
         lines={song.lines}
+        blanks={song.blanks[level]}
         level={level}
         backHref={backHref}
         onFinished={setGameResult}
@@ -170,6 +170,7 @@ function PlayScreen({
   trackId,
   track,
   lines,
+  blanks,
   level,
   backHref,
   onFinished,
@@ -177,12 +178,12 @@ function PlayScreen({
   trackId: string;
   track: TrackSummary;
   lines: TimedLine[];
+  blanks: Blank[];
   level: Difficulty;
   backHref: string;
   onFinished: (result: GameResult) => void;
 }) {
   const router = useRouter();
-  const blanks = useMemo(() => pickBlanks(lines, level), [lines, level]);
   const blankById = useMemo(() => new Map(blanks.map((b) => [b.id, b])), [blanks]);
   const lineTimesMs = useMemo(() => lines.map((l) => l.timeMs), [lines]);
 

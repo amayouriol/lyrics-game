@@ -62,3 +62,10 @@ Derived from: Output/phase-4-spec.md. Replaces plan.md's Phase 4 section and tak
 - [ ] Results: score, accuracy, best streak and guess list match what happened
 - [ ] Play again, Try harder and Pick another song work
 - [ ] Quit mid-song returns to the song screen without results
+
+## Change after third play-test (2026-10-03): stricter matching, only real words hidden
+- [x] Matching forgives only case, accents/ñ and apostrophes ("dont" = "don't"); any other symbol, digit or inner space makes a guess wrong ("know!" ≠ "know").
+- [x] Hidden words must be real words: checked server-side against MIT word lists (~275k English, ~636k Spanish), plus Spanish verb + attached pronoun ("hacerte", "mírala", "decírselo": base must end in -r/-ndo or the word be accented) and English dropped g ("fallin"). Excludes sounds ("doo-dooo", "eehh", "oooh"), names ("Rosetta", "Barcelona"), interjections ("whoa", "yeah"), contractions, and non-Latin scripts.
+- [x] Blanks are now picked on the server (`/api/lyrics/[trackId]` returns `blanks` per level) so the 11 MB dictionaries never reach the browser.
+- [x] On 551 cached songs: 97% of Medium blanks kept, no song left without blanks. 36 rule checks pass.
+- [ ] Re-test on a real account: symbols make a guess wrong, "dont" accepted, no sounds/names hidden.

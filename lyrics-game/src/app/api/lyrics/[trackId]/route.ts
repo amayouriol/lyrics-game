@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { getDictionary } from "@/lib/dictionary";
+import { DIFFICULTY_ORDER, pickBlanks } from "@/lib/game";
 import { getLyrics } from "@/lib/lyrics";
 import { getSession, getValidAccessToken } from "@/lib/session";
 import { getTrack, SpotifySessionExpiredError } from "@/lib/spotify";
@@ -39,11 +41,18 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tra
       );
     }
 
+    // Picked here because it needs the dictionaries, which stay on the server.
+    const isWord = await getDictionary();
+    const blanks = Object.fromEntries(
+      DIFFICULTY_ORDER.map((level) => [level, pickBlanks(lyrics.lines, level, isWord)])
+    );
+
     return NextResponse.json({
       track: summary,
       status: lyrics.status,
       lineCount: lyrics.lines.length,
       lines: lyrics.lines,
+      blanks,
     });
   } catch (error) {
     console.error("[/api/lyrics/[trackId]]", error);
