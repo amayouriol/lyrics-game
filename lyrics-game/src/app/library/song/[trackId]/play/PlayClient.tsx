@@ -1,10 +1,29 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Header } from "@/components/Header";
+import { LyricBlank } from "@/components/LyricBlank";
 import { PlayerBar } from "@/components/PlayerBar";
-import { loadSong, songHref, type SongResult, type TrackSummary } from "../loadSong";
+import { StatBlock } from "@/components/StatBlock";
+import {
+  activeBlankId,
+  blankState,
+  computeStats,
+  DIFFICULTIES,
+  isMatch,
+  nextDifficulty,
+  pickBlanks,
+  tokenize,
+  verdict,
+  type Answer,
+  type Blank,
+  type Difficulty,
+  type Stats,
+  type TimedLine,
+} from "@/lib/game";
+import { loadSong, playHref, songHref, type SongResult, type TrackSummary } from "../loadSong";
 import { usePlayer, type PlayerError } from "./usePlayer";
 import styles from "./play.module.css";
 
@@ -27,10 +46,30 @@ const ERRORS: Record<PlayerError, { title: string; body: string }> = {
   },
 };
 
-export function PlayClient({ trackId, from }: { trackId: string; from: string | null }) {
+const HELP_DEFAULT = "Type the missing word. It checks as you go. Enter on an empty blank skips it.";
+
+interface GameResult {
+  level: Difficulty;
+  blanks: Blank[];
+  answers: Record<string, Answer>;
+  stats: Stats;
+}
+
+export function PlayClient({
+  trackId,
+  from,
+  initialLevel,
+}: {
+  trackId: string;
+  from: string | null;
+  initialLevel: Difficulty;
+}) {
   const router = useRouter();
   const [reloadKey, setReloadKey] = useState(0);
   const [result, setResult] = useState<{ key: number; value: SongResult } | null>(null);
+  const [level, setLevel] = useState(initialLevel);
+  const [round, setRound] = useState(0);
+  const [gameResult, setGameResult] = useState<GameResult | null>(null);
 
   useEffect(() => {
     let ignore = false;
@@ -50,13 +89,38 @@ export function PlayClient({ trackId, from }: { trackId: string; from: string | 
   const song = result && result.key === reloadKey ? result.value : null;
   const backHref = songHref(trackId, from);
 
+  const startRound = (nextLevel: Difficulty) => {
+    if (nextLevel !== level) {
+      setLevel(nextLevel);
+      // Keep the URL in step, so a refresh replays at the same level.
+      window.history.replaceState(null, "", playHref(trackId, from, nextLevel));
+    }
+    setGameResult(null);
+    setRound((r) => r + 1);
+  };
+
   if (song?.kind === "ready" && song.status === "available") {
+    if (gameResult) {
+      return (
+        <Results
+          track={song.track}
+          result={gameResult}
+          libraryHref={from ? `/library?source=${encodeURIComponent(from)}` : "/library"}
+          onPlayAgain={() => startRound(gameResult.level)}
+          onTryNext={(next) => startRound(next)}
+        />
+      );
+    }
     return (
       <PlayScreen
+        // A new key per round resets the game; the page's Spotify player is reused.
+        key={`${level}-${round}`}
         trackId={trackId}
         track={song.track}
-        lineTimesMs={song.lineTimesMs}
+        lines={song.lines}
+        level={level}
         backHref={backHref}
+        onFinished={setGameResult}
       />
     );
   }
@@ -97,24 +161,116 @@ export function PlayClient({ trackId, from }: { trackId: string; from: string | 
 function PlayScreen({
   trackId,
   track,
-  lineTimesMs,
+  lines,
+  level,
   backHref,
+  onFinished,
 }: {
   trackId: string;
   track: TrackSummary;
-  lineTimesMs: number[];
+  lines: TimedLine[];
+  level: Difficulty;
   backHref: string;
+  onFinished: (result: GameResult) => void;
 }) {
   const router = useRouter();
-  const onEnded = useCallback(() => router.push(backHref), [router, backHref]);
+  const blanks = useMemo(() => pickBlanks(lines, level), [lines, level]);
+  const blankById = useMemo(() => new Map(blanks.map((b) => [b.id, b])), [blanks]);
+  const lineTimesMs = useMemo(() => lines.map((l) => l.timeMs), [lines]);
+
+  const [answers, setAnswers] = useState<Record<string, Answer>>({});
+  /** The latest thing you did, shown in the help line until the song moves on a line. */
+  const [lastEvent, setLastEvent] = useState<{ line: number; text: string; bad: boolean } | null>(
+    null
+  );
+
+  const onEnded = useCallback(() => {
+    onFinished({ level, blanks, answers, stats: computeStats(blanks, answers, Infinity, level) });
+  }, [onFinished, level, blanks, answers]);
+
   const { status, paused, positionSec, lineIndex, togglePause, resume, unblock, retry, stop } =
     usePlayer({ trackId, durationMs: track.durationMs, lineTimesMs, onEnded });
+
+  const currentLine = lineIndex - 1;
+  // Paused by you or by another device: lyrics hidden, no typing.
+  const hidden = status.kind === "dropped" || (status.kind === "playing" && paused);
+  const activeId = activeBlankId(blanks, answers, currentLine);
+  const stats = computeStats(blanks, answers, currentLine, level);
+
+  function onType(blank: Blank, value: string) {
+    if (hidden || blank.id !== activeId) return;
+    if (isMatch(value, blank.answer)) {
+      const next: Record<string, Answer> = { ...answers, [blank.id]: { value, status: "correct" } };
+      setAnswers(next);
+      const { streak } = computeStats(blanks, next, currentLine, level);
+      setLastEvent({
+        line: currentLine,
+        text: streak >= 3 ? `Got it. ${streak} in a row.` : "Got it.",
+        bad: false,
+      });
+    } else {
+      setAnswers({ ...answers, [blank.id]: { value, status: "typing" } });
+    }
+  }
+
+  function onSubmit(blank: Blank, value: string) {
+    if (hidden || blank.id !== activeId) return;
+    if (!value.trim()) {
+      setAnswers({ ...answers, [blank.id]: { value: "", status: "skipped" } });
+      setLastEvent({ line: currentLine, text: `Skipped. It was “${blank.answer}”.`, bad: true });
+    } else if (!isMatch(value, blank.answer)) {
+      setLastEvent({
+        line: currentLine,
+        text: "Not it. Keep trying before the line moves on.",
+        bad: true,
+      });
+    }
+  }
+
+  function help(): { text: string; tone: "muted" | "good" | "bad" } {
+    if (currentLine < 0) return { text: "Get ready. The first line is coming.", tone: "muted" };
+    if (lastEvent && lastEvent.line === currentLine) {
+      return { text: lastEvent.text, tone: lastEvent.bad ? "bad" : "good" };
+    }
+    const missed = blanks.filter(
+      (b) =>
+        b.line === currentLine - 1 &&
+        answers[b.id]?.status !== "correct" &&
+        answers[b.id]?.status !== "skipped"
+    );
+    if (missed.length > 0) {
+      return { text: `Too slow. It was “${missed[missed.length - 1].answer}”.`, tone: "bad" };
+    }
+    return { text: HELP_DEFAULT, tone: "muted" };
+  }
+
+  function renderLine(li: number) {
+    return tokenize(lines[li].text).map((token, wi) => {
+      const blank = blankById.get(`${li}-${wi}`);
+      if (!blank) return <span key={wi}>{token.raw}</span>;
+      const state = blankState(blank, answers[blank.id], currentLine, activeId);
+      return (
+        <span key={wi} className={styles.word}>
+          {token.lead}
+          <LyricBlank
+            answer={blank.answer}
+            value={answers[blank.id]?.value ?? ""}
+            state={state === "future" ? "waiting" : state}
+            onChange={(v) => onType(blank, v)}
+            onSubmit={(v) => onSubmit(blank, v)}
+          />
+          {token.trail}
+        </span>
+      );
+    });
+  }
 
   async function quit() {
     await stop();
     router.push(backHref);
   }
 
+  const helpLine = help();
 
   return (
     <main className={styles.main}>
@@ -123,6 +279,14 @@ function PlayScreen({
           <button className="btn btn--ghost btn--sm" onClick={quit}>
             Quit song
           </button>
+          <div className={styles.chips}>
+            <span className="chip chip--tertiary chip--sm">{DIFFICULTIES[level].label}</span>
+            <span className="chip chip--grey chip--sm">
+              Line {Math.max(0, lineIndex)} of {lines.length}
+            </span>
+            <span className="chip chip--primary chip--sm">{stats.score} pts</span>
+            <span className="chip chip--quaternary chip--sm">Streak {stats.streak}</span>
+          </div>
         </div>
 
         <div className={styles.center}>
@@ -143,14 +307,20 @@ function PlayScreen({
             </div>
           )}
 
-          {status.kind === "playing" && (
+          {status.kind === "playing" && paused && (
+            <div className={styles.panel}>
+              <h2>Paused.</h2>
+              <p>The lyrics are hidden while the song is paused. Press play to continue.</p>
+            </div>
+          )}
+
+          {status.kind === "playing" && !hidden && (
             <>
-              <div className={styles.line}>
-                {lineIndex === 0 ? "· · ·" : `Line ${lineIndex} of ${lineTimesMs.length}`}
+              <div className={styles.prevLine}>{currentLine >= 1 && renderLine(currentLine - 1)}</div>
+              <div className={styles.currentLine}>
+                {currentLine >= 0 ? renderLine(currentLine) : "· · ·"}
               </div>
-              <div className={styles.help}>
-                {lineIndex === 0 ? "Get ready. The first line is coming." : paused ? "Paused." : ""}
-              </div>
+              <div className={styles.nextLine}>{currentLine < lines.length - 1 ? "· · ·" : ""}</div>
             </>
           )}
 
@@ -187,6 +357,10 @@ function PlayScreen({
             </div>
           )}
         </div>
+
+        {status.kind === "playing" && !hidden && (
+          <div className={`${styles.help} ${styles[helpLine.tone]}`}>{helpLine.text}</div>
+        )}
       </div>
 
       <div className={styles.playerBar}>
@@ -202,5 +376,91 @@ function PlayScreen({
         />
       </div>
     </main>
+  );
+}
+
+function Results({
+  track,
+  result,
+  libraryHref,
+  onPlayAgain,
+  onTryNext,
+}: {
+  track: TrackSummary;
+  result: GameResult;
+  libraryHref: string;
+  onPlayAgain: () => void;
+  onTryNext: (level: Difficulty) => void;
+}) {
+  const { level, blanks, answers, stats } = result;
+  const next = nextDifficulty(level);
+  const info = DIFFICULTIES[level];
+
+  return (
+    <>
+      <Header />
+      <main className={styles.results}>
+        <section className={styles.resultsTop}>
+          <span className="chip chip--primary chip--sm">
+            {track.title} — {track.artist}
+          </span>
+          <h1 className={styles.verdict}>{verdict(stats.accuracy)}</h1>
+          <p className={styles.summary}>
+            You got {stats.correct} of {stats.total} words in {track.title}.
+          </p>
+          <div className={styles.stats}>
+            <StatBlock label="Score" value={stats.score} tone="primary" hint={`${info.points} per word`} />
+            <StatBlock
+              label="Accuracy"
+              value={`${stats.accuracy}%`}
+              tone="secondary"
+              hint={`${stats.correct} of ${stats.total} words`}
+            />
+            <StatBlock
+              label="Best streak"
+              value={stats.bestStreak}
+              tone="quaternary"
+              hint="In a row, no misses"
+            />
+            <StatBlock
+              label="Difficulty"
+              value={info.label}
+              tone="tertiary"
+              hint={info.description.split(".")[0]}
+            />
+          </div>
+          <div className={styles.actions}>
+            <button className="btn btn--lg" onClick={onPlayAgain}>
+              Play again
+            </button>
+            {next && (
+              <button className="btn btn--lg btn--secondary" onClick={() => onTryNext(next)}>
+                Try {DIFFICULTIES[next].label}
+              </button>
+            )}
+            <Link href={libraryHref} className="btn btn--lg btn--ghost">
+              Pick another song
+            </Link>
+          </div>
+        </section>
+
+        <section className={styles.guesses}>
+          <h2>Your guesses</h2>
+          <div className={styles.receipts}>
+            {blanks.map((b) => {
+              const state = blankState(b, answers[b.id], Infinity, null);
+              return (
+                <LyricBlank
+                  key={b.id}
+                  answer={b.answer}
+                  value={answers[b.id]?.value ?? ""}
+                  state={state === "correct" || state === "wrong" ? state : "revealed"}
+                />
+              );
+            })}
+          </div>
+        </section>
+      </main>
+    </>
   );
 }

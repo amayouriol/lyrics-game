@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { isDifficulty } from "@/lib/game";
 import { getSession, hasActiveSession } from "@/lib/session";
 import { PlayClient } from "./PlayClient";
 
@@ -8,7 +9,7 @@ export default async function PlayPage({
   searchParams,
 }: {
   params: Promise<{ trackId: string }>;
-  searchParams: Promise<{ from?: string }>;
+  searchParams: Promise<{ from?: string; level?: string }>;
 }) {
   const session = await getSession();
   if (!hasActiveSession(session)) {
@@ -16,7 +17,13 @@ export default async function PlayPage({
   }
 
   const { trackId } = await params;
-  const { from } = await searchParams;
+  const { from, level } = await searchParams;
 
-  return <PlayClient trackId={trackId} from={from ?? null} />;
+  return (
+    <PlayClient
+      trackId={trackId}
+      from={from ?? null}
+      initialLevel={isDifficulty(level) ? level : "medium"}
+    />
+  );
 }

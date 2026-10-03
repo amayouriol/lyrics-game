@@ -30,9 +30,17 @@
 
   --tertiary-100: rgb(242, 239, 249);
   --tertiary-200: rgb(217, 210, 239);
+  --tertiary-300: rgb(180, 166, 224);
+  --tertiary-400: rgb(146, 123, 208);
+  --tertiary-500: rgb(114, 80, 188);
   --tertiary-600: rgb(77, 51, 132);
+  --tertiary-700: rgb(42, 26, 76);
 
   --quaternary-100: rgb(184, 254, 241);
+  --quaternary-200: rgb(57, 223, 201);
+  --quaternary-300: rgb(44, 180, 162);
+  --quaternary-400: rgb(32, 139, 125);
+  --quaternary-500: rgb(20, 100, 89);
   --quaternary-600: rgb(9, 63, 56);
   --quaternary-700: rgb(2, 30, 26);
 
@@ -101,6 +109,13 @@ a:hover {
   color: var(--white);
 }
 
+.btn:disabled,
+.btn:disabled:hover {
+  background: var(--grey-200);
+  color: var(--grey-500);
+  cursor: default;
+}
+
 .btn--lg {
   height: 52px;
   padding: 14px 28px;
@@ -165,6 +180,32 @@ a:hover {
 .chip--grey {
   background: var(--grey-100);
   color: var(--grey-600);
+}
+
+.chip--primary {
+  background: var(--primary-100);
+  color: var(--primary-600);
+}
+
+.chip--tertiary {
+  background: var(--tertiary-100);
+  color: var(--tertiary-600);
+}
+
+/* Selectable chips (difficulty): a button, darker when selected. */
+button.chip {
+  border: 0;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+
+button.chip--tertiary:hover {
+  background: var(--tertiary-200);
+}
+
+button.chip--tertiary[aria-pressed="true"] {
+  background: var(--tertiary-600);
+  color: var(--white);
 }
 
 /* App header, shown on every screen once logged in */

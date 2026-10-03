@@ -63,6 +63,31 @@
   color: var(--grey-500);
 }
 
+.setup {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.setupLabel {
+  font: 600 14px var(--font-sans);
+  color: var(--grey-500);
+}
+
+.levels {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.levelDescription {
+  margin: 0;
+  max-width: 440px;
+  font: 400 16px/1.6 var(--font-sans);
+  color: var(--text-body);
+}
+
 .meta {
   font: 400 14px var(--font-mono);
   color: var(--grey-500);

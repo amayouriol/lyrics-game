@@ -1,0 +1,23 @@
+.block {
+  border-radius: 8px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.label {
+  font: 600 14px/1.2 var(--font-sans);
+  color: var(--tone-600);
+}
+
+.value {
+  font: 400 48px/1 var(--font-display);
+  color: var(--tone-700);
+}
+
+.hint {
+  font: 400 14px/1.4 var(--font-sans);
+  color: var(--tone-600);
+}

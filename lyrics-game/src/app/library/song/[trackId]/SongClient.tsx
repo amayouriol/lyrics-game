@@ -3,13 +3,15 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { loadSong, songHref, type SongResult } from "./loadSong";
+import { DIFFICULTIES, DIFFICULTY_ORDER, pickBlanks, type Difficulty } from "@/lib/game";
+import { loadSong, playHref, type SongResult } from "./loadSong";
 import styles from "./song.module.css";
 
 export function SongClient({ trackId, from }: { trackId: string; from: string | null }) {
   const router = useRouter();
   const [reloadKey, setReloadKey] = useState(0);
   const [result, setResult] = useState<{ key: number; value: SongResult } | null>(null);
+  const [level, setLevel] = useState<Difficulty>("medium");
 
   useEffect(() => {
     let ignore = false;
@@ -30,6 +32,7 @@ export function SongClient({ trackId, from }: { trackId: string; from: string | 
   const track = song && "track" in song ? song.track : null;
   const backHref = from ? `/library?source=${encodeURIComponent(from)}` : "/library";
   const retry = () => setReloadKey((k) => k + 1);
+  const blankCount = song?.kind === "ready" ? pickBlanks(song.lines, level).length : 0;
 
   return (
     <main className={styles.main}>
@@ -59,15 +62,38 @@ export function SongClient({ trackId, from }: { trackId: string; from: string | 
 
           {song?.kind === "ready" && song.status === "available" && (
             <>
-              <div className={styles.meta}>
-                {song.lineCount} lines · {song.track.duration}
+              <div className={styles.setup}>
+                <div className={styles.setupLabel}>Difficulty</div>
+                <div className={styles.levels}>
+                  {DIFFICULTY_ORDER.map((d) => (
+                    <button
+                      key={d}
+                      type="button"
+                      className="chip chip--tertiary"
+                      aria-pressed={d === level}
+                      onClick={() => setLevel(d)}
+                    >
+                      {DIFFICULTIES[d].label}
+                    </button>
+                  ))}
+                </div>
+                <p className={styles.levelDescription}>{DIFFICULTIES[level].description}</p>
+                <div className={styles.meta}>
+                  {blankCount} blanks · {song.lineCount} lines · {song.track.duration}
+                </div>
               </div>
-              <Link
-                href={`${songHref(trackId, null)}/play${from ? `?from=${encodeURIComponent(from)}` : ""}`}
-                className="btn btn--lg"
-              >
-                Play the song
-              </Link>
+              {blankCount > 0 ? (
+                <Link href={playHref(trackId, from, level)} className="btn btn--lg">
+                  Play the song
+                </Link>
+              ) : (
+                <>
+                  <button className="btn btn--lg" disabled>
+                    Play the song
+                  </button>
+                  <div className={styles.hint}>No words to guess at this level.</div>
+                </>
+              )}
             </>
           )}
 
