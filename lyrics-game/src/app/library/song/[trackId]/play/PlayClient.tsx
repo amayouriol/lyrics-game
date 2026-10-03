@@ -47,6 +47,10 @@ const ERRORS: Record<PlayerError, { title: string; body: string }> = {
 };
 
 const HELP_DEFAULT = "Type the missing word. It checks as you go. Enter on an empty blank skips it.";
+const HELP_WAITING =
+  "The song waits for you. Type the word, or press Enter on an empty blank to skip.";
+/** On the last line, the song waits this close to its end. */
+const LAST_LINE_HOLD_MS = 1_500;
 
 interface GameResult {
   level: Difficulty;
@@ -188,14 +192,39 @@ function PlayScreen({
     onFinished({ level, blanks, answers, stats: computeStats(blanks, answers, Infinity, level) });
   }, [onFinished, level, blanks, answers]);
 
-  const { status, paused, positionSec, lineIndex, togglePause, resume, unblock, retry, stop } =
-    usePlayer({ trackId, durationMs: track.durationMs, lineTimesMs, onEnded });
+  const {
+    status,
+    paused,
+    held,
+    positionSec,
+    lineIndex,
+    togglePause,
+    resume,
+    unblock,
+    retry,
+    stop,
+    setHoldBeforeMs,
+  } = usePlayer({ trackId, durationMs: track.durationMs, lineTimesMs, onEnded });
 
   const currentLine = lineIndex - 1;
-  // Paused by you or by another device: lyrics hidden, no typing.
-  const hidden = status.kind === "dropped" || (status.kind === "playing" && paused);
   const activeId = activeBlankId(blanks, answers, currentLine);
   const stats = computeStats(blanks, answers, currentLine, level);
+
+  // While the current line has an unanswered word, the song waits just
+  // before the next line (or near the end, on the last line).
+  const holdBeforeMs =
+    activeId === null || currentLine < 0
+      ? null
+      : currentLine + 1 < lines.length
+        ? lines[currentLine + 1].timeMs
+        : track.durationMs - LAST_LINE_HOLD_MS;
+  useEffect(() => {
+    setHoldBeforeMs(holdBeforeMs);
+  }, [holdBeforeMs, setHoldBeforeMs]);
+
+  // Paused by you or by another device: lyrics hidden, no typing. Waiting
+  // for your answer is different: the lyrics stay up so you can type.
+  const hidden = status.kind === "dropped" || (status.kind === "playing" && paused && !held);
 
   function onType(blank: Blank, value: string) {
     if (hidden || blank.id !== activeId) return;
@@ -232,6 +261,7 @@ function PlayScreen({
     if (lastEvent && lastEvent.line === currentLine) {
       return { text: lastEvent.text, tone: lastEvent.bad ? "bad" : "good" };
     }
+    if (held) return { text: HELP_WAITING, tone: "muted" };
     const missed = blanks.filter(
       (b) =>
         b.line === currentLine - 1 &&
@@ -307,7 +337,7 @@ function PlayScreen({
             </div>
           )}
 
-          {status.kind === "playing" && paused && (
+          {status.kind === "playing" && paused && !held && (
             <div className={styles.panel}>
               <h2>Paused.</h2>
               <p>The lyrics are hidden while the song is paused. Press play to continue.</p>
@@ -372,7 +402,7 @@ function PlayScreen({
           positionSec={positionSec}
           durationSec={track.durationMs / 1000}
           onToggle={togglePause}
-          disabled={status.kind !== "playing"}
+          disabled={status.kind !== "playing" || held}
         />
       </div>
     </main>

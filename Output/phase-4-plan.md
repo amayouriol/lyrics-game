@@ -35,6 +35,12 @@ Derived from: Output/phase-4-spec.md. Replaces plan.md's Phase 4 section and tak
 - [x] Unit-check `pickBlanks`, `normalize` and the scoring rules with a quick script (English and Spanish lines, accents, ñ, punctuation).
 - [x] `npm run lint` and `npm run build` pass.
 
+## Change after first play-test (2026-10-03): the song waits for your answer
+- [x] `usePlayer` takes a hold point (`setHoldBeforeMs`): the next line's start, or 1.5s before the end on the last line, while the current line has an open word. It pauses 300ms early (Spotify stops with a short delay) and keeps its clock before the next line, so the line doesn't "move on" while waiting.
+- [x] Released automatically when the word is right or skipped; resumes playback.
+- [x] While waiting: lyrics stay visible (unlike a normal pause), play/pause disabled, help line "The song waits for you…".
+- [x] A dropped playback during a wait clears the wait; after Resume, it waits again at the line end if the word is still open.
+
 ## Verified while building (2026-10-03)
 - 20 rule checks pass: accent/ñ/case/apostrophe matching, punctuation kept outside words, blanks per level, filler skipped, deterministic picks, blank states, score/streak/accuracy, verdicts.
 - On 4 real songs from the cache (Spanish and English), Medium hides sensible words ("corazón", "esperanza", "terminó", "somebody") and keeps trailing apostrophes outside the blank ("Tú [sabe]'").
@@ -42,7 +48,7 @@ Derived from: Output/phase-4-spec.md. Replaces plan.md's Phase 4 section and tak
 ## Acceptance check (tied to phase-4-spec.md's Success section)
 - [ ] Each difficulty: number of blanks matches the song screen's summary
 - [ ] Typing a hidden word (without accents on a Spanish song) turns it green and adds the level's points
-- [ ] Leaving a blank empty reveals it when the line ends and resets the streak; Enter on empty skips
+- [ ] With a word still open, the song pauses at the end of its line and continues by itself once it's answered; Enter on empty skips it (revealed, streak reset)
 - [ ] The next line's text never appears before the song reaches it
 - [ ] Pausing hides the lyrics and blocks typing
 - [ ] Results: score, accuracy, best streak and guess list match what happened

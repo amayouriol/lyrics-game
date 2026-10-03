@@ -41,7 +41,7 @@ Hidden words are meaningful words of at least 4 letters, never filler words (e.g
    - Correct as soon as it matches: the word turns green, you score the level's points, and the streak goes up ("Got it." or, from 3 in a row, "Got it. 3 in a row."). The next blank in the line, if any, becomes active.
    - Enter on a non-empty wrong guess: "Not it. Keep trying before the line moves on."
    - Enter on an empty blank skips it: the word is revealed ("Skipped. It was “night”.") and the streak resets.
-6. **When the line moves on,** any blank still open is missed: its word is revealed, the streak resets, and the message reads "Too slow. It was “night”." What you'd typed stays visible, marked wrong.
+6. **The song waits for you.** If a line is about to end and it still has an unanswered word, the song pauses just before the next line starts (on the last line, just before the song ends). The lyrics stay visible, the play/pause button is disabled, and the help line reads "The song waits for you. Type the word, or press Enter on an empty blank to skip." The song continues by itself as soon as the word is right or skipped. If you answer before the line ends, it never stops. There's no time limit for now. *(Added 2026-10-03 at the user's request, replacing the design's rule that an open word was missed when the line moved on. "Too slow. It was …" remains only as a fallback.)*
 7. **Matching is forgiving:** capital letters, punctuation, accents and ñ don't matter. "corazon" counts for "corazón", "ano" for "año", "dont" for "don't".
 8. **Pausing** (the player bar's button, or Spotify moving to another device): the lyrics are hidden behind the pause message and typing is disabled until you resume, so pausing can't be used to buy thinking time.
 9. **Quit song:** stops the music and returns to the song screen. No results.
@@ -68,6 +68,9 @@ Play one song at each difficulty. The number of blanks matches the song screen's
 - **Hidden on screen only:** the lyrics text reaches the browser and only the current and previous lines are shown. Someone using developer tools could peek; as the only player, you'd only spoil your own game. Keeping answers on the server was rejected as more to build for no real benefit here.
 - **Difficulty picker moves into Phase 4** (plan.md had it in Phase 5), since the game can't be tested without it.
 - **The Phase 3 rule "song end returns to the song screen"** is replaced by the results screen.
+
+## Next to decide
+- **A time limit for the wait** (user's idea, 2026-10-03): e.g. after N seconds the song continues and the word counts as missed, and/or fewer points the longer you take. To be decided after playing with the open-ended wait.
 
 ## V2 (optional)
 - Random word choice on each play.

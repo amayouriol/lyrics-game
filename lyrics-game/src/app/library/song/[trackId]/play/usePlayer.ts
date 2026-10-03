@@ -14,6 +14,11 @@ const DROP_CONFIRM_CHECKS = 2;
 const END_ZONE_MS = 3_000;
 /** If no "song ended" event arrives, treat the song as over this long after its length. */
 const END_GRACE_MS = 1_500;
+/**
+ * How early to pause before a hold point. Spotify takes a moment to stop,
+ * so pausing slightly early keeps the next line's first word from playing.
+ */
+const HOLD_LEAD_MS = 300;
 
 export type PlayerStatus =
   | { kind: "connecting" }
@@ -49,6 +54,10 @@ function linesStarted(lineTimesMs: number[], positionMs: number): number {
 /**
  * Plays one song on the page's shared Spotify player and tracks its
  * position. Re-renders only when the shown second or line changes.
+ *
+ * `setHoldBeforeMs(ms)`: a point the song must not pass yet (the next line,
+ * while the current one has unanswered words). The song pauses just before
+ * it and continues by itself once the hold is set back to null.
  */
 export function usePlayer({
   trackId,
@@ -64,6 +73,7 @@ export function usePlayer({
   const router = useRouter();
   const [status, setStatus] = useState<PlayerStatus>({ kind: "connecting" });
   const [paused, setPaused] = useState(true);
+  const [held, setHeld] = useState(false);
   const [positionSec, setPositionSec] = useState(0);
   const [lineIndex, setLineIndex] = useState(0);
 
@@ -73,10 +83,16 @@ export function usePlayer({
   const startedRef = useRef(false);
   const endedRef = useRef(false);
   const onEndedRef = useRef(onEnded);
+  const holdRef = useRef<number | null>(null);
+  const heldRef = useRef(false);
 
   useEffect(() => {
     onEndedRef.current = onEnded;
   }, [onEnded]);
+
+  const setHoldBeforeMs = useCallback((ms: number | null) => {
+    holdRef.current = ms;
+  }, []);
 
   const expire = useCallback(() => router.push("/?expired=1"), [router]);
 
@@ -116,6 +132,7 @@ export function usePlayer({
     deviceRef.current = null;
     startedRef.current = false;
     endedRef.current = false;
+    heldRef.current = false;
     clockRef.current = { positionMs: 0, at: performance.now(), paused: true };
 
     const fail = (error: PlayerError) => {
@@ -128,6 +145,9 @@ export function usePlayer({
       dropped = true;
       console.info(`[player] game paused (${reason}) at ${Math.round(atPositionMs / 1000)}s`);
       clockRef.current = { positionMs: atPositionMs, at: performance.now(), paused: true };
+      // Once Resume plays again, the hold check pauses at the line end anew if still needed.
+      heldRef.current = false;
+      setHeld(false);
       setPaused(true);
       setStatus((s) => (s.kind === "error" ? s : { kind: "dropped" }));
     };
@@ -163,6 +183,19 @@ export function usePlayer({
 
       dropped = false;
       missedChecks = 0;
+      const hold = holdRef.current;
+      if (heldRef.current && hold !== null) {
+        // Waiting for an answer: Spotify may report a spot a little past the
+        // hold point (it stops with a short delay), or a late "playing"
+        // state. Keep the clock before the next line so it doesn't start.
+        clockRef.current = {
+          positionMs: Math.min(state.position, hold - 1),
+          at: performance.now(),
+          paused: true,
+        };
+        setPaused(true);
+        return;
+      }
       clockRef.current = { positionMs: state.position, at: performance.now(), paused: state.paused };
       setPaused(state.paused);
       if (!state.paused) startedRef.current = true;
@@ -286,6 +319,34 @@ export function usePlayer({
     let lastSec = -1;
     let lastLine = -1;
     const tick = () => {
+      const hold = holdRef.current;
+      if (heldRef.current && hold === null) {
+        // Answered (or skipped): let the song continue. Marked as playing
+        // right away so the "Paused." panel doesn't flash before Spotify confirms.
+        heldRef.current = false;
+        setHeld(false);
+        setPaused(false);
+        clockRef.current = { ...clockRef.current, at: performance.now(), paused: false };
+        playerRef.current?.resume();
+      } else if (
+        !heldRef.current &&
+        hold !== null &&
+        startedRef.current &&
+        !endedRef.current &&
+        !clockRef.current.paused &&
+        clockPosition(clockRef.current) >= hold - HOLD_LEAD_MS
+      ) {
+        // Words still open and the line is ending: wait for the answer.
+        heldRef.current = true;
+        setHeld(true);
+        clockRef.current = {
+          positionMs: Math.min(clockPosition(clockRef.current), hold - 1),
+          at: performance.now(),
+          paused: true,
+        };
+        playerRef.current?.pause();
+      }
+
       const position = clockPosition(clockRef.current);
       const sec = Math.floor(Math.min(position, durationMs) / 1000);
       if (sec !== lastSec) {
@@ -350,5 +411,17 @@ export function usePlayer({
     }
   }, []);
 
-  return { status, paused, positionSec, lineIndex, togglePause, resume, unblock, retry, stop };
+  return {
+    status,
+    paused,
+    held,
+    positionSec,
+    lineIndex,
+    togglePause,
+    resume,
+    unblock,
+    retry,
+    stop,
+    setHoldBeforeMs,
+  };
 }
