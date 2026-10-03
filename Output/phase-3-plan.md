@@ -35,6 +35,9 @@ Confirmed scope: in-browser playback (Web Playback SDK, tested on the user's acc
 ## 6. Cleanup
 - [x] Delete the temporary `/playback-test` page.
 
+## Found in testing (2026-10-03)
+- "The player didn't start" on every attempt: Spotify answered `404 Device not found` because the app asked it to play the instant the browser player reported "ready", before Spotify's servers had registered the new device. One retry after 0.8s wasn't enough. Now retries for about 7s (0.5s, 1s, 1.5s, 2s, 2s) and logs how many retries it took.
+
 ## Acceptance check (tied to phase-3-spec.md's Success section)
 - [ ] "Play the song" starts the song in the browser within a few seconds
 - [ ] Elapsed time counts up; the line counter changes as each new line starts (by ear), including after a pause and through to the end

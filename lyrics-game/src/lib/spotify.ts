@@ -108,11 +108,16 @@ export class SpotifyApiError extends Error {
   }
 }
 
-const DEVICE_REGISTER_WAIT_MS = 800;
+/**
+ * Waits between "Device not found" retries. A browser player reports
+ * "ready" before Spotify's servers know about it; one 800ms retry wasn't
+ * enough on a real account, so this allows about 7 seconds.
+ */
+const DEVICE_REGISTER_WAITS_MS = [500, 1_000, 1_500, 2_000, 2_000];
 
 /**
- * Starts a song on a specific player (this browser's). Retries once on 404,
- * since a player that just connected can take a moment to register.
+ * Starts a song on a specific player (this browser's), retrying while the
+ * just-connected player is still registering with Spotify.
  */
 export async function startPlayback(
   accessToken: string,
@@ -123,17 +128,20 @@ export async function startPlayback(
   const url = `${API_URL}/me/player/play?device_id=${encodeURIComponent(deviceId)}`;
   const body = JSON.stringify({ uris: [`spotify:track:${trackId}`], position_ms: positionMs });
 
-  for (let attempt = 1; ; attempt++) {
+  for (let attempt = 0; ; attempt++) {
     const res = await fetch(url, {
       method: "PUT",
       headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
       body,
       cache: "no-store",
     });
-    if (res.ok) return;
+    if (res.ok) {
+      if (attempt > 0) console.info(`[player] device registered after ${attempt} retries`);
+      return;
+    }
     if (res.status === 401) throw new SpotifySessionExpiredError("Spotify API error 401 for play");
-    if (res.status === 404 && attempt === 1) {
-      await new Promise((resolve) => setTimeout(resolve, DEVICE_REGISTER_WAIT_MS));
+    if (res.status === 404 && attempt < DEVICE_REGISTER_WAITS_MS.length) {
+      await new Promise((resolve) => setTimeout(resolve, DEVICE_REGISTER_WAITS_MS[attempt]));
       continue;
     }
     throw new SpotifyApiError(res.status, `Spotify play failed: ${res.status} ${await res.text()}`);
