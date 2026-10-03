@@ -37,7 +37,7 @@ Confirmed scope: in-browser playback (Web Playback SDK, tested on the user's acc
 
 ## Found in testing (2026-10-03)
 - "The player didn't start" for every song after the first. First diagnosis (device not registered yet, so retry longer) was wrong: diagnostic logging showed Spotify only ever registers the **first** player a page creates. The app made a new player per song, so every later device id got `404 Device not found` no matter how long it waited, while Spotify kept listing the first one. **Fix:** one shared player per page (`sharedPlayer.ts`), reused for every song; leaving a song pauses it instead of disconnecting; Retry reloads the page (the only way to get a fresh, registrable player). The "not found" retry is back to a short ~3s. Verified on a real account: 4 songs in a row on the same device, each starting in under half a second, one played to the end.
-- Another device taking over stopped the music, but the counter kept running and no "dropped" message appeared: the SDK doesn't always send an event when Spotify moves elsewhere. **Fix:** the once-a-second position check now treats "this browser isn't the active player" (two checks in a row, except in the last 3s of the song) as dropped, freezing the clock at the first missed check. The design's small banner became a big centred "Paused: Spotify is playing somewhere else." message with Resume here, at the user's request (spec updated).
+- Another device taking over stopped the music, but the counter kept running and no "dropped" message appeared. **Cause (confirmed by logging on a real account):** the browser player keeps reporting the account's playback, now showing the *other* device's song ("BbY WOW", "Papasito"), not an empty state, and the app ignored states for other songs. **Fix:** once the song has started, a state for a different song pauses the game (or ends it in the last 3s, e.g. Spotify autoplaying the next song). An empty state for two checks in a row is also treated as a drop, as a backstop. The design's small banner became a big centred "Paused: Spotify is playing somewhere else." message with Resume here, at the user's request (spec updated).
 - Side effect to know: after you play a song, this browser stays listed as a Spotify device ("Lyrics Game") until the tab is closed.
 
 ## Acceptance check (tied to phase-3-spec.md's Success section)
@@ -46,6 +46,9 @@ Confirmed scope: in-browser playback (Web Playback SDK, tested on the user's acc
 - [x] Pause and resume work
 - [x] "Quit song" stops the music and returns to the song screen
 - [x] The song's end returns to the song screen
-- [ ] Starting Spotify on another device mid-song pauses the game (counter frozen, big "Paused" message); Resume here continues from the same spot
-- [ ] Opening the play screen by URL (no click) shows "Start the music" if the browser blocks sound
+- [x] Starting Spotify on another device mid-song pauses the game (counter frozen, big "Paused" message); Resume here continues from the same spot
+- [ ] Opening the play screen by URL (no click) shows "Start the music" if the browser blocks sound. *Not tested: Chrome and Edge allowed sound in every test, so this path hasn't been seen yet.*
+
+## Phase 3 status: done (2026-10-03)
+All acceptance items confirmed on a real account except the blocked-sound edge case, which couldn't be triggered.
 - [x] `npm run lint` and `npm run build` pass
