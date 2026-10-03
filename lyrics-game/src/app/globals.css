@@ -134,20 +134,32 @@ a:hover {
 }
 
 /* Chips */
+/* Matches the design system's Chip: tone-100 background, tone-600 text. */
 .chip {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  font: 500 13px var(--font-sans);
-  padding: 4px 12px;
-  height: 28px;
+  gap: 6px;
+  border-radius: 8px;
+  font: 600 14px/1 var(--font-sans);
+  padding: 0 12px;
+  height: 32px;
   white-space: nowrap;
+}
+
+.chip--sm {
+  height: 24px;
+  padding: 0 8px;
+  font-size: 12px;
 }
 
 .chip--quaternary {
   background: var(--quaternary-100);
-  color: var(--quaternary-700);
+  color: var(--quaternary-600);
+}
+
+.chip--secondary {
+  background: var(--secondary-100);
+  color: var(--secondary-600);
 }
 
 .chip--grey {

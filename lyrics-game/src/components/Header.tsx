@@ -7,7 +7,7 @@ export function Header() {
         Lyrics Game
       </Link>
       <div className="app-header__spacer" />
-      <span className="chip chip--quaternary">Spotify Premium</span>
+      <span className="chip chip--quaternary chip--sm">Spotify Premium</span>
       <form action="/api/auth/logout" method="POST">
         <button type="submit" className="btn btn--ghost btn--sm">
           Log out

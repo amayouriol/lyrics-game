@@ -91,9 +91,18 @@ async function spotifyGet(path: string, accessToken: string) {
     if (res.status === 401) {
       throw new SpotifySessionExpiredError(`Spotify API error 401 for ${path}`);
     }
-    throw new Error(`Spotify API error ${res.status} for ${path}`);
+    throw new SpotifyApiError(res.status, `Spotify API error ${res.status} for ${path}`);
   }
   return res.json();
+}
+
+export class SpotifyApiError extends Error {
+  constructor(
+    readonly status: number,
+    message: string
+  ) {
+    super(message);
+  }
 }
 
 export interface Source {
@@ -105,7 +114,12 @@ export interface Source {
 export interface Track {
   id: string;
   title: string;
+  /** All artists, for display. */
   artist: string;
+  /** First listed artist; LRCLIB indexes songs by main artist only. */
+  primaryArtist: string;
+  album: string;
+  durationMs: number;
   duration: string;
   cover: string | null;
 }
@@ -121,12 +135,13 @@ interface SpotifyArtist {
 }
 
 interface SpotifyTrack {
-  id: string;
+  id: string | null;
   type?: string;
+  is_local?: boolean;
   name: string;
   duration_ms: number;
   artists: SpotifyArtist[];
-  album: { images: SpotifyImage[] };
+  album: { name: string; images: SpotifyImage[] };
 }
 
 // Spotify renamed playlist "tracks" to "items" for Development Mode apps
@@ -154,20 +169,37 @@ function formatDuration(ms: number): string {
   return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
-function pickCover(images: SpotifyImage[] | undefined): string | null {
+function pickCover(images: SpotifyImage[] | undefined, minWidth: number): string | null {
   if (!images || images.length === 0) return null;
   const sorted = [...images].sort((a, b) => (a.width ?? 0) - (b.width ?? 0));
-  return sorted.find((img) => (img.width ?? 0) >= 64)?.url ?? sorted[sorted.length - 1].url;
+  return sorted.find((img) => (img.width ?? 0) >= minWidth)?.url ?? sorted[sorted.length - 1].url;
 }
 
-function mapTrack(track: SpotifyTrack): Track {
+function mapTrack(track: SpotifyTrack & { id: string }, coverMinWidth = 64): Track {
   return {
     id: track.id,
     title: track.name,
     artist: track.artists.map((a) => a.name).join(", "),
+    primaryArtist: track.artists[0]?.name ?? "",
+    album: track.album?.name ?? "",
+    durationMs: track.duration_ms,
     duration: formatDuration(track.duration_ms),
-    cover: pickCover(track.album?.images),
+    cover: pickCover(track.album?.images, coverMinWidth),
   };
+}
+
+/** One track with a large cover, or null if Spotify doesn't know the id. */
+export async function getTrack(accessToken: string, id: string): Promise<Track | null> {
+  try {
+    const track: SpotifyTrack = await spotifyGet(`/tracks/${encodeURIComponent(id)}`, accessToken);
+    if (!track.id) return null;
+    return mapTrack({ ...track, id: track.id }, 300);
+  } catch (error) {
+    if (error instanceof SpotifyApiError && (error.status === 404 || error.status === 400)) {
+      return null;
+    }
+    throw error;
+  }
 }
 
 /**
@@ -219,9 +251,10 @@ export async function listTracks(accessToken: string, sourceId: string): Promise
       await spotifyGet(path, accessToken);
     for (const entry of page.items) {
       const track = isLiked ? entry.track : entry.item;
-      // Skip removed tracks and podcast episodes, which have no artists/album.
-      if (!track || (track.type && track.type !== "track")) continue;
-      tracks.push(mapTrack(track));
+      // Skip removed tracks, podcast episodes (no artists/album), and local
+      // files (no Spotify id, and Spotify's web player can't stream them).
+      if (!track?.id || track.is_local || (track.type && track.type !== "track")) continue;
+      tracks.push(mapTrack({ ...track, id: track.id }));
     }
     path = page.next ? page.next.replace(API_URL, "") : null;
   }

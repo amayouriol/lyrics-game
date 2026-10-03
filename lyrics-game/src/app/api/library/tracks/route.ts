@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { getCachedStatuses } from "@/lib/lyrics";
 import { getSession, getValidAccessToken } from "@/lib/session";
 import { listTracks, SpotifySessionExpiredError } from "@/lib/spotify";
 
@@ -11,7 +12,10 @@ export async function GET(request: NextRequest) {
   try {
     const accessToken = await getValidAccessToken();
     const tracks = await listTracks(accessToken, source);
-    return NextResponse.json({ tracks });
+    const statuses = await getCachedStatuses(tracks.map((t) => t.id));
+    return NextResponse.json({
+      tracks: tracks.map((t) => ({ ...t, lyricsStatus: statuses[t.id] })),
+    });
   } catch (error) {
     console.error("[/api/library/tracks]", error);
     if (error instanceof SpotifySessionExpiredError) {
