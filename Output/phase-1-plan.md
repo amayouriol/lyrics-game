@@ -50,12 +50,12 @@ Confirmed scope for this phase: track rows are browse-only (no click behavior), 
 
 ## Acceptance check (tied to phase-1-spec.md's Success section)
 - [x] Log in once, close the app, reopen it later, and land straight on the library — no repeat login
-- [ ] Library correctly lists Liked Songs and every playlist **you own** with accurate track counts — blocked by the known issue below
+- [x] Library correctly lists Liked Songs and every playlist **you own** with accurate track counts (after the 2026-10-03 fix below)
 - [x] Denying consent shows the dedicated denied screen, not a blank/broken state
 - [ ] An expired session sends you back to login with the expiry banner, not a silent failure — not yet exercised against a real expiry
 - [x] A failed library load shows the error state with a working Retry
 
-## Known issue (open, fix later) — 2026-10-03
+## Known issue — RESOLVED 2026-10-03 (confirmed working on a real account)
 Owned playlists show **0 songs** and opening one shows "Spotify didn't answer." Liked Songs works.
 
 **Cause:** Spotify changed its Web API for Development Mode apps (applied to existing apps on 2026-03-09). The code still uses the old names:

@@ -13,7 +13,7 @@ Confirmed scope: LRCLIB as the lyrics source; every song in the open list is che
 And on Spotify's side (after the March 2026 changes): `GET /tracks/{id}` (one track) still works; `GET /tracks?ids=` (several at once) was removed; tracks still include `duration_ms`, `artists`, `album`.
 
 ## 0. Before starting (recommended, separate commit)
-- [ ] Fix the open Phase 1 issue in Output/phase-1-plan.md (playlists use Spotify's removed `/tracks` API). It's in the same file Phase 2 changes first (`spotify.ts`), and without it only Liked Songs can be tested. Phase 2 can still be built and tested on Liked Songs if you'd rather leave it.
+- [x] Fix the open Phase 1 issue in Output/phase-1-plan.md (playlists use Spotify's removed `/tracks` API). It's in the same file Phase 2 changes first (`spotify.ts`), and without it only Liked Songs can be tested. Phase 2 can still be built and tested on Liked Songs if you'd rather leave it.
 
 ## 1. Track data (`src/lib/spotify.ts`)
 - [ ] Add to each track what the lyrics lookup needs: `durationMs`, `album` name, and `primaryArtist` (the first listed artist; LRCLIB indexes by main artist, Spotify lists featured artists separately). Keep the joined `artist` string for display.

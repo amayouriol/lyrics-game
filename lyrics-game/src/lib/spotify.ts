@@ -122,16 +122,19 @@ interface SpotifyArtist {
 
 interface SpotifyTrack {
   id: string;
+  type?: string;
   name: string;
   duration_ms: number;
   artists: SpotifyArtist[];
   album: { images: SpotifyImage[] };
 }
 
+// Spotify renamed playlist "tracks" to "items" for Development Mode apps
+// (March 2026). Non-owned playlists omit "items" entirely.
 interface SpotifyPlaylist {
   id: string;
   name: string;
-  tracks: { total: number };
+  items?: { total: number };
   owner: { id: string };
 }
 
@@ -170,12 +173,9 @@ function mapTrack(track: SpotifyTrack): Track {
 /**
  * Liked Songs first, then every playlist you own, each with its track count.
  *
- * Playlists you merely follow (Discover Weekly, Release Radar, Daily Mix, or
- * anyone else's playlist) are deliberately excluded: Spotify's API returns a
- * 403 when asked for the actual track list of a playlist you don't own, even
- * with the right scopes granted. There's no way to fix that from this side,
- * so rather than list a playlist that then fails the moment you open it,
- * Phase 1 only shows playlists you created.
+ * Playlists you merely follow (Discover Weekly, Release Radar, anyone else's)
+ * are excluded: since March 2026 Spotify only returns a playlist's contents
+ * to Development Mode apps if the user owns or collaborates on it.
  */
 export async function listSources(accessToken: string): Promise<Source[]> {
   const sources: Source[] = [];
@@ -190,15 +190,12 @@ export async function listSources(accessToken: string): Promise<Source[]> {
   while (path) {
     const page: SpotifyPage<SpotifyPlaylist> = await spotifyGet(path, accessToken);
     for (const playlist of page.items) {
-      // Some playlists (e.g. ones you no longer have access to) come back
-      // with fields missing instead of a full object; skip those rather
-      // than crash the whole library load over one bad entry.
-      if (!playlist || !playlist.id) continue;
+      if (!playlist?.id) continue;
       if (playlist.owner?.id !== me.id) continue;
       sources.push({
         id: playlist.id,
         name: playlist.name ?? "Untitled playlist",
-        count: playlist.tracks?.total ?? 0,
+        count: playlist.items?.total ?? 0,
       });
     }
     path = page.next ? page.next.replace(API_URL, "") : null;
@@ -210,14 +207,21 @@ export async function listSources(accessToken: string): Promise<Source[]> {
 /** All tracks for a source id ("liked" or a playlist id), paginated to completion. */
 export async function listTracks(accessToken: string, sourceId: string): Promise<Track[]> {
   const tracks: Track[] = [];
-  let path: string | null =
-    sourceId === "liked" ? "/me/tracks?limit=50" : `/playlists/${sourceId}/tracks?limit=50`;
+  const isLiked = sourceId === "liked";
+  // Liked Songs entries still use "track"; playlist entries were renamed to
+  // "item" along with the endpoint (/tracks -> /items).
+  let path: string | null = isLiked
+    ? "/me/tracks?limit=50"
+    : `/playlists/${encodeURIComponent(sourceId)}/items?limit=50`;
 
   while (path) {
-    const page: SpotifyPage<{ track: SpotifyTrack | null }> = await spotifyGet(path, accessToken);
-    for (const item of page.items) {
-      if (!item.track) continue; // local files / removed tracks have no track object
-      tracks.push(mapTrack(item.track));
+    const page: SpotifyPage<{ track?: SpotifyTrack | null; item?: SpotifyTrack | null }> =
+      await spotifyGet(path, accessToken);
+    for (const entry of page.items) {
+      const track = isLiked ? entry.track : entry.item;
+      // Skip removed tracks and podcast episodes, which have no artists/album.
+      if (!track || (track.type && track.type !== "track")) continue;
+      tracks.push(mapTrack(track));
     }
     path = page.next ? page.next.replace(API_URL, "") : null;
   }
