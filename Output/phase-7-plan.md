@@ -62,11 +62,15 @@ Order: the saved lists first (the library cards and buttons need them), then the
 - [x] **Songs marked unavailable before the fix** (112 in the cache) are checked once more the next time they're seen. Phase 2 spec corrected.
 
 ## 5. Filters (chips above the songs, reset per playlist)
-- [ ] **Only playable** (on by default): hides songs marked "Lyrics not available". Songs still being checked stay visible until their check finishes.
-- [ ] **Played:** Any / Played / Not played. The tracks responses include which songs you've finished (from your games).
-- [ ] **Language:** Any / English / Spanish. `dictionary.ts` keeps the two word lists separately as well; `languageOf(lines)` in a new `src/lib/language.ts`. Tracks responses and the lyrics check include each available song's language. Rule checks on a few real songs of each language and a mixed one.
+- [x] **Only playable** (on by default): hides songs marked "Lyrics not available". Songs still being checked stay visible until their check finishes.
+- [x] **Played:** Any / Played / Not played. The tracks responses include which songs you've finished (from your games).
+- [x] **Language:** Any / English / Spanish. `dictionary.ts` keeps the two word lists separately as well; `languageOf(lines)` in a new `src/lib/language.ts`. Tracks responses and the lyrics check include each available song's language. Rule checks on a few real songs of each language and a mixed one.
 - [ ] **Genre:** first, a quick check with your account that Spotify still returns genres for artists in Development Mode. **If it returns none, I stop and tell you before building the rest.** Then: tracks gain their main artist's id; `POST /api/library/genres` takes artist ids, answers what's already known and fetches a few unknown ones per call (3 at a time), pausing on "slow down"; the page keeps asking until everything visible is known ("Loading genres…"). Spotify's genres are grouped into broad ones by keywords (e.g. "latin", "reggaeton", "urbano latino" → Latin; "pop" → Pop; "hip hop", "rap", "trap" → Hip hop). A song can be in several. Genre chips only list genres present in the current list.
-- [ ] Filters combine; the count reads "12 of 42 songs"; "No songs match these filters." with **Clear filters**.
+- [x] Filters combine; the count reads "12 of 42 songs"; "No songs match these filters." with **Clear filters**.
+
+- Done 2026-10-04 (all but genre): `src/lib/language.ts` (the rule), the word lists now record which language each word is in (`dictionary.ts`), `src/lib/library.ts` adds each song's status, language and "played" to every list, search and lyrics check. `Filters.tsx` for the chips; search and filters combine; "Clear filters" keeps your search.
+- Language rule, tried on the 1,119 cached songs: the language with more words found only in its own list, unknown with under 8 such words, a tie, or under 72% of words in either list (French and Portuguese songs score 38–72%, since "la" and "de" are Spanish words too). Result: 600 English, 456 Spanish, 63 unknown (mostly French/Portuguese, a few mixed like "Danza Kuduro"). A few French songs still pass as English or Spanish (e.g. GIMS 79%).
+- Checked on a throwaway preview (deleted): default hides the greyed song ("5 of 6 songs"), Spanish, Spanish + Not played, English + Played, English + Not played all correct, no match shows "No songs match these filters." and Clear filters. Lint and build pass.
 
 ## 6. Home sections (Phase 6 home page)
 - [ ] `GET /api/progress` also returns the two saved lists (first 5 each) and, per song, the level you last finished it at.

@@ -1,10 +1,9 @@
 import { normalize } from "@/lib/game";
-import type { LyricsStatus } from "@/lib/lyrics";
-import type { Track } from "@/lib/spotify";
+import type { LibraryTrack } from "@/lib/library";
 
 export type LoadState = "loading" | "ready" | "error";
 export type FetchResult<T> = { status: "ok"; data: T } | { status: "expired" } | { status: "error" };
-export type LibraryTrack = Track & { lyricsStatus: LyricsStatus };
+export type { LibraryTrack };
 
 export async function fetchJson<T>(url: string, init?: RequestInit): Promise<FetchResult<T>> {
   try {

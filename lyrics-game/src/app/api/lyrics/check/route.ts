@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { checkTracks, type LyricsLookup } from "@/lib/lyrics";
+import { checkTracks, getCachedInfo, type LyricsLookup } from "@/lib/lyrics";
 import { getSession, hasActiveSession } from "@/lib/session";
 
 const MAX_BATCH = 10;
@@ -49,5 +49,9 @@ export async function POST(request: NextRequest) {
   }
 
   const statuses = await checkTracks(tracks);
-  return NextResponse.json({ statuses });
+  // Songs just found to have lyrics: their language, for the filter.
+  const available = tracks.map((t) => t.id).filter((id) => statuses[id] === "available");
+  const info = await getCachedInfo(available);
+  const languages = Object.fromEntries(available.map((id) => [id, info[id].language]));
+  return NextResponse.json({ statuses, languages });
 }

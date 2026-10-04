@@ -125,7 +125,7 @@ const ENCLITICS = ["nos", "los", "las", "les", "me", "te", "se", "lo", "la", "le
  * full of: Spanish verbs with attached pronouns, and English words with a
  * dropped "g" ("fallin").
  */
-export function makeIsWord(dictionary: Set<string>): IsWord {
+export function makeIsWord(dictionary: { has(word: string): boolean }): IsWord {
   // A verb that takes an attached pronoun is an infinitive (-r), a gerund
   // (-ndo) or an imperative, which then gets a written accent ("mírala").
   // Requiring one of those keeps sounds like "lele" (le + le) out.

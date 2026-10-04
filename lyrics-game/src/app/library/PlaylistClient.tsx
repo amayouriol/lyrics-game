@@ -12,6 +12,7 @@ import {
   type LoadState,
 } from "./libraryData";
 import { useSaved } from "./SavedProvider";
+import { DEFAULT_FILTERS, Filters, NoFilterMatch, passesFilters } from "./Filters";
 import { SearchBox } from "./SearchBox";
 import { TrackList } from "./TrackList";
 import { useLyricsCheck } from "./useLyricsCheck";
@@ -78,10 +79,16 @@ export function PlaylistClient({ source }: { source: string }) {
         : loadedTracks,
     [loadedTracks, savedList]
   );
-  const { statusOf, someUnchecked, retry } = useLyricsCheck(tracks, `${source}|${reloadKey}`);
+  const { statusOf, languageOf, someUnchecked, retry } = useLyricsCheck(
+    tracks,
+    `${source}|${reloadKey}`
+  );
 
+  // Filters start from the defaults on every list (this component is keyed by list).
   const [search, setSearch] = useState("");
-  const shown = tracks?.filter((t) => matchesSearch(t, search)) ?? null;
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const found = tracks?.filter((t) => matchesSearch(t, search)) ?? null;
+  const shown = found?.filter((t) => passesFilters(t, filters, statusOf, languageOf)) ?? null;
   const count = tracks?.length ?? info?.count;
 
   return (
@@ -102,7 +109,10 @@ export function PlaylistClient({ source }: { source: string }) {
       </div>
 
       {tracks && tracks.length > 0 && (
-        <SearchBox value={search} onChange={setSearch} placeholder="Search this list" />
+        <>
+          <SearchBox value={search} onChange={setSearch} placeholder="Search this list" />
+          <Filters value={filters} onChange={setFilters} />
+        </>
       )}
 
       {state === "loading" && <div className={styles.hint}>Loading your songs…</div>}
@@ -130,8 +140,12 @@ export function PlaylistClient({ source }: { source: string }) {
         <div className={styles.hint}>{EMPTY[source] ?? "This playlist has no songs."}</div>
       )}
 
-      {shown && tracks!.length > 0 && shown.length === 0 && (
+      {found && tracks!.length > 0 && found.length === 0 && (
         <div className={styles.hint}>No songs match “{search.trim()}”.</div>
+      )}
+
+      {found && found.length > 0 && shown!.length === 0 && (
+        <NoFilterMatch onClear={() => setFilters(DEFAULT_FILTERS)} />
       )}
 
       {shown && shown.length > 0 && <TrackList tracks={shown} statusOf={statusOf} from={source} />}

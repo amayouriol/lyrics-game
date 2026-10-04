@@ -9,6 +9,7 @@ import {
   type LibraryTrack,
   type LoadState,
 } from "./libraryData";
+import { DEFAULT_FILTERS, Filters, NoFilterMatch, passesFilters } from "./Filters";
 import { TrackList } from "./TrackList";
 import { useLyricsCheck } from "./useLyricsCheck";
 import styles from "./library.module.css";
@@ -69,7 +70,12 @@ export function LibrarySearch({ search }: { search: string }) {
     [library, query]
   );
   // Only the songs found are checked for lyrics, not the whole library.
-  const { statusOf, someUnchecked, retry } = useLyricsCheck(matches, `${reloadKey}|${query}`);
+  const { statusOf, languageOf, someUnchecked, retry } = useLyricsCheck(
+    matches,
+    `${reloadKey}|${query}`
+  );
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const shown = matches?.filter((t) => passesFilters(t, filters, statusOf, languageOf)) ?? null;
 
   if (!active) return null;
 
@@ -116,10 +122,17 @@ export function LibrarySearch({ search }: { search: string }) {
 
       {matches && matches.length > 0 && (
         <>
+          <Filters value={filters} onChange={setFilters} />
           <div className={styles.resultCount}>
-            {matches.length} {matches.length === 1 ? "song" : "songs"} in your library
+            {shown!.length === matches.length
+              ? `${matches.length} ${matches.length === 1 ? "song" : "songs"} in your library`
+              : `${shown!.length} of ${matches.length} songs in your library`}
           </div>
-          <TrackList tracks={matches} statusOf={statusOf} from={null} />
+          {shown!.length === 0 ? (
+            <NoFilterMatch onClear={() => setFilters(DEFAULT_FILTERS)} />
+          ) : (
+            <TrackList tracks={shown!} statusOf={statusOf} from={null} />
+          )}
         </>
       )}
     </>

@@ -551,3 +551,24 @@
   color: var(--grey-400);
   white-space: nowrap;
 }
+
+/* Filter chips above a list of songs. */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 24px;
+}
+
+.filterGroup {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.filterLabel {
+  margin-right: 2px;
+  font: 600 13px var(--font-sans);
+  color: var(--grey-500);
+}

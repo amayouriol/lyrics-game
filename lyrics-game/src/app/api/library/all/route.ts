@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCachedStatuses } from "@/lib/lyrics";
+import { describeTracks } from "@/lib/library";
 import { getSession, getValidAccessToken } from "@/lib/session";
 import { listSources, listTracks, SpotifySessionExpiredError, type Track } from "@/lib/spotify";
 
@@ -39,9 +39,8 @@ export async function GET() {
         tracks.push(track);
       }
     }
-    const statuses = await getCachedStatuses(tracks.map((t) => t.id));
     return NextResponse.json({
-      tracks: tracks.map((t) => ({ ...t, lyricsStatus: statuses[t.id] })),
+      tracks: await describeTracks(tracks),
       failed: sources.filter((_, i) => lists[i] === null).map((s) => s.name),
     });
   } catch (error) {

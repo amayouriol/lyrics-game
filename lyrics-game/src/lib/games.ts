@@ -8,6 +8,11 @@ export async function getGames(userId: string): Promise<Game[]> {
   return (await store.read())[userId] ?? [];
 }
 
+/** Ids of the songs you've finished at least once. */
+export async function playedTrackIds(userId: string): Promise<Set<string>> {
+  return new Set((await getGames(userId)).map((g) => g.song.trackId));
+}
+
 /** Saves a finished game. A game id already saved (a retry, a reload) is left alone. */
 export function saveGame(userId: string, game: Game): Promise<"saved" | "duplicate"> {
   return store.update((all) => {

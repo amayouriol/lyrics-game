@@ -1,3 +1,5 @@
+import { getLanguage } from "./dictionary";
+import type { Language } from "./language";
 import { getCacheEntries as getAllCacheEntries, saveCacheEntries, type CacheEntry } from "./lyrics-cache";
 
 const LRCLIB_GET_URL = "https://lrclib.net/api/get";
@@ -208,10 +210,25 @@ function toCacheEntry(track: LyricsLookup, result: LookupResult): CacheEntry | n
   };
 }
 
-/** Cached statuses for these ids; anything never checked is "unknown". */
-export async function getCachedStatuses(ids: string[]): Promise<Record<string, LyricsStatus>> {
+export interface CachedInfo {
+  status: LyricsStatus;
+  /** From the lyrics, for songs that have them; null if unclear. */
+  language: Language | null;
+}
+
+/** Cached status and language for these ids; anything never checked is "unknown". */
+export async function getCachedInfo(ids: string[]): Promise<Record<string, CachedInfo>> {
   const cached = await getCacheEntries(ids);
-  return Object.fromEntries(ids.map((id) => [id, cached.get(id)?.status ?? "unknown"]));
+  const info: Record<string, CachedInfo> = {};
+  for (const id of ids) {
+    const entry = cached.get(id);
+    info[id] = {
+      status: entry?.status ?? "unknown",
+      language:
+        entry?.status === "available" && entry.lines ? await getLanguage(id, entry.lines) : null,
+    };
+  }
+  return info;
 }
 
 /**
