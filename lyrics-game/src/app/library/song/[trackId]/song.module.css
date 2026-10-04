@@ -116,3 +116,11 @@
   font: 400 16px/1.6 var(--font-sans);
   color: var(--text-body);
 }
+
+/* Play the song, with the Favorites and Play later buttons beside it. */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}

@@ -1,9 +1,14 @@
 import Link from "next/link";
 import type { LyricsStatus } from "@/lib/lyrics";
 import type { LibraryTrack } from "./libraryData";
+import { SaveButtons, songToSave } from "./SaveButtons";
 import styles from "./library.module.css";
 
-/** Song rows: available songs open the song screen, the rest can't be clicked. */
+/**
+ * Song rows: available songs open the song screen and get the Favorites /
+ * Play later buttons (beside the link, not inside it); the rest can't be
+ * clicked.
+ */
 export function TrackList({
   tracks,
   statusOf,
@@ -48,13 +53,15 @@ export function TrackList({
 
         if (status === "available") {
           return (
-            <Link
-              key={key}
-              href={`/library/song/${track.id}?from=${encodeURIComponent(from)}`}
-              className={`${styles.track} ${styles.trackAvailable}`}
-            >
-              {row}
-            </Link>
+            <div key={key} className={`${styles.track} ${styles.trackAvailable}`}>
+              <Link
+                href={`/library/song/${track.id}?from=${encodeURIComponent(from)}`}
+                className={styles.trackMain}
+              >
+                {row}
+              </Link>
+              <SaveButtons song={songToSave(track)} />
+            </div>
           );
         }
         return (
@@ -63,7 +70,8 @@ export function TrackList({
             className={`${styles.track} ${status === "unavailable" ? styles.trackUnavailable : ""}`}
             title={status === "unavailable" ? "Lyrics not available" : undefined}
           >
-            {row}
+            <div className={styles.trackMain}>{row}</div>
+            <span />
           </div>
         );
       })}

@@ -3,6 +3,8 @@ import type { Blank, Difficulty, TimedLine } from "@/lib/game";
 export interface TrackSummary {
   title: string;
   artist: string;
+  primaryArtist: string;
+  album: string;
   cover: string | null;
   duration: string;
   durationMs: number;

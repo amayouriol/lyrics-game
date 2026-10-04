@@ -41,10 +41,12 @@ Order: the saved lists first (the library cards and buttons need them), then the
 - Checked on a throwaway preview (deleted): panel on the right in its own colour with counts and songs, empty Play later hint, Hide → "Saved" tab, still hidden after a reload, the tab brings it back, on a phone-width window the panel drops below the songs with no sideways scroll. Lint and build pass.
 
 ## 3. Favorite and Play later buttons
-- [ ] Heart and bookmark on every playable song row (not on greyed or still-checking songs), and on the song screen next to "Play the song".
-- [ ] Clicking changes the button straight away and saves in the background. If saving fails, the button goes back and "Couldn't save. Try again." shows briefly.
-- [ ] The library loads the saved lists once per visit to know which buttons are filled in.
-- [ ] Removing a song while viewing Favorites or Play later takes it off that list on screen.
+- [x] Heart and bookmark on every playable song row (not on greyed or still-checking songs), and on the song screen next to "Play the song".
+- [x] Clicking changes the button straight away and saves in the background. If saving fails, the button goes back and "Couldn't save. Try again." shows briefly.
+- [x] The library loads the saved lists once per visit to know which buttons are filled in.
+- [x] Removing a song while viewing Favorites or Play later takes it off that list on screen.
+- Done 2026-10-04: `SaveButtons`, `toggle` in `SavedProvider` (changes show at once, are applied over the loaded lists until the server answers, and a late older answer can't undo a newer one). Rows are now a link plus the buttons beside it, not buttons inside a link. The song screen has larger buttons next to "Play the song". The lyrics route now also sends the main artist and album, which a saved song needs for its lyrics check.
+- Checked on a throwaway preview with a made-up server (deleted): buttons only on playable songs, the heart fills and the panel updates before the save answers, both stay after it, a failed save goes back with "Couldn't save. Try again." for 3 s, removing a song on the Favorites page takes it off at once. The song screen's buttons weren't previewed (they need a real song); lint and build pass.
 
 ## 4. Search
 - [ ] Inside a playlist: a search box filtering title and artist as you type, ignoring capitals and accents (the game's `normalize`).

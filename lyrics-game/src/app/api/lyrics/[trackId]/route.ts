@@ -28,6 +28,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tra
     const summary = {
       title: track.title,
       artist: track.artist,
+      primaryArtist: track.primaryArtist,
+      album: track.album,
       cover: track.cover,
       duration: track.duration,
       durationMs: track.durationMs,

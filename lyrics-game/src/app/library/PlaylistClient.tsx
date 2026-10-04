@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Source } from "@/lib/spotify";
@@ -10,6 +10,7 @@ import {
   type LibraryTrack,
   type LoadState,
 } from "./libraryData";
+import { useSaved } from "./SavedProvider";
 import { TrackList } from "./TrackList";
 import { useLyricsCheck } from "./useLyricsCheck";
 import styles from "./library.module.css";
@@ -64,7 +65,17 @@ export function PlaylistClient({ source }: { source: string }) {
   }, [source, reloadKey, router]);
 
   const state: LoadState = !result || result.key !== reloadKey ? "loading" : result.status;
-  const tracks = state === "ready" ? result!.data! : null;
+  const loadedTracks = state === "ready" ? result!.data! : null;
+  // On Favorites and Play later, a song you take off leaves the list at once.
+  const { lists } = useSaved();
+  const savedList = source === "favorites" || source === "later" ? lists?.[source] : undefined;
+  const tracks = useMemo(
+    () =>
+      loadedTracks && savedList
+        ? loadedTracks.filter((t) => savedList.some((s) => s.id === t.id))
+        : loadedTracks,
+    [loadedTracks, savedList]
+  );
   const { statusOf, someUnchecked, retry } = useLyricsCheck(tracks, `${source}|${reloadKey}`);
 
   const count = tracks?.length ?? info?.count;

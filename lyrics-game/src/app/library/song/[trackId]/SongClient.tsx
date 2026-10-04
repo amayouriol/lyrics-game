@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DIFFICULTIES, DIFFICULTY_ORDER, type Difficulty } from "@/lib/game";
+import { SaveButtons } from "../../SaveButtons";
 import { loadSong, playHref, type SongResult } from "./loadSong";
 import styles from "./song.module.css";
 
@@ -82,17 +83,20 @@ export function SongClient({ trackId, from }: { trackId: string; from: string | 
                   {blankCount} blanks · {song.lineCount} lines · {song.track.duration}
                 </div>
               </div>
-              {blankCount > 0 ? (
-                <Link href={playHref(trackId, from, level)} className="btn btn--lg">
-                  Play the song
-                </Link>
-              ) : (
-                <>
+              <div className={styles.actions}>
+                {blankCount > 0 ? (
+                  <Link href={playHref(trackId, from, level)} className="btn btn--lg">
+                    Play the song
+                  </Link>
+                ) : (
                   <button className="btn btn--lg" disabled>
                     Play the song
                   </button>
-                  <div className={styles.hint}>No words to guess at this level.</div>
-                </>
+                )}
+                <SaveButtons song={{ id: trackId, ...song.track }} size="lg" />
+              </div>
+              {blankCount === 0 && (
+                <div className={styles.hint}>No words to guess at this level.</div>
               )}
             </>
           )}
