@@ -4,7 +4,7 @@ Part of: Lyrics Game (see spec.md for the full project, plan.md for the phase ro
 Builds on: Output/phase-2-spec.md (the library and lyrics check), Output/phase-6-spec.md (saved games and the home page)
 
 ## Overview
-With 179 liked songs and a dozen playlists, it's easy to get lost in the library. Phase 7 makes it easy to find a song. The library opens on your playlists as cards. Inside a playlist you can search and filter by language, genre and whether you've played a song, and songs you can't play are hidden by default. One search box finds a song across your whole library. Two new lists, **Favorites** and **Play later**, let you keep songs at hand, in the library and on the home page.
+With 179 liked songs and a dozen playlists, it's easy to get lost in the library. Phase 7 makes it easy to find a song. The library opens on your playlists as cards. Inside a playlist you can search and filter by language and whether you've played a song, and songs you can't play are hidden by default. One search box finds a song across your whole library. Two new lists, **Favorites** and **Play later**, let you keep songs at hand, in the library and on the home page.
 
 ## Target users
 Same as the main spec: a single user (you), using your own Spotify Premium account, on a desktop browser. You know roughly what you want to play ("something in Spanish I haven't played", "that Bad Bunny song") but scrolling a long list to find it is tiring.
