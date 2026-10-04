@@ -13,14 +13,17 @@ Order: the rule change first (pure and easy to check), then the countdown (build
 - Result (2026-10-03): 23 rule checks pass. On 771 cached songs, blanks kept: Easy 92%, Medium 88%, Hard 78%; no song left without blanks at any level. Most repetitive song ("Love Tonight", 21 lines): Medium went from 19 blanks of one word ("tonight") to 7 blanks of 3 words (tonight, need, love, with "tonight" back on line 9).
 
 ## 2. 15-second countdown (`play/PlayClient.tsx`, `LyricBlank`)
-- [ ] `WAIT_LIMIT_MS = 15_000`. When `held` turns true, record the start time. The countdown is worked out from the clock (`performance.now()`), not by counting ticks, so it stays right when the tab is in the background (browsers slow timers there).
-- [ ] A ticker (every 250 ms while held) re-renders the seconds left. Shown next to the active blank, red in the last 5 seconds. The help line keeps "The song waits for you…".
-- [ ] At 0: every open blank on the current line becomes `missed` (keeping whatever was typed). The help line says "Time's up. It was “x”." (the last missed word, as for "Too slow"). The hold is released by the existing logic, since no blank is open, and the song continues.
-- [ ] Answering or skipping the last open word stops the countdown (the hold ends, as now). Wrong tries don't touch it.
-- [ ] Hard: one countdown per wait, not per word. A second open word on the same line doesn't restart it.
-- [ ] Playback dropped (`status.kind === "dropped"`): the countdown is cancelled. A new hold after "Resume here" starts a fresh 15 s.
-- [ ] Results: a word missed with nothing typed shows as **revealed**, not wrong with an empty guess. Change `blankState` so `missed` with an empty value is `revealed`, and add a rule check for it.
-- [ ] Streak and score need no change: `missed` already scores 0 and breaks the streak.
+- [x] `WAIT_LIMIT_MS = 15_000`. When `held` turns true, record the start time. The countdown is worked out from the clock (`performance.now()`), not by counting ticks, so it stays right when the tab is in the background (browsers slow timers there).
+- [x] A ticker (every 250 ms while held) re-renders the seconds left. Shown next to the active blank, red in the last 5 seconds. The help line keeps "The song waits for you…".
+- [x] At 0: every open blank on the current line becomes `missed` (keeping whatever was typed). The help line says "Time's up. It was “x”." (the last missed word, as for "Too slow"). The hold is released by the existing logic, since no blank is open, and the song continues.
+- [x] Answering or skipping the last open word stops the countdown (the hold ends, as now). Wrong tries don't touch it.
+- [x] Hard: one countdown per wait, not per word. A second open word on the same line doesn't restart it.
+- [x] Playback dropped (`status.kind === "dropped"`): the countdown is cancelled. A new hold after "Resume here" starts a fresh 15 s.
+- [x] Results: a word missed with nothing typed shows as **revealed**, not wrong with an empty guess. Change `blankState` so `missed` with an empty value is `revealed`, and add a rule check for it.
+- [x] Streak and score need no change: `missed` already scores 0 and breaks the streak.
+- Also: the miss message now carries over to the next line ("Time's up." / "Out of tries." / "Too slow."), since the song moves on right after a miss and the message used to vanish at once. Out-of-tries misses used to show "Too slow." there.
+- Note: "your last guess" means what's in the box when time runs out. A wrong try clears the box, so a word that ran out right after a wrong try shows as revealed.
+- Result (2026-10-03): 28 rule checks pass, lint and build pass. Not yet seen on a real account.
 
 ## 3. Lyrics that move (`play/PlayClient.tsx`, `play.module.css`, `usePlayer.ts`)
 - [ ] **Glide:** render the previous, current and "· · ·" lines as elements keyed by line number, so when the line changes the same element moves from "current" to "previous" instead of being replaced. Animate `transform` and `opacity` (not font size, which would make the layout jump). The new line slides in from below; the line before the previous one fades out above. About 350 ms.

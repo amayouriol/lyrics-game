@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
@@ -54,6 +54,10 @@ const HELP_WAITING =
   "The song waits for you. Type the word, or press Enter on an empty blank to skip.";
 /** On the last line, the song waits this close to its end. */
 const LAST_LINE_HOLD_MS = 1_500;
+/** How long the song waits for an open word before it counts as missed. */
+const WAIT_LIMIT_MS = 15_000;
+/** The countdown turns red for its last seconds. */
+const WAIT_WARNING_SEC = 5;
 
 interface GameResult {
   level: Difficulty;
@@ -201,6 +205,7 @@ function PlayScreen({
     status,
     paused,
     held,
+    heldSince,
     positionSec,
     lineIndex,
     togglePause,
@@ -226,6 +231,29 @@ function PlayScreen({
   useEffect(() => {
     setHoldBeforeMs(holdBeforeMs);
   }, [holdBeforeMs, setHoldBeforeMs]);
+
+  // The wait has a time limit. Worked out from the clock, not by counting
+  // ticks, so it stays right while the tab is in the background (browsers
+  // slow timers there). A drop clears the wait, so a new one after Resume
+  // starts a fresh countdown.
+  const [now, setNow] = useState(0);
+  const timeUpRef = useRef<() => void>(() => {});
+  useEffect(() => {
+    if (heldSince === null) return;
+    const id = setInterval(() => {
+      const t = performance.now();
+      setNow(t);
+      if (t - heldSince >= WAIT_LIMIT_MS) {
+        clearInterval(id);
+        timeUpRef.current();
+      }
+    }, 250);
+    return () => clearInterval(id);
+  }, [heldSince]);
+  const secondsLeft =
+    heldSince === null
+      ? null
+      : Math.max(0, Math.ceil((WAIT_LIMIT_MS - Math.max(0, now - heldSince)) / 1000));
 
   // Paused by you or by another device: lyrics hidden, no typing. Waiting
   // for your answer is different: the lyrics stay up so you can type.
@@ -287,12 +315,41 @@ function PlayScreen({
     });
   }
 
+  /** Out of time: every open word on the line is missed and the song moves on. */
+  function timeUp() {
+    const open = blanks.filter(
+      (b) =>
+        b.line === currentLine &&
+        answers[b.id]?.status !== "correct" &&
+        answers[b.id]?.status !== "skipped" &&
+        answers[b.id]?.status !== "missed"
+    );
+    if (open.length === 0) return;
+    const next = { ...answers };
+    for (const b of open) {
+      next[b.id] = {
+        value: answers[b.id]?.value ?? "",
+        status: "missed",
+        wrongTries: answers[b.id]?.wrongTries ?? 0,
+        timedOut: true,
+      };
+    }
+    setAnswers(next);
+    const last = open[open.length - 1];
+    setLastEvent({ line: currentLine, text: `Time's up. It was “${last.answer}”.`, bad: true });
+  }
+  useEffect(() => {
+    timeUpRef.current = timeUp;
+  });
+
   function help(): { text: string; tone: "muted" | "good" | "bad" } {
     if (currentLine < 0) return { text: "Get ready. The first line is coming.", tone: "muted" };
     if (lastEvent && lastEvent.line === currentLine) {
       return { text: lastEvent.text, tone: lastEvent.bad ? "bad" : "good" };
     }
     if (held) return { text: HELP_WAITING, tone: "muted" };
+    // The song moves on right after a miss, so its message carries over
+    // to the next line instead of vanishing at once.
     const missed = blanks.filter(
       (b) =>
         b.line === currentLine - 1 &&
@@ -300,7 +357,11 @@ function PlayScreen({
         answers[b.id]?.status !== "skipped"
     );
     if (missed.length > 0) {
-      return { text: `Too slow. It was “${missed[missed.length - 1].answer}”.`, tone: "bad" };
+      const last = missed[missed.length - 1];
+      const answer = answers[last.id];
+      const lead =
+        answer?.status !== "missed" ? "Too slow." : answer.timedOut ? "Time's up." : "Out of tries.";
+      return { text: `${lead} It was “${last.answer}”.`, tone: "bad" };
     }
     return { text: HELP_DEFAULT, tone: "muted" };
   }
@@ -325,6 +386,15 @@ function PlayScreen({
             onSubmit={(v) => onSubmit(blank, v)}
           />
           {token.trail}
+          {state === "active" && secondsLeft !== null && (
+            <span
+              className={`${styles.countdown} ${secondsLeft <= WAIT_WARNING_SEC ? styles.countdownLow : ""}`}
+              role="timer"
+              aria-label={`${secondsLeft} seconds left`}
+            >
+              {secondsLeft}
+            </span>
+          )}
         </span>
       );
     });

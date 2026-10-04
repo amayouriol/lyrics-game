@@ -199,9 +199,11 @@ export function pickBlanks(lines: TimedLine[], level: Difficulty, isWord: IsWord
 
 export interface Answer {
   value: string;
-  /** "missed": out of tries. */
+  /** "missed": out of tries, or out of time while the song waited. */
   status: "typing" | "correct" | "skipped" | "missed";
   wrongTries: number;
+  /** Missed because the wait ran out, not because of tries. */
+  timedOut?: boolean;
 }
 
 function isResolvedByYou(answer: Answer | undefined): boolean {
@@ -229,7 +231,8 @@ export function blankState(
 ): BlankState {
   if (answer?.status === "correct") return "correct";
   if (answer?.status === "skipped") return "revealed";
-  if (answer?.status === "missed") return "wrong";
+  // Missed with nothing typed (out of time) has no guess to cross out.
+  if (answer?.status === "missed") return answer.value ? "wrong" : "revealed";
   if (blank.line < currentLine) return answer?.value ? "wrong" : "revealed";
   if (blank.line === currentLine) return blank.id === activeId ? "active" : "waiting";
   return "future";

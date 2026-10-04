@@ -197,3 +197,22 @@
   font: 400 28px/1.5 var(--font-display);
   color: var(--grey-600);
 }
+
+/* Seconds left while the song waits for the active word. */
+.countdown {
+  display: inline-block;
+  margin-left: 0.35em;
+  min-width: 2ch;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font: 600 15px/1.4 var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  color: var(--grey-700);
+  background: var(--grey-100);
+  vertical-align: middle;
+}
+
+.countdownLow {
+  color: var(--tertiary-600);
+  background: var(--tertiary-100);
+}

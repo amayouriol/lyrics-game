@@ -74,6 +74,8 @@ export function usePlayer({
   const [status, setStatus] = useState<PlayerStatus>({ kind: "connecting" });
   const [paused, setPaused] = useState(true);
   const [held, setHeld] = useState(false);
+  /** performance.now() when the current wait began; null when not waiting. */
+  const [heldSince, setHeldSince] = useState<number | null>(null);
   const [positionSec, setPositionSec] = useState(0);
   const [lineIndex, setLineIndex] = useState(0);
 
@@ -148,6 +150,7 @@ export function usePlayer({
       // Once Resume plays again, the hold check pauses at the line end anew if still needed.
       heldRef.current = false;
       setHeld(false);
+      setHeldSince(null);
       setPaused(true);
       setStatus((s) => (s.kind === "error" ? s : { kind: "dropped" }));
     };
@@ -325,6 +328,7 @@ export function usePlayer({
         // right away so the "Paused." panel doesn't flash before Spotify confirms.
         heldRef.current = false;
         setHeld(false);
+        setHeldSince(null);
         setPaused(false);
         clockRef.current = { ...clockRef.current, at: performance.now(), paused: false };
         playerRef.current?.resume();
@@ -339,6 +343,7 @@ export function usePlayer({
         // Words still open and the line is ending: wait for the answer.
         heldRef.current = true;
         setHeld(true);
+        setHeldSince(performance.now());
         clockRef.current = {
           positionMs: Math.min(clockPosition(clockRef.current), hold - 1),
           at: performance.now(),
@@ -415,6 +420,7 @@ export function usePlayer({
     status,
     paused,
     held,
+    heldSince,
     positionSec,
     lineIndex,
     togglePause,
