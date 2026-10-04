@@ -60,15 +60,15 @@ Order: storage and saving first (nothing to show without it), then the progress 
 - [x] Rule checks pass (old + new).
 
 ## Acceptance check (tied to phase-6-spec.md's Success section)
-- [ ] Finish three songs (one twice, at two levels): Recently played shows them newest first with the right scores and accuracy; each Play again starts the right song at the right level
-- [ ] Best songs shows that song once, with its better game
-- [ ] A word missed in two games is listed with the right count and song; a word missed once isn't
-- [ ] Overall stats match a count by hand
-- [ ] Quitting mid-song adds nothing
-- [ ] Log out and back in: everything is still there
-- [ ] Empty history shows the welcome, not empty sections
-- [ ] Saving failure shows the note and Retry works (simulated by making the file unwritable for a moment)
-- [ ] Phase 5's game still plays as before
+- [x] Finish three songs (one twice, at two levels): Recently played shows them newest first with the right scores and accuracy; each Play again starts the right song at the right level
+- [x] Best songs shows that song once, with its better game
+- [x] A word missed in two games is listed with the right count and song; a word missed once isn't
+- [x] Overall stats match a count by hand
+- [x] Quitting mid-song adds nothing
+- [x] Log out and back in: everything is still there
+- [x] Empty history shows the welcome, not empty sections
+- [ ] Saving failure shows the note and Retry works (simulated by making the file unwritable for a moment). *Not seen on screen; the store's failed-write-then-retry path passed in the rule checks.*
+- [x] Phase 5's game still plays as before
 
 ## Before approving this plan
 - [x] The technical decisions above are fine with you (file on the server; songs removed from Spotify handled by the song screen)

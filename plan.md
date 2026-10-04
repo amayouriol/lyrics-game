@@ -34,10 +34,10 @@ Redefined: the original Phase 5 tasks (difficulty selector, song picker disabled
 - [x] Lyrics that move: lines glide up, karaoke-style sweep across the current line
 - [x] Close v1: every error state in spec.md checked on a real account, including the four left untested
 
-## Phase 6: Progress — spec and plan written 2026-10-03 (Output/phase-6-spec.md, phase-6-plan.md)
-- [ ] Save every finished game (song, difficulty, score, accuracy, streak, each word's result)
-- [ ] Home page: Recently played, Best songs, Words you keep missing, Overall stats
-- [ ] Land on home after login; "Home" / "Library" in the header
+## Phase 6: Progress — DONE 2026-10-03 (Output/phase-6-spec.md, phase-6-plan.md)
+- [x] Save every finished game (song, difficulty, score, accuracy, streak, each word's result)
+- [x] Home page: Recently played, Best songs, Words you keep missing, Overall stats
+- [x] Land on home after login; "Home" / "Library" in the header
 
 ## Phase 7: Library — to spec next
 - [ ] Playlists first, then songs inside
