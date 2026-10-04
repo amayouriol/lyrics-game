@@ -27,14 +27,14 @@ Derived from spec.md — review before building. Ordered to match the roadmap do
 - [x] Scoring logic
 - [x] End-of-song summary screen (final score, accuracy)
 
-## Phase 5: Game polish — spec and plan written 2026-10-03 (Output/phase-5-spec.md, phase-5-plan.md)
+## Phase 5: Game polish — DONE 2026-10-03, v1 complete (Output/phase-5-spec.md, phase-5-plan.md)
 Redefined: the original Phase 5 tasks (difficulty selector, song picker disabled state, styling) were already built in Phases 2 and 4.
-- [ ] 15-second countdown when the song waits for a word, then the word is missed
-- [ ] Spaced-out hidden words (not the same word again within 8 lines)
-- [ ] Lyrics that move: lines glide up, karaoke-style sweep across the current line
-- [ ] Close v1: every error state in spec.md checked on a real account, including the four left untested
+- [x] 15-second countdown when the song waits for a word, then the word is missed
+- [x] Spaced-out hidden words (not the same word again within 8 lines)
+- [x] Lyrics that move: lines glide up, karaoke-style sweep across the current line
+- [x] Close v1: every error state in spec.md checked on a real account, including the four left untested
 
-## Phase 6: Progress — spec written 2026-10-03 (Output/phase-6-spec.md)
+## Phase 6: Progress — spec and plan written 2026-10-03 (Output/phase-6-spec.md, phase-6-plan.md)
 - [ ] Save every finished game (song, difficulty, score, accuracy, streak, each word's result)
 - [ ] Home page: Recently played, Best songs, Words you keep missing, Overall stats
 - [ ] Land on home after login; "Home" / "Library" in the header

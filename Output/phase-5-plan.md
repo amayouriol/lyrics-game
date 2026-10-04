@@ -53,12 +53,12 @@ Each of these, seen on screen, with a clear message (never a crash, blank or fro
 - [x] Leave a word open: the song pauses, the 15 s countdown runs and turns red at 5, at 0 the word is revealed, scores 0, resets the streak, and the song continues by itself
 - [x] Answering mid-countdown continues the song immediately
 - [x] On Hard, a line with two open words has one countdown
-- [ ] Spotify moving to another device during the countdown cancels it; after Resume, a fresh 15 s
+- [x] Spotify moving to another device during the countdown cancels it; after Resume, a fresh 15 s
 - [x] A short, repetitive song on Medium: no word hidden twice within 8 lines; the song screen's blank count matches the play screen
 - [x] Lines glide up; the sweep reaches the end of each line about when the next one starts; typing is never interrupted
-- [ ] With "reduce motion" on, nothing glides and the line is fully lit
+- [x] With "reduce motion" on, nothing glides and the line is fully lit
 - [x] All four untested error states seen on screen (section 4)
-- [ ] Phase 4's acceptance checks still pass (quick replay at each level)
+- [x] Phase 4's acceptance checks still pass (quick replay at each level)
 
 ## Before approving this plan
 - [x] The order still makes sense to you
