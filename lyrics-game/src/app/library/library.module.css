@@ -544,3 +544,10 @@
   font: 400 14px var(--font-sans);
   color: var(--grey-500);
 }
+
+/* A song whose lyrics check hasn't come back yet (it can still be opened). */
+.checkingNote {
+  font: 400 13px var(--font-sans);
+  color: var(--grey-400);
+  white-space: nowrap;
+}

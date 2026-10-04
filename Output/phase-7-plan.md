@@ -56,6 +56,11 @@ Order: the saved lists first (the library cards and buttons need them), then the
 - Done 2026-10-04: `SearchBox`, `matchesSearch` (the game's `normalize`, so capitals, accents and apostrophes don't matter), search inside `PlaylistClient` ("1 of 4 songs"), `LibrarySearch` on the cards page with `GET /api/library/all` (3 playlists at a time, each song once, Liked Songs first, failed playlists named). The whole-library search waits 250 ms after typing before searching and checking lyrics, so it doesn't check every half-typed word. Search results link to the song screen without a playlist, so "Back to library" returns to the cards.
 - Checked on a throwaway preview with a made-up library (deleted): "hawaii" finds the Bad Bunny song inside a list, "xyz" shows the no-match line, "bad bunny" on the cards page shows "Searching your whole library…" then 3 songs and the failed-playlist notice, "dakiti" finds "Dákiti", a second search doesn't load the library again, clearing the box brings back the cards, lyrics are checked only for the songs found. Lint and build pass.
 
+### 4b. Fixes from testing search (2026-10-04)
+- [x] **Songs still being checked can be opened** (user's choice when the check for 30 results felt slow): they show "Checking…" and open the song screen, which fetches its own lyrics. No Favorite/Play later buttons until the check confirms lyrics. Phase 2 spec corrected.
+- [x] **"Sacrifice" (Elton John) marked unavailable although LRCLIB has it.** Cause: LRCLIB's best match for its album is 308 s, Spotify's is 305.8 s, over the 2 s limit. Fix: when the best match is another length or untimed, search LRCLIB's other versions and take the closest timed one within 2 s (here 305 s). The 2 s protection stays: a 340 s "live" length is still rejected. Checked against real LRCLIB: "Sacrifice" and "Africa" available, a made-up song and the 340 s version unavailable.
+- [x] **Songs marked unavailable before the fix** (112 in the cache) are checked once more the next time they're seen. Phase 2 spec corrected.
+
 ## 5. Filters (chips above the songs, reset per playlist)
 - [ ] **Only playable** (on by default): hides songs marked "Lyrics not available". Songs still being checked stay visible until their check finishes.
 - [ ] **Played:** Any / Played / Not played. The tracks responses include which songs you've finished (from your games).

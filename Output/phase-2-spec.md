@@ -28,7 +28,7 @@ Same as the main spec: a single user (you), using your own Spotify Premium accou
 
 ## Expected behavior
 1. You open a list (e.g. Liked Songs). The songs appear right away, as in Phase 1, and the heading reads "Pick a song. Anything without synced lyrics stays greyed out."
-2. While a song is still being checked, it looks like Phase 1 and can't be clicked yet.
+2. While a song is still being checked, it shows "Checking…" and can already be opened: the song screen fetches its own lyrics, and says "Lyrics not available" if there are none. *(Changed 2026-10-04 at the user's request: checking 30 search results took long, and every song was locked until its check came back. It used to be unclickable until checked.)*
 3. As each check finishes, the song updates: available songs get a "Synced lyrics" tag and become clickable; unavailable songs turn grey with "Lyrics not available" and stay unclickable (hovering shows the same note).
 4. The next time you open that list, every song already shows its status. Nothing is checked again.
 5. You click an available song. The song screen opens with its cover, title, and artist. While the lyrics load, it shows "Fetching synced lyrics…".
@@ -36,7 +36,7 @@ Same as the main spec: a single user (you), using your own Spotify Premium accou
 7. "Back to library" returns you to the list you came from, with every song's status still in place.
 
 ## Errors and safety
-- **Wrong-version protection:** lyrics are only accepted if they match the song's length. A song whose only lyrics come from a different version (live, remix, radio edit) shows as unavailable rather than playing with out-of-sync lyrics.
+- **Wrong-version protection:** lyrics are only accepted if they match the song's length (within 2 seconds). If LRCLIB's best match is another length or has no timing, its other versions of the song (other albums, compilations) are searched for one that fits. Only a song with no fitting version anywhere (live, remix, radio edit) shows as unavailable rather than playing with out-of-sync lyrics. *(Search through other versions added 2026-10-04: "Sacrifice" by Elton John was rejected for a 308 s match, 2.2 s longer than Spotify's 305.8 s, while LRCLIB had a 305 s version. Songs marked unavailable before this are checked once more.)*
 - **Instrumentals:** songs listed as instrumental, or found with lyrics but no timestamps, show as "Lyrics not available."
 - **Lyrics service down while checking a list:** songs that couldn't be checked are **not** marked unavailable, since that would be wrong. They stay in the unchecked state, and a short notice above the list says some songs couldn't be checked, with a "Retry" button.
 - **Lyrics service down on the song screen:** the screen shows "The lyrics service is having a moment." / "We couldn't fetch synced lyrics for this song. Your library is fine." with a "Retry" button, never a blank or frozen screen.

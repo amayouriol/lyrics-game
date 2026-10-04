@@ -1,6 +1,7 @@
-import { getCacheEntries, saveCacheEntries, type CacheEntry } from "./lyrics-cache";
+import { getCacheEntries as getAllCacheEntries, saveCacheEntries, type CacheEntry } from "./lyrics-cache";
 
 const LRCLIB_GET_URL = "https://lrclib.net/api/get";
+const LRCLIB_SEARCH_URL = "https://lrclib.net/api/search";
 const USER_AGENT = "LyricsGame/0.1 (personal project)";
 const TIMEOUT_MS = 8_000;
 /** Max seconds between Spotify's duration and the lyrics' duration. */
@@ -8,6 +9,23 @@ const DURATION_TOLERANCE_S = 2;
 const MAX_PARALLEL_LOOKUPS = 3;
 const SERVER_ERROR_ATTEMPTS = 2;
 const SERVER_ERROR_RETRY_MS = 1_000;
+/**
+ * Songs marked unavailable before LRCLIB's other versions were searched
+ * (2026-10-04) are checked once more, e.g. "Sacrifice" was rejected for a
+ * compilation 2.2 s longer while a 305 s version existed.
+ */
+const RECHECK_UNAVAILABLE_BEFORE = Date.parse("2026-10-04T21:25:00Z");
+
+/** Cached results still worth trusting. */
+async function getCacheEntries(ids: string[]): Promise<Map<string, CacheEntry>> {
+  const entries = await getAllCacheEntries(ids);
+  for (const [id, entry] of entries) {
+    if (entry.status === "unavailable" && entry.checkedAt < RECHECK_UNAVAILABLE_BEFORE) {
+      entries.delete(id);
+    }
+  }
+  return entries;
+}
 
 export type LyricsStatus = "available" | "unavailable" | "unknown";
 
@@ -42,6 +60,43 @@ type LookupResult =
   | { status: "unavailable" }
   | { status: "unknown"; rateLimited: boolean };
 
+type LrclibResponse<T> =
+  | { kind: "found"; body: T }
+  | { kind: "not_found" }
+  | { kind: "rate_limited" }
+  | { kind: "error" };
+
+/** One LRCLIB request, retrying its occasional 503s once. */
+async function requestLrclib<T>(url: string, label: string): Promise<LrclibResponse<T>> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      const res = await fetch(url, {
+        headers: { "User-Agent": USER_AGENT },
+        cache: "no-store",
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+      });
+      if (res.status === 404) return { kind: "not_found" };
+      if (res.status === 429) {
+        console.warn(`[lrclib] rate limited (retry-after ${res.headers.get("retry-after")})`);
+        return { kind: "rate_limited" };
+      }
+      if (res.ok) return { kind: "found", body: (await res.json()) as T };
+
+      console.warn(`[lrclib] ${res.status} for "${label}" (attempt ${attempt})`);
+      // LRCLIB returns occasional 503s that succeed moments later.
+      if (res.status >= 500 && attempt < SERVER_ERROR_ATTEMPTS) {
+        await new Promise((resolve) => setTimeout(resolve, SERVER_ERROR_RETRY_MS));
+        continue;
+      }
+      return { kind: "error" };
+    } catch (error) {
+      console.warn(`[lrclib] request failed for "${label}":`, error);
+      return { kind: "error" };
+    }
+  }
+}
+
+/** LRCLIB's best match for a song: one record, by title, artist, album and length. */
 async function fetchLrclib(
   track: LyricsLookup,
   title: string,
@@ -53,33 +108,28 @@ async function fetchLrclib(
     duration: String(Math.round(track.durationMs / 1000)),
   });
   if (album) params.set("album_name", album);
+  const r = await requestLrclib<LrclibRecord>(`${LRCLIB_GET_URL}?${params}`, title);
+  return r.kind === "found" ? { kind: "found", record: r.body } : r;
+}
 
-  for (let attempt = 1; ; attempt++) {
-    try {
-      const res = await fetch(`${LRCLIB_GET_URL}?${params}`, {
-        headers: { "User-Agent": USER_AGENT },
-        cache: "no-store",
-        signal: AbortSignal.timeout(TIMEOUT_MS),
-      });
-      if (res.status === 404) return { kind: "not_found" };
-      if (res.status === 429) {
-        console.warn(`[lrclib] rate limited (retry-after ${res.headers.get("retry-after")})`);
-        return { kind: "rate_limited" };
-      }
-      if (res.ok) return { kind: "found", record: await res.json() };
-
-      console.warn(`[lrclib] ${res.status} for "${title}" (attempt ${attempt})`);
-      // LRCLIB returns occasional 503s that succeed moments later.
-      if (res.status >= 500 && attempt < SERVER_ERROR_ATTEMPTS) {
-        await new Promise((resolve) => setTimeout(resolve, SERVER_ERROR_RETRY_MS));
-        continue;
-      }
-      return { kind: "error" };
-    } catch (error) {
-      console.warn(`[lrclib] request failed for "${title}":`, error);
-      return { kind: "error" };
-    }
-  }
+/**
+ * Every version LRCLIB has of a song (other albums, compilations), for when
+ * its best match is a different length or has no timing. Picks the timed
+ * version closest in length to Spotify's, if one is close enough.
+ */
+async function searchLrclib(track: LyricsLookup): Promise<FetchOutcome> {
+  const params = new URLSearchParams({
+    artist_name: track.primaryArtist,
+    track_name: cleanTitle(track.title),
+  });
+  const r = await requestLrclib<LrclibRecord[]>(`${LRCLIB_SEARCH_URL}?${params}`, track.title);
+  if (r.kind !== "found") return r;
+  const seconds = track.durationMs / 1000;
+  const best = r.body
+    .filter((rec) => !rec.instrumental && rec.syncedLyrics?.trim())
+    .filter((rec) => Math.abs(rec.duration - seconds) <= DURATION_TOLERANCE_S)
+    .sort((x, y) => Math.abs(x.duration - seconds) - Math.abs(y.duration - seconds))[0];
+  return best ? { kind: "found", record: best } : { kind: "not_found" };
 }
 
 /** Strips Spotify title suffixes that LRCLIB often doesn't have. */
@@ -120,6 +170,10 @@ function classify(record: LrclibRecord, track: LyricsLookup): LookupResult {
   return lines.length > 0 ? { status: "available", lines } : { status: "unavailable" };
 }
 
+function unknown(outcome: FetchOutcome): LookupResult {
+  return { status: "unknown", rateLimited: outcome.kind === "rate_limited" };
+}
+
 async function lookupLyrics(track: LyricsLookup): Promise<LookupResult> {
   let outcome = await fetchLrclib(track, track.title, track.album);
   if (outcome.kind === "not_found") {
@@ -127,16 +181,18 @@ async function lookupLyrics(track: LyricsLookup): Promise<LookupResult> {
     // remasters), and the album is optional, so retry without it.
     outcome = await fetchLrclib(track, cleanTitle(track.title), null);
   }
-  switch (outcome.kind) {
-    case "found":
-      return classify(outcome.record, track);
-    case "not_found":
-      return { status: "unavailable" };
-    case "rate_limited":
-      return { status: "unknown", rateLimited: true };
-    case "error":
-      return { status: "unknown", rateLimited: false };
+  if (outcome.kind === "rate_limited" || outcome.kind === "error") return unknown(outcome);
+  if (outcome.kind === "found") {
+    const result = classify(outcome.record, track);
+    if (result.status === "available" || outcome.record.instrumental) return result;
   }
+
+  // No match, or the match is another version (a different length) or has
+  // no timing: LRCLIB often has the same song timed on another album.
+  const other = await searchLrclib(track);
+  if (other.kind === "found") return classify(other.record, track);
+  if (other.kind === "rate_limited" || other.kind === "error") return unknown(other);
+  return { status: "unavailable" };
 }
 
 function toCacheEntry(track: LyricsLookup, result: LookupResult): CacheEntry | null {

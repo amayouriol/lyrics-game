@@ -6,9 +6,10 @@ import { SaveButtons, songToSave } from "./SaveButtons";
 import styles from "./library.module.css";
 
 /**
- * Song rows: available songs open the song screen and get the Favorites /
- * Play later buttons (beside the link, not inside it); the rest can't be
- * clicked.
+ * Song rows. Available songs open the song screen and get the Favorites /
+ * Play later buttons (beside the link, not inside it). Songs still being
+ * checked open too, since the song screen fetches its own lyrics, so you
+ * don't wait for the whole list. Songs without lyrics can't be clicked.
  */
 export function TrackList({
   tracks,
@@ -45,31 +46,28 @@ export function TrackList({
             {status === "unavailable" && (
               <span className={styles.unavailableNote}>Lyrics not available</span>
             )}
-            {status === "unknown" && <span />}
+            {status === "unknown" && <span className={styles.checkingNote}>Checking…</span>}
             <span className={styles.trackDur}>{track.duration}</span>
           </>
         );
         // The same song can appear twice in a playlist.
         const key = `${track.id}-${index}`;
 
-        if (status === "available") {
+        if (status !== "unavailable") {
           return (
             <div key={key} className={`${styles.track} ${styles.trackAvailable}`}>
-              <Link
-                href={songHref(track.id, from)}
-                className={styles.trackMain}
-              >
+              <Link href={songHref(track.id, from)} className={styles.trackMain}>
                 {row}
               </Link>
-              <SaveButtons song={songToSave(track)} />
+              {status === "available" ? <SaveButtons song={songToSave(track)} /> : <span />}
             </div>
           );
         }
         return (
           <div
             key={key}
-            className={`${styles.track} ${status === "unavailable" ? styles.trackUnavailable : ""}`}
-            title={status === "unavailable" ? "Lyrics not available" : undefined}
+            className={`${styles.track} ${styles.trackUnavailable}`}
+            title="Lyrics not available"
           >
             <div className={styles.trackMain}>{row}</div>
             <span />
