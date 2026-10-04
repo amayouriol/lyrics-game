@@ -25,6 +25,7 @@ import {
   type Stats,
   type TimedLine,
 } from "@/lib/game";
+import type { WordResult } from "@/lib/progress";
 import { loadSong, playHref, songHref, type SongResult, type TrackSummary } from "../loadSong";
 import { usePlayer, type PlayerError } from "./usePlayer";
 import styles from "./play.module.css";
@@ -66,6 +67,8 @@ function prefersReducedMotion(): boolean {
 }
 
 interface GameResult {
+  /** Made when the round starts, so the game is saved once however often it's sent. */
+  id: string;
   level: Difficulty;
   blanks: Blank[];
   answers: Record<string, Answer>;
@@ -120,6 +123,7 @@ export function PlayClient({
     if (gameResult) {
       return (
         <Results
+          trackId={trackId}
           track={song.track}
           result={gameResult}
           libraryHref={from ? `/library?source=${encodeURIComponent(from)}` : "/library"}
@@ -197,6 +201,7 @@ function PlayScreen({
   const blankById = useMemo(() => new Map(blanks.map((b) => [b.id, b])), [blanks]);
   const lineTimesMs = useMemo(() => lines.map((l) => l.timeMs), [lines]);
 
+  const [gameId] = useState(() => crypto.randomUUID());
   const [answers, setAnswers] = useState<Record<string, Answer>>({});
   /** The latest thing you did, shown in the help line until the song moves on a line. */
   const [lastEvent, setLastEvent] = useState<{ line: number; text: string; bad: boolean } | null>(
@@ -204,8 +209,14 @@ function PlayScreen({
   );
 
   const onEnded = useCallback(() => {
-    onFinished({ level, blanks, answers, stats: computeStats(blanks, answers, Infinity, level) });
-  }, [onFinished, level, blanks, answers]);
+    onFinished({
+      id: gameId,
+      level,
+      blanks,
+      answers,
+      stats: computeStats(blanks, answers, Infinity, level),
+    });
+  }, [onFinished, gameId, level, blanks, answers]);
 
   const {
     status,
@@ -626,22 +637,81 @@ function PlayScreen({
   );
 }
 
+/** Sends a finished game to your progress. */
+async function saveGameResult(
+  trackId: string,
+  track: TrackSummary,
+  result: GameResult
+): Promise<"saved" | "failed" | "expired"> {
+  const words: WordResult[] = result.blanks.map((b) => {
+    const state = blankState(b, result.answers[b.id], Infinity, null);
+    return {
+      answer: b.answer,
+      result: state === "correct" ? "right" : state === "wrong" ? "wrong" : "revealed",
+      wrongTries: result.answers[b.id]?.wrongTries ?? 0,
+      guess: result.answers[b.id]?.value ?? "",
+    };
+  });
+  try {
+    const res = await fetch("/api/games", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: result.id,
+        level: result.level,
+        song: {
+          trackId,
+          title: track.title,
+          artist: track.artist,
+          cover: track.cover,
+          durationMs: track.durationMs,
+        },
+        words,
+      }),
+    });
+    if (res.status === 401) return "expired";
+    return res.ok ? "saved" : "failed";
+  } catch {
+    return "failed";
+  }
+}
+
 function Results({
+  trackId,
   track,
   result,
   libraryHref,
   onPlayAgain,
   onTryNext,
 }: {
+  trackId: string;
   track: TrackSummary;
   result: GameResult;
   libraryHref: string;
   onPlayAgain: () => void;
   onTryNext: (level: Difficulty) => void;
 }) {
+  const router = useRouter();
   const { level, blanks, answers, stats } = result;
   const next = nextDifficulty(level);
   const info = DIFFICULTIES[level];
+
+  // Saved as soon as the results open. The server ignores a game it already
+  // has, so Retry (or a double send) can't count it twice.
+  const [saveAttempt, setSaveAttempt] = useState(0);
+  const [saveResult, setSaveResult] = useState<{ attempt: number; failed: boolean } | null>(null);
+  useEffect(() => {
+    let ignore = false;
+    saveGameResult(trackId, track, result).then((outcome) => {
+      if (ignore) return;
+      if (outcome === "expired") router.push("/?expired=1");
+      else setSaveResult({ attempt: saveAttempt, failed: outcome === "failed" });
+    });
+    return () => {
+      ignore = true;
+    };
+  }, [trackId, track, result, saveAttempt, router]);
+  const saveFailed = saveResult?.attempt === saveAttempt && saveResult.failed;
 
   return (
     <>
@@ -655,6 +725,14 @@ function Results({
           <p className={styles.summary}>
             You got {stats.correct} of {stats.total} words in {track.title}.
           </p>
+          {saveFailed && (
+            <div className={styles.saveError}>
+              <span>Couldn&apos;t save this game to your progress.</span>
+              <button className="btn btn--ghost btn--sm" onClick={() => setSaveAttempt((n) => n + 1)}>
+                Retry
+              </button>
+            </div>
+          )}
           <div className={styles.stats}>
             <StatBlock
               label="Score"

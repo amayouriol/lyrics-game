@@ -265,3 +265,16 @@
   color: var(--tertiary-600);
   background: var(--tertiary-100);
 }
+
+/* Results: the game couldn't be added to your progress. */
+.saveError {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 8px 8px 8px 16px;
+  border-radius: 12px;
+  background: var(--tertiary-100);
+  color: var(--tertiary-600);
+  font: 400 15px/1.5 var(--font-sans);
+}

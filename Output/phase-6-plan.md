@@ -16,18 +16,21 @@ Order: storage and saving first (nothing to show without it), then the progress 
 - Done 2026-10-03: `getCurrentUserId` (spotify.ts), `userId` in the session, set at login (a failed `/me` doesn't fail the login), and `getUserId()` (session.ts) for route handlers. It fetches and saves the id for older sessions, using the same session object as the token refresh, so it can't overwrite refreshed tokens. Lint and build pass. Nothing uses it yet; step 2 is the first user.
 
 ## 2. Saving games (`src/lib/games.ts`, `api/games`)
-- [ ] `games.ts`: load and save `.data/games.json`, `{ [userId]: Game[] }`. Writes are chained (as in the lyrics cache) and go to a temporary file that then replaces the real one, so a crash mid-write can't corrupt your history. Unlike the lyrics cache, a failed write is reported, not swallowed.
-- [ ] A `Game`: id, date, song (track id, title, artist, cover, length), difficulty, score, accuracy, correct count, total, best streak, and every hidden word: answer, result (right / wrong / revealed), wrong tries, what you typed.
-- [ ] `POST /api/games`: checks the body's shape, ignores a game id it already has (answers "saved"), recomputes the numbers (step 3), saves, answers. 401 on an expired session as everywhere else.
-- [ ] Results screen (`PlayClient.tsx`): when a game reaches results, send it once (the game's id is made when the round starts). If it fails: "Couldn't save this game to your progress." with Retry under the summary. The rest of the screen is unchanged. Quit sends nothing.
+- [x] `games.ts`: load and save `.data/games.json`, `{ [userId]: Game[] }`. Writes are chained (as in the lyrics cache) and go to a temporary file that then replaces the real one, so a crash mid-write can't corrupt your history. Unlike the lyrics cache, a failed write is reported, not swallowed.
+- [x] A `Game`: id, date, song (track id, title, artist, cover, length), difficulty, score, accuracy, correct count, total, best streak, and every hidden word: answer, result (right / wrong / revealed), wrong tries, what you typed.
+- [x] `POST /api/games`: checks the body's shape, ignores a game id it already has (answers "saved"), recomputes the numbers (step 3), saves, answers. 401 on an expired session as everywhere else.
+- [x] Results screen (`PlayClient.tsx`): when a game reaches results, send it once (the game's id is made when the round starts). If it fails: "Couldn't save this game to your progress." with Retry under the summary. The rest of the screen is unchanged. Quit sends nothing.
 
 ## 3. The numbers (`src/lib/progress.ts`, pure functions, used by the server and the rule checks)
-- [ ] `summarizeGame(words, level)`: score, accuracy, correct, total and best streak from the word results, same rules as `computeStats` (points halve per wrong try; streak counts first-try words only).
-- [ ] `overallStats(games)`: songs played (finished games), words guessed (right answers), average accuracy (right answers ÷ hidden words across all games, not an average of averages), best streak ever.
-- [ ] `recentGames(games, 5)`: newest first.
-- [ ] `bestSongs(games, 5)`: each song's best game at any level (higher accuracy, then higher score), top 5 by the same order.
-- [ ] `missedWords(games, 10)`: grouped by `normalize` ("Corazón" = "corazon"), shown in the spelling seen most often. Missed = not right (wrong or revealed). Counts "missed N of M times" and the songs. Only words missed 2+ times. Ordered by misses, then miss rate, then alphabetically.
-- [ ] Rule checks (throwaway script, as before): each function on hand-made games, including ties, accents, a word right in one game and missed in two, and an empty history.
+- [x] `summarizeGame(words, level)`: score, accuracy, correct, total and best streak from the word results, same rules as `computeStats` (points halve per wrong try; streak counts first-try words only).
+- [x] `overallStats(games)`: songs played (finished games), words guessed (right answers), average accuracy (right answers ÷ hidden words across all games, not an average of averages), best streak ever.
+- [x] `recentGames(games, 5)`: newest first.
+- [x] `bestSongs(games, 5)`: each song's best game at any level (higher accuracy, then higher score), top 5 by the same order.
+- [x] `missedWords(games, 10)`: grouped by `normalize` ("Corazón" = "corazon"), shown in the spelling seen most often. Missed = not right (wrong or revealed). Counts "missed N of M times" and the songs. Only words missed 2+ times. Ordered by misses, then miss rate, then alphabetically.
+- [x] Rule checks (throwaway script, as before): each function on hand-made games, including ties, accents, a word right in one game and missed in two, and an empty history.
+- Done 2026-10-03: `src/lib/progress.ts` (types and numbers), `src/lib/games.ts` (the file), `POST /api/games`, and saving from the results screen.
+- Rule checks: 35 new ones (summary, overall, recent, best, missed words, and the file store: duplicate, re-read, corrupt file left untouched, failed write reported and retried), plus the 28 game checks, all pass. Endpoint without a login: bad game → 400, valid game → 401, nothing written. Lint and build pass.
+- Not yet seen on a real account: the first game saved will create `.data/games.json`.
 
 ## 4. Home page (`src/app/page.tsx` + `HomeClient` or server-rendered sections)
 - [ ] `/` when logged in shows home instead of redirecting to the library. Logged out: the login screen, as now.
