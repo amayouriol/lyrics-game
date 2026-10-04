@@ -596,11 +596,6 @@
   padding-right: clamp(20px, 3vw, 48px);
 }
 
-.total {
-  font-weight: 400;
-  color: var(--grey-500);
-}
-
 .sectionTitle {
   margin: 16px 0 0;
   font: 500 24px / 1.2 var(--font-sans);
@@ -610,7 +605,7 @@
 
 .columns {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 16px;
 }
 
@@ -629,10 +624,6 @@
 
 .column_later {
   background: var(--quaternary-100);
-}
-
-.column_day {
-  background: var(--secondary-100);
 }
 
 .columnTitle {
@@ -667,29 +658,6 @@ a.columnTitle:hover {
   color: var(--black);
 }
 
-.daySong {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  color: inherit;
-  text-decoration: none;
-  min-width: 0;
-}
-
-.dayCover {
-  width: 100%;
-  max-width: 160px;
-  aspect-ratio: 1;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.06) center / cover no-repeat;
-}
-
-.dayActions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
 /* Search and filters for the whole library. */
 .searchColumn {
   flex: 1 1 360px;
@@ -709,4 +677,12 @@ a.columnTitle:hover {
 
 .searchColumn .search {
   max-width: none;
+}
+
+/* "Updated from Spotify 2 hours ago" with the Refresh button. */
+.updated {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
 }

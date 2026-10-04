@@ -1,3 +1,5 @@
+import { blockSpotifyUntil, spotifyBlockedUntil } from "./spotify-block";
+
 const ACCOUNTS_URL = "https://accounts.spotify.com";
 const API_URL = "https://api.spotify.com/v1";
 
@@ -89,16 +91,13 @@ export async function refreshAccessToken(refreshToken: string): Promise<TokenRes
 const MAX_RETRY_AFTER_S = 5;
 const RATE_LIMIT_RETRIES = 2;
 
-/**
- * Until when Spotify told us to stop (epoch ms). Calling it again before
- * then only extends the wait, so requests fail straight away instead.
- */
-let blockedUntil = 0;
-
 async function spotifyGet(path: string, accessToken: string) {
   for (let attempt = 0; ; attempt++) {
+    // Calling Spotify while it has told us to stop only extends the wait,
+    // so requests fail straight away instead.
+    const blockedUntil = await spotifyBlockedUntil();
     if (Date.now() < blockedUntil) {
-      throw new SpotifyApiError(429, `Spotify cool-down for ${path}`, blockedUntil);
+      throw new SpotifyApiError(429, `Spotify block for ${path}`, blockedUntil);
     }
     const res = await fetch(`${API_URL}${path}`, {
       headers: { Authorization: `Bearer ${accessToken}` },
@@ -111,8 +110,8 @@ async function spotifyGet(path: string, accessToken: string) {
         await new Promise((resolve) => setTimeout(resolve, wait * 1000 + 250));
         continue;
       }
-      blockedUntil = Math.max(blockedUntil, Date.now() + wait * 1000);
-      throw new SpotifyApiError(429, `Spotify API error 429 for ${path}`, blockedUntil);
+      await blockSpotifyUntil(Date.now() + wait * 1000);
+      throw new SpotifyApiError(429, `Spotify API error 429 for ${path}`, await spotifyBlockedUntil());
     }
     return readSpotifyResponse(res, path);
   }

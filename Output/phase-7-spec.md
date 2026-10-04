@@ -27,11 +27,12 @@ Same as the main spec: a single user (you), using your own Spotify Premium accou
 ## Expected behavior
 
 ### The library's main page *(redesigned 2026-10-04 at the user's request; replaces items 1–4 and 9–10)*
-A. The heading reads "Your library · 412 songs": every song in Liked Songs and your playlists, each counted once. The page shows straight away; the total appears once your whole library has loaded in the background ("Counting your songs…").
-B. Below it, three columns: **Favorites** and **Play later** (up to 5 songs each, newest first, with "See all" to the full list), and **Song of the day**: a random song from your library that has synced lyrics and you've never finished, the same all day and a new one tomorrow, with **Play** and **Another one**. If every song with lyrics has been played, it says so.
+A. The heading reads "Your library". *(Total song count removed 2026-10-04, see below.)*
+B. Below it, two columns: **Favorites** and **Play later** (up to 5 songs each, newest first, with "See all" to the full list). *(Song of the day removed 2026-10-04, see below.)*
 C. Below the columns, **Your Spotify playlists** as cards (Liked Songs first, then Spotify's order), each opening its page.
-D. **On the right, search and filters for your whole library:** a search box with the filter chips under it, and the results below. Results show as soon as you type or change a filter (e.g. Spanish + Not played lists every such song in your library with no search typed). With an empty search and the filters at their defaults, it says "Search, or pick a filter, to browse your whole library." On narrow windows this column goes below the rest.
+D. **On the right, search and filters for your whole library:** a search box with the filter chips under it, and the results below. Your whole library loads the first time you type or change a filter ("Loading your whole library…"); results show as soon as it's there (e.g. Spanish + Not played lists every such song in your library with no search typed). With an empty search and the filters at their defaults, it says "Search, or pick a filter, to browse your whole library." On narrow windows this column goes below the rest.
 E. The "Saved in Lyrics Game" side panel only shows on playlist pages; the main page has the Favorites and Play later columns instead.
+F. **Your library is kept by the app** *(added 2026-10-04, after Spotify blocked the app for ~22 hours for too many requests)*: your playlists and their songs are saved after loading and reused for up to 6 hours, even after the app restarts. A line under the heading says when they were last loaded from Spotify ("Updated 2 hours ago"), with a **Refresh from Spotify** button for when you've just changed a playlist. If Spotify is refusing requests, the saved copy is used even if it's older, and a note says so.
 
 ### The playlists page (original, superseded by the main page above)
 1. "Library" (from the header or "Pick a song" on home) opens a grid of cards. Each card shows a cover, a name and a song count ("179 songs").
@@ -70,6 +71,7 @@ E. The "Saved in Lyrics Game" side panel only shows on playlist pages; the main 
 21. Your Favorites and Play later lists are kept with your progress: still there after logging out, and on another browser.
 
 ## Errors and safety
+- **Spotify blocks the app for too many requests** (it says for how long, e.g. 22 hours): the app stops asking until then, even across restarts, so the block isn't stretched. The library shows its saved copy if there is one, with "Spotify is limiting this app until tomorrow at 1:15 PM; showing your library as of 2 hours ago." Without a copy: "Spotify asked us to slow down… Try again after tomorrow at 1:15 PM." Opening and playing songs also need Spotify, so they fail with the same message until then.
 - **Search can't load some playlists:** results come from the playlists that did load, with a notice "Some playlists couldn't be searched." and Retry.
 - ~~Genres can't be loaded~~: genre moved to V3.
 - **Saving a Favorite or Play later fails:** the button goes back to how it was and a short message says "Couldn't save. Try again."
@@ -97,6 +99,7 @@ E. The "Saved in Lyrics Game" side panel only shows on playlist pages; the main 
 - **Search is titles and artists only.** Searching lyrics would mean fetching lyrics for every song first.
 
 ## V2 (optional)
+- **Total song count and Song of the day** on the library page (built, then removed 2026-10-04 at the user's request): both needed the whole library on every visit, which helped get the app blocked by Spotify. Could come back using only the saved copy, never loading from Spotify for them.
 - Collaborative playlists (Spotify allows reading those).
 - Sorting, and remembering filters between visits.
 - Syncing Favorites with Spotify likes.

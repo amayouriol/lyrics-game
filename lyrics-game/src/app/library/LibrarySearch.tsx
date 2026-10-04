@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { LoadState } from "./libraryData";
-import { matchesSearch, spotifyTrouble } from "./libraryData";
+import { matchesSearch, moment, spotifyTrouble } from "./libraryData";
 import { DEFAULT_FILTERS, Filters, isDefault, NoFilterMatch, passesFilters } from "./Filters";
 import { SearchBox } from "./SearchBox";
 import { TrackList } from "./TrackList";
 import { useLyricsCheck } from "./useLyricsCheck";
-import type { WholeLibrary } from "./useWholeLibrary";
+import { useWholeLibrary } from "./useWholeLibrary";
 import styles from "./library.module.css";
 
 /** Waits this long after the last keystroke before searching (and checking lyrics). */
@@ -17,17 +16,7 @@ const SEARCH_DELAY_MS = 250;
  * Search and filters across your whole library, in the main page's right
  * column. Results show once you type or change a filter.
  */
-export function LibrarySearch({
-  state,
-  library,
-  rateLimited,
-  reload,
-}: {
-  state: LoadState;
-  library: WholeLibrary | null;
-  rateLimited: boolean;
-  reload: () => void;
-}) {
+export function LibrarySearch() {
   const [search, setSearch] = useState("");
   const [query, setQuery] = useState(search);
   useEffect(() => {
@@ -36,6 +25,7 @@ export function LibrarySearch({
   }, [search]);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const active = search.trim() !== "" || !isDefault(filters);
+  const { state, library, rateLimited, retryAt, reload } = useWholeLibrary(active);
 
   const matches = useMemo(
     () => (library && active ? library.tracks.filter((t) => matchesSearch(t, query)) : null),
@@ -64,8 +54,8 @@ export function LibrarySearch({
       {active && state === "error" && (
         <div className={styles.notice}>
           <span>
-            {spotifyTrouble(rateLimited).title} Your library couldn&apos;t be loaded to search
-            it.
+            {spotifyTrouble(rateLimited, retryAt).title} Your library couldn&apos;t be loaded to
+            search it. {spotifyTrouble(rateLimited, retryAt).body}
           </span>
           <button className="btn btn--secondary btn--sm" onClick={reload}>
             Retry
@@ -79,7 +69,9 @@ export function LibrarySearch({
             {library.rateLimited && "Spotify asked us to slow down, so some playlists "}
             {!library.rateLimited && "Some playlists "}
             couldn&apos;t be searched: {library.failed.join(", ")}.
-            {library.rateLimited && " Try again in a minute."}
+            {library.rateLimited && library.blockedUntil
+              ? ` Try again after ${moment(library.blockedUntil)}.`
+              : ""}
           </span>
           <button className="btn btn--secondary btn--sm" onClick={reload}>
             Retry
@@ -94,6 +86,13 @@ export function LibrarySearch({
             Retry
           </button>
         </div>
+      )}
+
+      {active && library && library.blockedUntil && library.failed.length === 0 && (
+        <p className={styles.hint}>
+          Spotify is limiting this app until {moment(library.blockedUntil)}, so some playlists
+          are older saved copies.
+        </p>
       )}
 
       {matches && matches.length === 0 && (

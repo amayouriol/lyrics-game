@@ -12,6 +12,8 @@ export async function GET(request: NextRequest) {
 
   try {
     let tracks: Track[];
+    let updatedAt: number | null = null;
+    let blockedUntil: number | null = null;
     if (source === "favorites" || source === "later") {
       // Kept by the app, not on Spotify; newest first.
       const saved = await getSaved(await getUserId());
@@ -28,9 +30,12 @@ export async function GET(request: NextRequest) {
         })
       );
     } else {
-      tracks = await getTracks(await getValidAccessToken(), source);
+      const got = await getTracks(await getValidAccessToken(), source);
+      tracks = got.data;
+      updatedAt = got.updatedAt;
+      blockedUntil = got.blockedUntil ?? null;
     }
-    return NextResponse.json({ tracks: await describeTracks(tracks) });
+    return NextResponse.json({ tracks: await describeTracks(tracks), updatedAt, blockedUntil });
   } catch (error) {
     console.error("[/api/library/tracks]", error);
     if (error instanceof SpotifySessionExpiredError) {

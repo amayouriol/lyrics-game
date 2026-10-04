@@ -93,7 +93,18 @@ Order: the saved lists first (the library cards and buttons need them), then the
 ### 5d. Still rate-limited after 5c (2026-10-04)
 - [x] Every library request failed within half a second: Spotify was asking for a wait longer than the 5 s the app waits out, and each reload or Retry asked again (which can stretch the wait).
 - [x] Spotify's requested wait is now logged, and respected: until it's over, the app doesn't call Spotify at all and the page says "Try again after 22:40" (the time Spotify gave).
-- [ ] Find out how long Spotify is asking for, and whether the library loads once it's over.
+- [x] Spotify asked for 80,005 s (~22 h, until Monday 2026-10-05 ~1:15 PM). Whether the library loads after that: to check then.
+
+### 5e. Keep Spotify requests low (spec change, 2026-10-04)
+- [x] Remove the total and Song of the day from the main page (user's decision). The whole library loads only on the first search or filter change.
+- [x] Library copy on disk (`.data/library-cache.json`, per user): the playlist list and each playlist's songs with when they were loaded. Reused for 6 hours; past that, reloaded when needed. A cache: unreadable means reload, never an error.
+- [x] When Spotify refuses (429) and an older copy exists, use it and say so.
+- [x] "Updated 2 hours ago" + **Refresh from Spotify** on the main page (reloads the playlist list; each playlist reloads when next opened or searched).
+- [x] Spotify's block remembered on disk (`.data/spotify-block.json`), so a restart doesn't ask again before it ends.
+- [x] "Try again after" shows the day when it isn't today.
+- Done 2026-10-04: `src/lib/spotify-block.ts` (the block, on disk; seeded with today's block until Mon 1:15 PM so the new code doesn't ask Spotify to find out), the library copy and `getSources`/`getTracks`/`markListsOutdated` in `src/lib/library.ts`, `?refresh=1` on the sources route, old-copy notes on the main page, playlist pages and search. Song of the day and the total removed (moved to V2 in the spec).
+- Checked on a throwaway preview (deleted): "Updated from Spotify 2 hours ago" + Refresh (asks with `?refresh=1`), older copy while blocked ("…limiting this app until tomorrow at 1:12 PM; showing your playlists as of yesterday"), blocked with no copy ("Try again after tomorrow at 1:12 PM"), the whole library loads only after typing. Lint and build pass.
+- [ ] After the block ends (Mon 2026-10-05 ~1:15 PM): the library loads, then reloads within 6 hours come from the copy (no new Spotify requests in the log).
 
 ## 6. Home sections (Phase 6 home page)
 - [x] `GET /api/progress` also returns the two saved lists (first 5 each) and, per song, the level you last finished it at.

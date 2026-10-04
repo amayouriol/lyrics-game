@@ -14,7 +14,9 @@ const PARALLEL = 2;
 export async function GET() {
   try {
     const accessToken = await getValidAccessToken();
-    const sources = await getSources(accessToken);
+    const got = await getSources(accessToken);
+    const sources = got.data;
+    let blockedUntil = got.blockedUntil ?? null;
 
     const lists: (Track[] | null)[] = new Array(sources.length).fill(null);
     let rateLimited = false;
@@ -22,10 +24,15 @@ export async function GET() {
       await Promise.all(
         sources.slice(i, i + PARALLEL).map(async (source, j) => {
           try {
-            lists[i + j] = await getTracks(accessToken, source.id);
+            const list = await getTracks(accessToken, source.id);
+            lists[i + j] = list.data;
+            if (list.blockedUntil) blockedUntil = list.blockedUntil;
           } catch (error) {
             if (error instanceof SpotifySessionExpiredError) throw error;
-            if (error instanceof SpotifyApiError && error.rateLimited) rateLimited = true;
+            if (error instanceof SpotifyApiError && error.rateLimited) {
+              rateLimited = true;
+              blockedUntil = error.retryAt ?? blockedUntil;
+            }
             console.warn(`[/api/library/all] couldn't load "${source.name}"`, error);
           }
         })
@@ -45,6 +52,7 @@ export async function GET() {
       tracks: await describeTracks(tracks),
       failed: sources.filter((_, i) => lists[i] === null).map((s) => s.name),
       rateLimited,
+      blockedUntil,
     });
   } catch (error) {
     console.error("[/api/library/all]", error);

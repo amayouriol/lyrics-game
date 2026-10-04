@@ -7,6 +7,7 @@ import type { Source } from "@/lib/spotify";
 import {
   fetchJson,
   matchesSearch,
+  moment,
   spotifyTrouble,
   type KeyedResult,
   type LibraryTrack,
@@ -47,9 +48,11 @@ export function PlaylistClient({ source }: { source: string }) {
 
   const [reloadKey, setReloadKey] = useState(0);
   const [result, setResult] = useState<KeyedResult<LibraryTrack[]> | null>(null);
+  /** Spotify is refusing until then, so the songs are an older saved copy. */
+  const [blockedUntil, setBlockedUntil] = useState<number | null>(null);
   useEffect(() => {
     let ignore = false;
-    fetchJson<{ tracks: LibraryTrack[] }>(
+    fetchJson<{ tracks: LibraryTrack[]; blockedUntil: number | null }>(
       `/api/library/tracks?source=${encodeURIComponent(source)}`
     ).then((r) => {
       if (ignore) return;
@@ -62,6 +65,7 @@ export function PlaylistClient({ source }: { source: string }) {
           ? { key: reloadKey, status: "error", rateLimited: r.rateLimited, retryAt: r.retryAt }
           : { key: reloadKey, status: "ready", data: r.data.tracks }
       );
+      setBlockedUntil(r.status === "ok" ? r.data.blockedUntil : null);
     });
     return () => {
       ignore = true;
@@ -129,6 +133,13 @@ export function PlaylistClient({ source }: { source: string }) {
             Retry
           </button>
         </div>
+      )}
+
+      {blockedUntil && (
+        <p className={styles.hint}>
+          Spotify is limiting this app until {moment(blockedUntil)}, so this is an older saved
+          copy of the list.
+        </p>
       )}
 
       {someUnchecked && (
