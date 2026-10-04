@@ -53,19 +53,19 @@ Derived from: Output/phase-4-spec.md. Replaces plan.md's Phase 4 section and tak
 - On 4 real songs from the cache (Spanish and English), Medium hides sensible words ("corazón", "esperanza", "terminó", "somebody") and keeps trailing apostrophes outside the blank ("Tú [sabe]'").
 
 ## Acceptance check (tied to phase-4-spec.md's Success section)
-- [ ] Each difficulty: number of blanks matches the song screen's summary
-- [ ] Typing a hidden word (without accents on a Spanish song) turns it green and adds the level's points
+- [x] Each difficulty: number of blanks matches the song screen's summary
+- [x] Typing a hidden word (without accents on a Spanish song) turns it green and adds the level's points
 - [x] With a word still open, the song pauses at the end of its line and continues by itself once it's answered; Enter on empty skips it (revealed, streak reset)
-- [ ] A wrong guess shakes the box red and costs a try; after 3, the word is revealed and the song continues; a word right on try 2 scores half
-- [ ] The next line's text never appears before the song reaches it
-- [ ] Pausing hides the lyrics and blocks typing
-- [ ] Results: score, accuracy, best streak and guess list match what happened
-- [ ] Play again, Try harder and Pick another song work
-- [ ] Quit mid-song returns to the song screen without results
+- [x] A wrong guess shakes the box red and costs a try; after 3, the word is revealed and the song continues; a word right on try 2 scores half
+- [x] The next line's text never appears before the song reaches it
+- [x] Pausing hides the lyrics and blocks typing
+- [x] Results: score, accuracy, best streak and guess list match what happened
+- [x] Play again, Try harder and Pick another song work
+- [x] Quit mid-song returns to the song screen without results
 
 ## Change after third play-test (2026-10-03): stricter matching, only real words hidden
 - [x] Matching forgives only case, accents/ñ and apostrophes ("dont" = "don't"); any other symbol, digit or inner space makes a guess wrong ("know!" ≠ "know").
 - [x] Hidden words must be real words: checked server-side against MIT word lists (~275k English, ~636k Spanish), plus Spanish verb + attached pronoun ("hacerte", "mírala", "decírselo": base must end in -r/-ndo or the word be accented) and English dropped g ("fallin"). Excludes sounds ("doo-dooo", "eehh", "oooh"), names ("Rosetta", "Barcelona"), interjections ("whoa", "yeah"), contractions, and non-Latin scripts.
 - [x] Blanks are now picked on the server (`/api/lyrics/[trackId]` returns `blanks` per level) so the 11 MB dictionaries never reach the browser.
 - [x] On 551 cached songs: 97% of Medium blanks kept, no song left without blanks. 36 rule checks pass.
-- [ ] Re-test on a real account: symbols make a guess wrong, "dont" accepted, no sounds/names hidden.
+- [x] Re-test on a real account: symbols make a guess wrong, "dont" accepted, no sounds/names hidden. (Confirmed by the user, 2026-10-03.)
