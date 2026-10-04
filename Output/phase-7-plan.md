@@ -30,6 +30,16 @@ Order: the saved lists first (the library cards and buttons need them), then the
 - Done 2026-10-04: `CardsClient` (cards page), `PlaylistClient` (one list's page), shared `TrackList` rows and `useLyricsCheck` (ready for search in step 4). `LibraryClient` removed. Playlist covers come with the list Spotify already sends. `source=favorites` and `source=later` read the saved lists.
 - Checked on a throwaway preview with made-up data (deleted): six cards per row at desktop width in the right order, counts ("1 song"), song links keep `?from=` so "Back to library" returns to the list, greyed songs not clickable, a still-checking song turns playable when its check returns, empty Favorites shows its hint, no console errors. Lint and build pass.
 
+### 2b. Side panel for Favorites and Play later (spec change, 2026-10-04)
+- [x] Cards: only Spotify lists (Liked Songs, then playlists in Spotify's order). Favorites and Play later leave the grid.
+- [x] `SavedPanel` on the right of the cards page and playlist pages: tinted, "Saved in Lyrics Game · Not on Spotify", two sections with counts and their songs (cover, title, artist, opening the song screen with `?from=favorites` / `later`). Section titles open the full pages (`?source=favorites` / `later`), kept for search and filters.
+- [x] Hide button → a slim "Saved" tab at the edge. Remembered in the browser (local storage, safely: a blocked or private window just shows the panel).
+- [x] A shared `SavedProvider` holds both lists for the library pages, so the panel and the buttons in step 3 stay in step.
+- [x] Narrow windows: the panel goes below the songs.
+- Done 2026-10-04: `SavedPanel`, `SavedProvider`, shared icons (`src/components/icons.tsx`). The sources list no longer includes Favorites/Play later; their full pages still work by address and from the panel's titles.
+- Order (user's question): kept as Spotify gives it (your library order, Liked Songs first). Spotify's "Recents" sort can't be read by apps.
+- Checked on a throwaway preview (deleted): panel on the right in its own colour with counts and songs, empty Play later hint, Hide → "Saved" tab, still hidden after a reload, the tab brings it back, on a phone-width window the panel drops below the songs with no sideways scroll. Lint and build pass.
+
 ## 3. Favorite and Play later buttons
 - [ ] Heart and bookmark on every playable song row (not on greyed or still-checking songs), and on the song screen next to "Play the song".
 - [ ] Clicking changes the button straight away and saves in the background. If saving fails, the button goes back and "Couldn't save. Try again." shows briefly.

@@ -3,8 +3,14 @@ import { getSession, hasActiveSession } from "@/lib/session";
 import { Header } from "@/components/Header";
 import { CardsClient } from "./CardsClient";
 import { PlaylistClient } from "./PlaylistClient";
+import { SavedPanel } from "./SavedPanel";
+import { SavedProvider } from "./SavedProvider";
+import styles from "./library.module.css";
 
-/** `/library`: every list as a card. `/library?source=…`: one list's songs. */
+/**
+ * `/library`: your Spotify lists as cards. `/library?source=…`: one list's
+ * songs. Both with Favorites and Play later in a side panel.
+ */
 export default async function LibraryPage({
   searchParams,
 }: {
@@ -20,7 +26,12 @@ export default async function LibraryPage({
   return (
     <>
       <Header />
-      {source ? <PlaylistClient key={source} source={source} /> : <CardsClient />}
+      <SavedProvider>
+        <div className={styles.layout}>
+          {source ? <PlaylistClient key={source} source={source} /> : <CardsClient />}
+          <SavedPanel />
+        </div>
+      </SavedProvider>
     </>
   );
 }

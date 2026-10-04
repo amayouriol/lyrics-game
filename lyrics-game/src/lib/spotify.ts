@@ -150,11 +150,11 @@ export async function startPlayback(
 }
 
 export interface Source {
-  /** A playlist id, or "liked", "favorites" or "later". */
+  /** A playlist id, or "liked". */
   id: string;
   name: string;
   count: number;
-  kind: "liked" | "favorites" | "later" | "playlist";
+  kind: "liked" | "playlist";
   cover: string | null;
 }
 

@@ -28,7 +28,8 @@ Same as the main spec: a single user (you), using your own Spotify Premium accou
 
 ### The playlists page
 1. "Library" (from the header or "Pick a song" on home) opens a grid of cards. Each card shows a cover, a name and a song count ("179 songs").
-2. The first three cards are **Liked Songs**, **Favorites** and **Play later**, then your playlists in Spotify's order. Favorites and Play later get simple tiles (a heart, a bookmark) instead of a cover.
+2. **Liked Songs** comes first, then your playlists in the order Spotify gives apps (your library's own order). If your Spotify app sorts by "Recents", the order will differ: Spotify doesn't let apps read that sort. Only Spotify lists are cards. Favorites and Play later live in the side panel (below), so they're never mistaken for Spotify playlists.
+2b. **The side panel:** on the right of every library page, a tinted panel titled "Saved in Lyrics Game" (with "Not on Spotify" underneath). It has two sections, **Favorites** and **Play later**, each with its count and its songs listed (cover, title, artist; click to open the song). Each section's title opens its full page, with the same search and filters as a playlist. A button hides the panel down to a small "Saved" tab at the edge, and the app remembers whether you hid it. On narrow windows, the panel goes below the songs. *(Changed 2026-10-04 at the user's request: Favorites and Play later were cards in the grid, which made them look like Spotify playlists.)*
 3. A short note under the grid explains why playlists you only follow aren't there, as now.
 4. A **search box** at the top searches your whole library (see Search).
 
@@ -57,7 +58,7 @@ Same as the main spec: a single user (you), using your own Spotify Premium accou
 16. Clicking the heart adds the song to **Favorites**, and the heart fills in. Clicking again removes it. The bookmark works the same for **Play later**. Both buttons also appear on the song screen.
 17. Only playable songs get the buttons.
 18. **Favorites** stay until you remove them. **Play later** songs leave that list by themselves once you finish them (when they reach the results screen). Quitting mid-song keeps them on the list.
-19. Both lists show newest first, and open like any other playlist card, with the same search and filters.
+19. Both lists show newest first, in the side panel and on their full pages (opened from the panel's section titles), which have the same search and filters as a playlist.
 20. **On the home page:** two sections, **Play later** and **Favorites**, up to 5 songs each, newest first, each with a Play button (Medium, or the level you last played it at) and a "See all" link to the list in the library. A section with no songs is hidden.
 21. Your Favorites and Play later lists are kept with your progress: still there after logging out, and on another browser.
 
@@ -70,16 +71,17 @@ Same as the main spec: a single user (you), using your own Spotify Premium accou
 - **Privacy:** your Favorites and Play later are kept with your progress, never sent to Spotify or the lyrics service.
 
 ## Success
-- The library opens on cards. Liked Songs, Favorites and Play later come first, and every playlist shows its song count.
+- The library opens on cards: Liked Songs first, then your playlists, each with its song count. Favorites and Play later show in the side panel, not as cards. Hiding the panel sticks after a reload.
 - Open a playlist: songs without lyrics are hidden until you switch off "Only playable".
 - Search "hawaii" inside Liked Songs finds the Bad Bunny song. On the playlists page, the same search finds it once, even if it's in several playlists.
 - Spanish + Not played shows only Spanish songs you've never finished. Played shows only songs you have.
 - At least some songs get a genre, and picking one narrows the list. Songs without a genre still appear under Any.
-- Favorite a song and add another to Play later. Both appear in their library lists and on home. Finish the Play later song: it leaves the list. Remove the Favorite: it leaves too.
+- Favorite a song and add another to Play later. Both appear in the side panel and on home. Finish the Play later song: it leaves the list. Remove the Favorite: it leaves too.
 - Log out and back in: Favorites and Play later are still there.
 
 ## Scope decisions made in this pass
-- **Cards** for the playlists page, with Liked Songs, Favorites and Play later first.
+- **Cards** for the playlists page, Liked Songs first, then Spotify's order.
+- **Favorites and Play later in a side panel** on the right, visibly "Saved in Lyrics Game", hideable (user's request after seeing the first version, 2026-10-04).
 - **Buttons on every playable song row and on the song screen.** Play later empties itself as you finish songs; Favorites only change when you change them.
 - **Filters as chips**, "Only playable" on by default, all reset per playlist.
 - **Both lists on home**, hidden when empty.

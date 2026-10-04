@@ -14,6 +14,9 @@ import { TrackList } from "./TrackList";
 import { useLyricsCheck } from "./useLyricsCheck";
 import styles from "./library.module.css";
 
+/** The app's own lists, which aren't among Spotify's sources. */
+const SAVED_NAMES: Record<string, string> = { favorites: "Favorites", later: "Play later" };
+
 const EMPTY: Record<string, string> = {
   favorites: "No favorites yet. Use the heart on any song to keep it here.",
   later: "Nothing saved for later. Use the bookmark on any song to keep it here.",
@@ -73,7 +76,7 @@ export function PlaylistClient({ source }: { source: string }) {
       </Link>
 
       <div className={styles.heading}>
-        <h1>{info?.name ?? (sources ? "Playlist" : "")}</h1>
+        <h1>{SAVED_NAMES[source] ?? info?.name ?? (sources ? "Playlist" : "")}</h1>
         <p>
           {count !== undefined && `${count} ${count === 1 ? "song" : "songs"} · `}
           Pick a song. Anything without synced lyrics stays greyed out.

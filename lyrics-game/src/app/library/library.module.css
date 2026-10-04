@@ -1,12 +1,22 @@
+/* The library page beside the Saved panel; the panel drops below on narrow windows. */
+.layout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0 32px;
+  max-width: 1440px;
+  margin: 0 auto;
+  width: 100%;
+  padding-right: clamp(20px, 3vw, 48px);
+}
+
 .page {
-  flex: 1;
+  flex: 999 1 560px;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 24px;
   padding: 40px clamp(20px, 5vw, 72px) 72px;
-  max-width: 1260px;
-  margin: 0 auto;
-  width: 100%;
 }
 
 .back {
@@ -60,16 +70,6 @@
 .tile_liked {
   background: linear-gradient(135deg, var(--primary-400), var(--tertiary-400));
   color: var(--white);
-}
-
-.tile_favorites {
-  background: var(--tertiary-100);
-  color: var(--tertiary-600);
-}
-
-.tile_later {
-  background: var(--secondary-100);
-  color: var(--secondary-700);
 }
 
 .tile_playlist {
@@ -256,4 +256,153 @@
   font: 400 13px var(--font-mono);
   color: var(--grey-500);
   text-align: right;
+}
+
+/* Saved in Lyrics Game: Favorites and Play later, the app's own lists. */
+.panel {
+  flex: 1 1 280px;
+  max-width: 340px;
+  position: sticky;
+  top: 96px;
+  margin: 40px 0;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  border-radius: 16px;
+  background: var(--quaternary-100);
+}
+
+.panelHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.panelHead h2 {
+  margin: 0;
+  font: 600 17px/1.3 var(--font-sans);
+  color: var(--black);
+}
+
+.panelHead p {
+  margin: 2px 0 0;
+  font: 400 13px var(--font-sans);
+  color: var(--grey-500);
+}
+
+.panelSection {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.panelTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  margin: 0 -8px;
+  border-radius: 8px;
+  font: 600 15px var(--font-sans);
+  color: var(--black);
+  text-decoration: none;
+}
+
+.panelTitle:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--black);
+}
+
+.panelTitle svg,
+.panelTab svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+}
+
+.panelTitle .count {
+  margin-left: auto;
+}
+
+.panelHint {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  font: 400 13px/1.5 var(--font-sans);
+  color: var(--grey-500);
+}
+
+.panelHint p {
+  margin: 0;
+}
+
+.panelSongs {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.panelSong {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 8px;
+  margin: 0 -8px;
+  border-radius: 8px;
+  color: inherit;
+  text-decoration: none;
+  min-width: 0;
+}
+
+.panelSong:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: inherit;
+}
+
+.panelCover {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.06) center / cover no-repeat;
+}
+
+.panelSongTitle {
+  font: 600 14px/1.4 var(--font-sans);
+  color: var(--black);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The panel when hidden: a small tab at the edge. */
+.panelTab {
+  position: fixed;
+  right: 0;
+  top: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 8px;
+  border: 0;
+  border-radius: 12px 0 0 12px;
+  background: var(--quaternary-100);
+  color: var(--black);
+  font: 600 13px var(--font-sans);
+  cursor: pointer;
+  z-index: 4;
+}
+
+.panelTab:hover {
+  background: var(--quaternary-200, var(--quaternary-100));
 }

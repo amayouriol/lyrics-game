@@ -3,34 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { NoteIcon } from "@/components/icons";
 import type { Source } from "@/lib/spotify";
 import { fetchJson, playlistHref, type KeyedResult, type LoadState } from "./libraryData";
 import styles from "./library.module.css";
 
-/** Liked Songs, Favorites and Play later get a tile instead of a cover. */
-function Tile({ kind }: { kind: Source["kind"] }) {
-  if (kind === "favorites") {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 20.5s-7.5-4.6-7.5-10.1A4.4 4.4 0 0 1 12 7.6a4.4 4.4 0 0 1 7.5 2.8c0 5.5-7.5 10.1-7.5 10.1z" />
-      </svg>
-    );
-  }
-  if (kind === "later") {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M7 3.5h10a1 1 0 0 1 1 1v16l-6-4-6 4v-16a1 1 0 0 1 1-1z" />
-      </svg>
-    );
-  }
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M9 18.5a2.5 2.5 0 1 1-2.5-2.5H9V5l11-2v13a2.5 2.5 0 1 1-2.5-2.5H20" />
-    </svg>
-  );
-}
-
-/** The library's first page: every list as a card. */
+/** The library's first page: your Spotify lists as cards. */
 export function CardsClient() {
   const router = useRouter();
   const [reloadKey, setReloadKey] = useState(0);
@@ -86,7 +64,7 @@ export function CardsClient() {
                   className={`${styles.cardCover} ${source.cover ? "" : styles[`tile_${source.kind}`]}`}
                   style={source.cover ? { backgroundImage: `url(${source.cover})` } : undefined}
                 >
-                  {!source.cover && <Tile kind={source.kind} />}
+                  {!source.cover && <NoteIcon />}
                 </div>
                 <span className={styles.cardName}>{source.name}</span>
                 <span className={styles.cardCount}>
