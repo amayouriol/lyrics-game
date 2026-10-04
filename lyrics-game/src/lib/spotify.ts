@@ -89,18 +89,30 @@ export async function refreshAccessToken(refreshToken: string): Promise<TokenRes
 const MAX_RETRY_AFTER_S = 5;
 const RATE_LIMIT_RETRIES = 2;
 
+/**
+ * Until when Spotify told us to stop (epoch ms). Calling it again before
+ * then only extends the wait, so requests fail straight away instead.
+ */
+let blockedUntil = 0;
+
 async function spotifyGet(path: string, accessToken: string) {
   for (let attempt = 0; ; attempt++) {
+    if (Date.now() < blockedUntil) {
+      throw new SpotifyApiError(429, `Spotify cool-down for ${path}`, blockedUntil);
+    }
     const res = await fetch(`${API_URL}${path}`, {
       headers: { Authorization: `Bearer ${accessToken}` },
       cache: "no-store",
     });
-    if (res.status === 429 && attempt < RATE_LIMIT_RETRIES) {
+    if (res.status === 429) {
       const wait = Number(res.headers.get("retry-after") ?? "1");
-      if (wait <= MAX_RETRY_AFTER_S) {
+      console.warn(`[spotify] 429 for ${path}: retry after ${wait}s`);
+      if (wait <= MAX_RETRY_AFTER_S && attempt < RATE_LIMIT_RETRIES) {
         await new Promise((resolve) => setTimeout(resolve, wait * 1000 + 250));
         continue;
       }
+      blockedUntil = Math.max(blockedUntil, Date.now() + wait * 1000);
+      throw new SpotifyApiError(429, `Spotify API error 429 for ${path}`, blockedUntil);
     }
     return readSpotifyResponse(res, path);
   }
@@ -122,7 +134,9 @@ async function readSpotifyResponse(res: Response, path: string) {
 export class SpotifyApiError extends Error {
   constructor(
     readonly status: number,
-    message: string
+    message: string,
+    /** For 429s: when Spotify said requests may resume (epoch ms). */
+    readonly retryAt?: number
   ) {
     super(message);
   }

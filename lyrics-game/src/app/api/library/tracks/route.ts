@@ -39,7 +39,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "session_expired" }, { status: 401 });
     }
     if (error instanceof SpotifyApiError && error.rateLimited) {
-      return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+      return NextResponse.json(
+        { error: "rate_limited", retryAt: error.retryAt ?? null },
+        { status: 429 }
+      );
     }
     return NextResponse.json({ error: "library_unavailable" }, { status: 502 });
   }

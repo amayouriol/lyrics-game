@@ -33,7 +33,7 @@ export function useWholeLibrary() {
       }
       setResult(
         r.status === "error"
-          ? { key: reloadKey, status: "error", rateLimited: r.rateLimited }
+          ? { key: reloadKey, status: "error", rateLimited: r.rateLimited, retryAt: r.retryAt }
           : { key: reloadKey, status: "ready", data: r.data }
       );
     });
@@ -47,6 +47,7 @@ export function useWholeLibrary() {
     state,
     library: state === "ready" ? result!.data! : null,
     rateLimited: Boolean(result?.rateLimited),
+    retryAt: result?.retryAt,
     reload: () => setReloadKey((k) => k + 1),
   };
 }

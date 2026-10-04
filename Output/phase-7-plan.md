@@ -90,6 +90,11 @@ Order: the saved lists first (the library cards and buttons need them), then the
 - [x] When it still refuses: "Spotify asked us to slow down. Try again in a minute." instead of "Spotify didn't answer.", on the cards, playlist pages and search column.
 - Not checked on a real account yet: needs Spotify to stop limiting first (usually within a minute or so).
 
+### 5d. Still rate-limited after 5c (2026-10-04)
+- [x] Every library request failed within half a second: Spotify was asking for a wait longer than the 5 s the app waits out, and each reload or Retry asked again (which can stretch the wait).
+- [x] Spotify's requested wait is now logged, and respected: until it's over, the app doesn't call Spotify at all and the page says "Try again after 22:40" (the time Spotify gave).
+- [ ] Find out how long Spotify is asking for, and whether the library loads once it's over.
+
 ## 6. Home sections (Phase 6 home page)
 - [x] `GET /api/progress` also returns the two saved lists (first 5 each) and, per song, the level you last finished it at.
 - [x] **Play later** and **Favorites** sections between the stats and Recently played, each hidden when empty: cover, title, artist, a **Play** button (your last level for that song, else Medium) and "See all" to its library page.
