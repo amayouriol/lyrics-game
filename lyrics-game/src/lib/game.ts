@@ -52,6 +52,9 @@ export function isMatch(guess: string, answer: string): boolean {
 /** Wrong tries allowed per word; the next wrong one after this is a miss. */
 export const MAX_TRIES = 3;
 
+/** A hidden word isn't hidden again until this many lines have passed. */
+export const SPACING_LINES = 8;
+
 /**
  * A guess that's already wrong without pressing Enter: as long as the word
  * (or longer) and not a match. Counts as a try on its own.
@@ -164,21 +167,32 @@ export interface Blank {
 /**
  * The hidden words for a song at a level. Deterministic, so replaying a
  * song at the same level hides the same words and scores compare fairly.
+ * A word hidden on one line isn't hidden again within the next
+ * SPACING_LINES lines (choruses would otherwise repeat the same blank);
+ * the next-longest word on the line is hidden instead, or none.
  */
 export function pickBlanks(lines: TimedLine[], level: Difficulty, isWord: IsWord): Blank[] {
   const blanks: Blank[] = [];
+  /** Normalized word → the last line it was hidden on. */
+  const lastHidden = new Map<string, number>();
   lines.forEach((line, li) => {
     const count = level === "hard" ? 2 : level === "medium" ? 1 : li % 2 === 0 ? 1 : 0;
     if (count === 0) return;
+    const picked: { core: string; wi: number }[] = [];
     tokenize(line.text)
-      .map((token, wi) => ({ token, wi }))
-      .filter(({ token }) => token.core && isEligible(token.core, isWord))
-      .sort((a, b) => normalize(b.token.core).length - normalize(a.token.core).length || a.wi - b.wi)
-      .slice(0, count)
+      .map((token, wi) => ({ core: token.core, wi }))
+      .filter(({ core }) => core && isEligible(core, isWord))
+      .sort((a, b) => normalize(b.core).length - normalize(a.core).length || a.wi - b.wi)
+      .forEach((candidate) => {
+        const n = normalize(candidate.core);
+        const last = lastHidden.get(n);
+        if (picked.length >= count || (last !== undefined && li - last <= SPACING_LINES)) return;
+        picked.push(candidate);
+        lastHidden.set(n, li);
+      });
+    picked
       .sort((a, b) => a.wi - b.wi)
-      .forEach(({ token, wi }) =>
-        blanks.push({ id: `${li}-${wi}`, line: li, word: wi, answer: token.core })
-      );
+      .forEach(({ core, wi }) => blanks.push({ id: `${li}-${wi}`, line: li, word: wi, answer: core }));
   });
   return blanks;
 }

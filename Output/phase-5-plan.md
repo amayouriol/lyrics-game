@@ -5,11 +5,12 @@ Derived from: Output/phase-5-spec.md. Replaces plan.md's original Phase 5 sectio
 Order: the rule change first (pure and easy to check), then the countdown (builds on the existing wait), then the motion (visual only), then the v1 sweep, which retests everything together.
 
 ## 1. Spaced-out hidden words (`src/lib/game.ts`)
-- [ ] `pickBlanks`: remember the last line each word (by `normalize`, so "Corazón" = "corazon") was hidden on. A candidate hidden fewer than 8 lines earlier is skipped. The next-longest eligible word is used instead, or no blank if none is left. Also on Hard: a line's two blanks are never the same word.
-- [ ] `SPACING_LINES = 8` as a named constant next to `MAX_TRIES`.
-- [ ] Still deterministic. Picking runs on the server per request (`/api/lyrics/[trackId]`) and isn't cached, so the song screen and play screen pick up the change together with nothing to clear.
-- [ ] Rule checks (throwaway script, as in Phase 4): a repeated chorus word comes back only after 8 lines; accent/capital variants count as one word; a line whose only word is spaced out gets no blank; Hard never doubles a word; the old checks still pass.
-- [ ] On the cached songs: how many Medium blanks remain, and whether any song now has no blanks at a level (that level shows "No words to guess at this level.", per the spec).
+- [x] `pickBlanks`: remember the last line each word (by `normalize`, so "Corazón" = "corazon") was hidden on. A candidate hidden fewer than 8 lines earlier is skipped. The next-longest eligible word is used instead, or no blank if none is left. Also on Hard: a line's two blanks are never the same word.
+- [x] `SPACING_LINES = 8` as a named constant next to `MAX_TRIES`.
+- [x] Still deterministic. Picking runs on the server per request (`/api/lyrics/[trackId]`) and isn't cached, so the song screen and play screen pick up the change together with nothing to clear.
+- [x] Rule checks (throwaway script, as in Phase 4): a repeated chorus word comes back only after 8 lines; accent/capital variants count as one word; a line whose only word is spaced out gets no blank; Hard never doubles a word; the old checks still pass.
+- [x] On the cached songs: how many Medium blanks remain, and whether any song now has no blanks at a level (that level shows "No words to guess at this level.", per the spec).
+- Result (2026-10-03): 23 rule checks pass. On 771 cached songs, blanks kept: Easy 92%, Medium 88%, Hard 78%; no song left without blanks at any level. Most repetitive song ("Love Tonight", 21 lines): Medium went from 19 blanks of one word ("tonight") to 7 blanks of 3 words (tonight, need, love, with "tonight" back on line 9).
 
 ## 2. 15-second countdown (`play/PlayClient.tsx`, `LyricBlank`)
 - [ ] `WAIT_LIMIT_MS = 15_000`. When `held` turns true, record the start time. The countdown is worked out from the clock (`performance.now()`), not by counting ticks, so it stays right when the tab is in the background (browsers slow timers there).
