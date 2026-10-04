@@ -30,7 +30,7 @@ One person: you, using your own Spotify Premium account. Nothing today lets you 
 6. When the song ends, you see your final score and how well you did.
 
 ## Errors and safety
-- If a song has no synced lyrics available on Musixmatch, it shows up in your list but disabled, with a note (e.g. "lyrics not available"), so you know why you can't play it.
+- If a song has no synced lyrics available (on LRCLIB, which replaced Musixmatch in Phase 2), it shows up in your list but disabled, with a note (e.g. "lyrics not available"), so you know why you can't play it.
 - If Spotify or the lyrics service fails momentarily, the app shows a clear message instead of freezing or going blank.
 - Your Spotify credentials and the lyrics-service connection are handled privately; no one but you can log in to this build.
 - The app never shows a song's full lyrics at once — it only reveals words as the song reaches them.

@@ -52,7 +52,7 @@ Confirmed scope for this phase: track rows are browse-only (no click behavior), 
 - [x] Log in once, close the app, reopen it later, and land straight on the library — no repeat login
 - [x] Library correctly lists Liked Songs and every playlist **you own** with accurate track counts (after the 2026-10-03 fix below)
 - [x] Denying consent shows the dedicated denied screen, not a blank/broken state
-- [ ] An expired session sends you back to login with the expiry banner, not a silent failure — not yet exercised against a real expiry
+- [x] An expired session sends you back to login with the expiry banner, not a silent failure — confirmed 2026-10-03 (Phase 5) by removing the app's access on Spotify
 - [x] A failed library load shows the error state with a working Retry
 
 ## Known issue — RESOLVED 2026-10-03 (confirmed working on a real account)

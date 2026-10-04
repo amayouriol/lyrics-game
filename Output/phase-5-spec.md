@@ -91,6 +91,7 @@ From the same interview (2026-10-03), for its own spec:
 - Favorite or pin songs, and save songs for later.
 
 ## V2 (optional)
+- **A sweep that follows the singer more closely** (user, 2026-10-03: "for now it's ok"). Two ways to get there: spread the sweep by syllables instead of letters (cheap, a bit closer), or use lyrics with a time for each word where a source has them (much closer, but few songs have them and the good sources are paid).
 - **Sing mode:** complete the lyrics with your voice instead of typing.
 - **Missed-words mini-game:** practise the words you keep missing (needs Phase 6's history).
 - Random word choice on each play, hint letters, or multiple-choice mode (from Phase 4).

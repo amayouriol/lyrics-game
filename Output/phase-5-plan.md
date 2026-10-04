@@ -37,17 +37,17 @@ Order: the rule change first (pure and easy to check), then the countdown (build
 
 ## 4. Close v1 (on your real account)
 Each of these, seen on screen, with a clear message (never a crash, blank or frozen screen):
-- [ ] **Session expired:** remove the app's access at Spotify (Account → Apps → Remove access), then use the app. It should go back to login with the expiry banner. Reconnect afterwards. *(Phase 1, never seen on a real expiry.)*
-- [ ] **Lyrics service down, list:** point `LRCLIB_GET_URL` (`src/lib/lyrics.ts`) at an unreachable host for the test only, and open a list with unchecked songs. The "couldn't be checked" notice with Retry, nothing greyed out. Revert afterwards. *(Phase 2.)*
-- [ ] **Lyrics service down, song screen:** same setup, open a song whose lyrics aren't cached. "The lyrics service is having a moment." with Retry. *(Phase 2.)*
-- [ ] **Browser blocks sound:** in Firefox (Settings → Privacy & Security → Autoplay → Block audio and video), open a play URL directly. "Start the music" appears and works. *(Phase 3, never seen in Chrome/Edge.)*
-- [ ] **The rest of spec.md's "Errors and safety":** a song without synced lyrics is greyed out with a note; Spotify failing shows a clear message (library Retry, play screen errors); only you can log in; the full lyrics are never shown at once.
-- [ ] Any problem found gets fixed here. If it points to a wrong rule, correct the spec first.
-- [ ] Update spec.md: Musixmatch → LRCLIB.
+- [x] **Session expired:** remove the app's access at Spotify (Account → Apps → Remove access), then use the app. It should go back to login with the expiry banner. Reconnect afterwards. *(Phase 1, never seen on a real expiry.)* Seen 2026-10-03.
+- [x] **Lyrics service down, list:** point `LRCLIB_GET_URL` (`src/lib/lyrics.ts`) at an unreachable host for the test only, and open a list with unchecked songs. The "couldn't be checked" notice with Retry, nothing greyed out. Revert afterwards. *(Phase 2.)* Seen 2026-10-03: notice with Retry, songs left unchecked and unclickable, nothing greyed out. (Simulated by also making the cache act empty, since every song in the library was already cached.)
+- [x] **Lyrics service down, song screen:** same setup, open a song whose lyrics aren't cached. "The lyrics service is having a moment." with Retry. *(Phase 2.)*
+- [x] **Browser blocks sound:** in Firefox (Settings → Privacy & Security → Autoplay → Block audio and video), open a play URL directly. "Start the music" appears and works. *(Phase 3, never seen in Chrome/Edge.)* Seen in Firefox 2026-10-03.
+- [x] **The rest of spec.md's "Errors and safety":** a song without synced lyrics is greyed out with a note; Spotify failing shows a clear message (library Retry, play screen errors); only you can log in; the full lyrics are never shown at once. All seen in earlier phases' acceptance checks (greyed-out songs: Phase 2; library Retry: Phase 1; play screen errors: Phase 3; next line never shown: Phase 4; login limited to your account by Spotify's Development Mode).
+- [x] Any problem found gets fixed here. If it points to a wrong rule, correct the spec first. None found.
+- [x] Update spec.md: Musixmatch → LRCLIB.
 
 ## 5. Checks
-- [ ] `npm run lint` and `npm run build` pass.
-- [ ] Rule checks pass (old + new).
+- [x] `npm run lint` and `npm run build` pass.
+- [x] Rule checks pass (old + new): 28.
 
 ## Acceptance check (tied to phase-5-spec.md's Success section)
 - [x] Leave a word open: the song pauses, the 15 s countdown runs and turns red at 5, at 0 the word is revealed, scores 0, resets the streak, and the song continues by itself
@@ -55,12 +55,12 @@ Each of these, seen on screen, with a clear message (never a crash, blank or fro
 - [x] On Hard, a line with two open words has one countdown
 - [ ] Spotify moving to another device during the countdown cancels it; after Resume, a fresh 15 s
 - [x] A short, repetitive song on Medium: no word hidden twice within 8 lines; the song screen's blank count matches the play screen
-- [ ] Lines glide up; the sweep reaches the end of each line about when the next one starts; typing is never interrupted
+- [x] Lines glide up; the sweep reaches the end of each line about when the next one starts; typing is never interrupted
 - [ ] With "reduce motion" on, nothing glides and the line is fully lit
-- [ ] All four untested error states seen on screen (section 4)
+- [x] All four untested error states seen on screen (section 4)
 - [ ] Phase 4's acceptance checks still pass (quick replay at each level)
 
 ## Before approving this plan
-- [ ] The order still makes sense to you
-- [ ] Nothing from the spec is missing
-- [ ] Nothing from Phase 6 (home page, history, library search/filters/pins) crept in
+- [x] The order still makes sense to you
+- [x] Nothing from the spec is missing
+- [x] Nothing from Phase 6 (home page, history, library search/filters/pins) crept in

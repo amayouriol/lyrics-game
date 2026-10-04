@@ -47,7 +47,7 @@ Confirmed scope: in-browser playback (Web Playback SDK, tested on the user's acc
 - [x] "Quit song" stops the music and returns to the song screen
 - [x] The song's end returns to the song screen
 - [x] Starting Spotify on another device mid-song pauses the game (counter frozen, big "Paused" message); Resume here continues from the same spot
-- [ ] Opening the play screen by URL (no click) shows "Start the music" if the browser blocks sound. *Not tested: Chrome and Edge allowed sound in every test, so this path hasn't been seen yet.*
+- [x] Opening the play screen by URL (no click) shows "Start the music" if the browser blocks sound. *Not tested: Chrome and Edge allowed sound in every test, so this path hasn't been seen yet.* Confirmed in Firefox with autoplay blocked, 2026-10-03 (Phase 5).
 
 ## Phase 3 status: done (2026-10-03)
 All acceptance items confirmed on a real account except the blocked-sound edge case, which couldn't be triggered.
