@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { describeTracks } from "@/lib/library";
+import { describeTracks, getSources, getTracks } from "@/lib/library";
 import { getSession, getValidAccessToken } from "@/lib/session";
-import { listSources, listTracks, SpotifySessionExpiredError, type Track } from "@/lib/spotify";
+import { SpotifyApiError, SpotifySessionExpiredError, type Track } from "@/lib/spotify";
 
 /** Playlists loaded at the same time; Spotify rate-limits bursts. */
-const PARALLEL = 3;
+const PARALLEL = 2;
 
 /**
  * Every song in Liked Songs and your playlists, each once (first place
@@ -14,16 +14,18 @@ const PARALLEL = 3;
 export async function GET() {
   try {
     const accessToken = await getValidAccessToken();
-    const sources = await listSources(accessToken);
+    const sources = await getSources(accessToken);
 
     const lists: (Track[] | null)[] = new Array(sources.length).fill(null);
+    let rateLimited = false;
     for (let i = 0; i < sources.length; i += PARALLEL) {
       await Promise.all(
         sources.slice(i, i + PARALLEL).map(async (source, j) => {
           try {
-            lists[i + j] = await listTracks(accessToken, source.id);
+            lists[i + j] = await getTracks(accessToken, source.id);
           } catch (error) {
             if (error instanceof SpotifySessionExpiredError) throw error;
+            if (error instanceof SpotifyApiError && error.rateLimited) rateLimited = true;
             console.warn(`[/api/library/all] couldn't load "${source.name}"`, error);
           }
         })
@@ -42,6 +44,7 @@ export async function GET() {
     return NextResponse.json({
       tracks: await describeTracks(tracks),
       failed: sources.filter((_, i) => lists[i] === null).map((s) => s.name),
+      rateLimited,
     });
   } catch (error) {
     console.error("[/api/library/all]", error);
@@ -49,6 +52,9 @@ export async function GET() {
       const session = await getSession();
       await session.destroy();
       return NextResponse.json({ error: "session_expired" }, { status: 401 });
+    }
+    if (error instanceof SpotifyApiError && error.rateLimited) {
+      return NextResponse.json({ error: "rate_limited" }, { status: 429 });
     }
     return NextResponse.json({ error: "library_unavailable" }, { status: 502 });
   }

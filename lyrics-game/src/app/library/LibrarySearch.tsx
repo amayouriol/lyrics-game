@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { LoadState } from "./libraryData";
-import { matchesSearch } from "./libraryData";
+import { matchesSearch, spotifyTrouble } from "./libraryData";
 import { DEFAULT_FILTERS, Filters, isDefault, NoFilterMatch, passesFilters } from "./Filters";
 import { SearchBox } from "./SearchBox";
 import { TrackList } from "./TrackList";
@@ -20,10 +20,12 @@ const SEARCH_DELAY_MS = 250;
 export function LibrarySearch({
   state,
   library,
+  rateLimited,
   reload,
 }: {
   state: LoadState;
   library: WholeLibrary | null;
+  rateLimited: boolean;
   reload: () => void;
 }) {
   const [search, setSearch] = useState("");
@@ -61,7 +63,10 @@ export function LibrarySearch({
 
       {active && state === "error" && (
         <div className={styles.notice}>
-          <span>Spotify didn&apos;t answer, so your library couldn&apos;t be searched.</span>
+          <span>
+            {spotifyTrouble(rateLimited).title} Your library couldn&apos;t be loaded to search
+            it.
+          </span>
           <button className="btn btn--secondary btn--sm" onClick={reload}>
             Retry
           </button>
@@ -70,7 +75,12 @@ export function LibrarySearch({
 
       {active && library && library.failed.length > 0 && (
         <div className={styles.notice}>
-          <span>Some playlists couldn&apos;t be searched: {library.failed.join(", ")}.</span>
+          <span>
+            {library.rateLimited && "Spotify asked us to slow down, so some playlists "}
+            {!library.rateLimited && "Some playlists "}
+            couldn&apos;t be searched: {library.failed.join(", ")}.
+            {library.rateLimited && " Try again in a minute."}
+          </span>
           <button className="btn btn--secondary btn--sm" onClick={reload}>
             Retry
           </button>

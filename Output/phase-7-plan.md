@@ -83,6 +83,13 @@ Order: the saved lists first (the library cards and buttons need them), then the
 - Done 2026-10-04: `useWholeLibrary`, `MainColumns.tsx` (Favorites / Play later columns, Song of the day), `CardsClient` rebuilt as the main page, `LibrarySearch` as the right column (results on search or any filter change), compact song rows. Song of the day is picked from today's date among playable, never-finished songs (sorted by id), so it holds all day; "Another one" moves along.
 - Checked on a throwaway preview (deleted): total "7 songs" after loading ("Counting your songs…" before), Favorites column with 2 songs, empty Play later hint, Song of the day + Another one, Spanish + Not played with no search lists only that song, "bunny" finds 2 (the one without lyrics hidden), no side panel on the main page, on a narrow window the search column drops below. Lint and build pass.
 
+### 5c. Fix: "Spotify didn't answer" on the main page (2026-10-04)
+- [x] **Cause** (server log): Spotify answered 429 "too many requests". The redesigned main page loads every playlist (30+, page by page) each time it opens, and the cards fetched the playlist list separately, so a few reloads got the app rate-limited, even for the playlist list itself.
+- [x] **Fix:** your playlist list and each playlist's songs are remembered on the server for 5 minutes (`getSources` / `getTracks` in `src/lib/library.ts`), shared by the cards, playlist pages and the whole-library load, and by requests made at the same moment. Failures aren't remembered. A change made in Spotify shows up within 5 minutes.
+- [x] When Spotify says to wait 5 s or less, the request waits and tries again (twice at most) instead of failing. Playlists load 2 at a time instead of 3.
+- [x] When it still refuses: "Spotify asked us to slow down. Try again in a minute." instead of "Spotify didn't answer.", on the cards, playlist pages and search column.
+- Not checked on a real account yet: needs Spotify to stop limiting first (usually within a minute or so).
+
 ## 6. Home sections (Phase 6 home page)
 - [ ] `GET /api/progress` also returns the two saved lists (first 5 each) and, per song, the level you last finished it at.
 - [ ] **Play later** and **Favorites** sections between the stats and Recently played, each hidden when empty: cover, title, artist, a **Play** button (your last level for that song, else Medium) and "See all" to its library page.

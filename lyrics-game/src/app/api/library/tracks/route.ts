@@ -1,8 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { describeTracks } from "@/lib/library";
+import { describeTracks, getTracks } from "@/lib/library";
 import { getSaved } from "@/lib/saved";
 import { getSession, getUserId, getValidAccessToken } from "@/lib/session";
-import { listTracks, SpotifySessionExpiredError, type Track } from "@/lib/spotify";
+import { SpotifyApiError, SpotifySessionExpiredError, type Track } from "@/lib/spotify";
 
 export async function GET(request: NextRequest) {
   const source = request.nextUrl.searchParams.get("source");
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
         })
       );
     } else {
-      tracks = await listTracks(await getValidAccessToken(), source);
+      tracks = await getTracks(await getValidAccessToken(), source);
     }
     return NextResponse.json({ tracks: await describeTracks(tracks) });
   } catch (error) {
@@ -37,6 +37,9 @@ export async function GET(request: NextRequest) {
       const session = await getSession();
       await session.destroy();
       return NextResponse.json({ error: "session_expired" }, { status: 401 });
+    }
+    if (error instanceof SpotifyApiError && error.rateLimited) {
+      return NextResponse.json({ error: "rate_limited" }, { status: 429 });
     }
     return NextResponse.json({ error: "library_unavailable" }, { status: 502 });
   }

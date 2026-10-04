@@ -5,7 +5,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { NoteIcon } from "@/components/icons";
 import type { Source } from "@/lib/spotify";
-import { fetchJson, playlistHref, type KeyedResult, type LoadState } from "./libraryData";
+import {
+  fetchJson,
+  playlistHref,
+  spotifyTrouble,
+  type KeyedResult,
+  type LoadState,
+} from "./libraryData";
 import { LibrarySearch } from "./LibrarySearch";
 import { SavedColumn, SongOfTheDay } from "./MainColumns";
 import { useWholeLibrary } from "./useWholeLibrary";
@@ -31,7 +37,7 @@ export function CardsClient() {
       }
       setResult(
         r.status === "error"
-          ? { key: reloadKey, status: "error" }
+          ? { key: reloadKey, status: "error", rateLimited: r.rateLimited }
           : { key: reloadKey, status: "ready", data: r.data.sources }
       );
     });
@@ -73,8 +79,11 @@ export function CardsClient() {
 
         {state === "error" && (
           <div className={styles.errorPanel}>
-            <h2>Spotify didn&apos;t answer.</h2>
-            <p>We couldn&apos;t load your playlists or liked songs. It&apos;s probably a blip.</p>
+            <h2>{spotifyTrouble(result?.rateLimited).title}</h2>
+            <p>
+              We couldn&apos;t load your playlists or liked songs.{" "}
+              {spotifyTrouble(result?.rateLimited).body}
+            </p>
             <button className="btn btn--secondary" onClick={() => setReloadKey((k) => k + 1)}>
               Retry
             </button>
@@ -107,7 +116,12 @@ export function CardsClient() {
         )}
       </main>
 
-      <LibrarySearch state={whole.state} library={whole.library} reload={whole.reload} />
+      <LibrarySearch
+        state={whole.state}
+        library={whole.library}
+        rateLimited={whole.rateLimited}
+        reload={whole.reload}
+      />
     </div>
   );
 }

@@ -9,6 +9,8 @@ export interface WholeLibrary {
   tracks: LibraryTrack[];
   /** Names of playlists that couldn't be loaded. */
   failed: string[];
+  /** Some of them because Spotify asked to slow down. */
+  rateLimited: boolean;
 }
 
 /**
@@ -31,7 +33,7 @@ export function useWholeLibrary() {
       }
       setResult(
         r.status === "error"
-          ? { key: reloadKey, status: "error" }
+          ? { key: reloadKey, status: "error", rateLimited: r.rateLimited }
           : { key: reloadKey, status: "ready", data: r.data }
       );
     });
@@ -44,6 +46,7 @@ export function useWholeLibrary() {
   return {
     state,
     library: state === "ready" ? result!.data! : null,
+    rateLimited: Boolean(result?.rateLimited),
     reload: () => setReloadKey((k) => k + 1),
   };
 }

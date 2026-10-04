@@ -2,17 +2,21 @@ import { normalize } from "@/lib/game";
 import type { LibraryTrack } from "@/lib/library";
 
 export type LoadState = "loading" | "ready" | "error";
-export type FetchResult<T> = { status: "ok"; data: T } | { status: "expired" } | { status: "error" };
+export type FetchResult<T> =
+  | { status: "ok"; data: T }
+  | { status: "expired" }
+  /** rateLimited: Spotify asked the app to slow down (try again in a minute). */
+  | { status: "error"; rateLimited: boolean };
 export type { LibraryTrack };
 
 export async function fetchJson<T>(url: string, init?: RequestInit): Promise<FetchResult<T>> {
   try {
     const res = await fetch(url, init);
     if (res.status === 401) return { status: "expired" };
-    if (!res.ok) return { status: "error" };
+    if (!res.ok) return { status: "error", rateLimited: res.status === 429 };
     return { status: "ok", data: (await res.json()) as T };
   } catch {
-    return { status: "error" };
+    return { status: "error", rateLimited: false };
   }
 }
 
@@ -22,6 +26,17 @@ export interface KeyedResult<T> {
   key: number;
   status: "ready" | "error";
   data?: T;
+  rateLimited?: boolean;
+}
+
+/** What to say when Spotify didn't give us something. */
+export function spotifyTrouble(rateLimited: boolean | undefined): { title: string; body: string } {
+  return rateLimited
+    ? {
+        title: "Spotify asked us to slow down.",
+        body: "Too many requests in a short time. Try again in a minute.",
+      }
+    : { title: "Spotify didn't answer.", body: "It's probably a blip." };
 }
 
 export function playlistHref(sourceId: string): string {

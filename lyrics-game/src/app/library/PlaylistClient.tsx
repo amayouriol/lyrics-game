@@ -7,6 +7,7 @@ import type { Source } from "@/lib/spotify";
 import {
   fetchJson,
   matchesSearch,
+  spotifyTrouble,
   type KeyedResult,
   type LibraryTrack,
   type LoadState,
@@ -58,7 +59,7 @@ export function PlaylistClient({ source }: { source: string }) {
       }
       setResult(
         r.status === "error"
-          ? { key: reloadKey, status: "error" }
+          ? { key: reloadKey, status: "error", rateLimited: r.rateLimited }
           : { key: reloadKey, status: "ready", data: r.data.tracks }
       );
     });
@@ -119,8 +120,10 @@ export function PlaylistClient({ source }: { source: string }) {
 
       {state === "error" && (
         <div className={styles.errorPanel}>
-          <h2>Spotify didn&apos;t answer.</h2>
-          <p>We couldn&apos;t load this list. It&apos;s probably a blip.</p>
+          <h2>{spotifyTrouble(result?.rateLimited).title}</h2>
+          <p>
+            We couldn&apos;t load this list. {spotifyTrouble(result?.rateLimited).body}
+          </p>
           <button className="btn btn--secondary" onClick={() => setReloadKey((k) => k + 1)}>
             Retry
           </button>

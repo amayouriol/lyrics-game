@@ -82,11 +82,31 @@ export async function refreshAccessToken(refreshToken: string): Promise<TokenRes
   return res.json();
 }
 
+/**
+ * When Spotify says "too many requests" it says how long to wait. Waits up
+ * to this long are waited out (twice at most) rather than failing.
+ */
+const MAX_RETRY_AFTER_S = 5;
+const RATE_LIMIT_RETRIES = 2;
+
 async function spotifyGet(path: string, accessToken: string) {
-  const res = await fetch(`${API_URL}${path}`, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-    cache: "no-store",
-  });
+  for (let attempt = 0; ; attempt++) {
+    const res = await fetch(`${API_URL}${path}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      cache: "no-store",
+    });
+    if (res.status === 429 && attempt < RATE_LIMIT_RETRIES) {
+      const wait = Number(res.headers.get("retry-after") ?? "1");
+      if (wait <= MAX_RETRY_AFTER_S) {
+        await new Promise((resolve) => setTimeout(resolve, wait * 1000 + 250));
+        continue;
+      }
+    }
+    return readSpotifyResponse(res, path);
+  }
+}
+
+async function readSpotifyResponse(res: Response, path: string) {
   if (!res.ok) {
     // A 401 here means the access token itself is invalid (e.g. revoked
     // from Spotify's end) even though it hadn't expired by our own clock.
@@ -105,6 +125,11 @@ export class SpotifyApiError extends Error {
     message: string
   ) {
     super(message);
+  }
+
+  /** Spotify asked the app to slow down (too many requests). */
+  get rateLimited(): boolean {
+    return this.status === 429;
   }
 }
 
