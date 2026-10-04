@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isDifficulty, MAX_TRIES } from "@/lib/game";
 import { saveGame } from "@/lib/games";
 import { summarizeGame, type Game, type GameSong, type WordResult } from "@/lib/progress";
+import { finishedSong } from "@/lib/saved";
 import { getSession, getUserId } from "@/lib/session";
 import { SpotifySessionExpiredError } from "@/lib/spotify";
 
@@ -71,6 +72,12 @@ export async function POST(request: Request) {
       ...summarizeGame(parsed.words, parsed.level),
     };
     const status = await saveGame(userId, game);
+    try {
+      await finishedSong(userId, game.song.trackId);
+    } catch (error) {
+      // The game is saved; the song just stays on Play later this time.
+      console.error("[/api/games] couldn't update Play later", error);
+    }
     return NextResponse.json({ status });
   } catch (error) {
     if (error instanceof SpotifySessionExpiredError) {

@@ -13,11 +13,13 @@ Order: the saved lists first (the library cards and buttons need them), then the
 - **Played** comes from your saved games (any finished game of that song).
 
 ## 1. Saved lists (`src/lib/saved.ts`, `api/saved`)
-- [ ] `saved.ts`: `.data/saved.json`, `{ [userId]: { favorites: SavedSong[], later: SavedSong[] } }`, same safe writing as `games.ts` (chained, temporary file then replace, failures reported, unreadable file never overwritten). A `SavedSong` is the track's id, title, artist, primary artist, album, length, cover, and when it was added.
-- [ ] `GET /api/saved`: both lists, newest first.
-- [ ] `POST /api/saved`: `{ list: "favorites" | "later", track, on: true | false }`. Adding twice or removing something not there is harmless.
-- [ ] `POST /api/games` (Phase 6): after saving a game, take that song off Play later. A failure there doesn't fail the save.
-- [ ] Rule checks: add, add again, remove, remove missing, newest first, finishing a song removes it from Play later only, unreadable file.
+- [x] `saved.ts`: `.data/saved.json`, `{ [userId]: { favorites: SavedSong[], later: SavedSong[] } }`, same safe writing as `games.ts` (chained, temporary file then replace, failures reported, unreadable file never overwritten). A `SavedSong` is the track's id, title, artist, primary artist, album, length, cover, and when it was added.
+- [x] `GET /api/saved`: both lists, newest first.
+- [x] `POST /api/saved`: `{ list: "favorites" | "later", track, on: true | false }`. Adding twice or removing something not there is harmless.
+- [x] `POST /api/games` (Phase 6): after saving a game, take that song off Play later. A failure there doesn't fail the save.
+- [x] Rule checks: add, add again, remove, remove missing, newest first, finishing a song removes it from Play later only, unreadable file.
+- Done 2026-10-04: `src/lib/saved.ts`, `GET`/`POST /api/saved`, and `POST /api/games` now takes a finished song off Play later. The safe file writing moved into a shared `src/lib/json-file.ts`, used by both `games.ts` and `saved.ts`. Changes run one at a time and only take effect once written, so two quick clicks can't lose one. Your existing `games.json` reads unchanged.
+- Rule checks: 12 new (saved lists) plus the 35 progress/store and 28 game checks, all pass. Without a login: bad body → 400, valid → 401, nothing written. Lint and build pass.
 
 ## 2. Playlists page and playlist pages (`src/app/library/…`)
 - [ ] `listSources` also returns each playlist's cover (Spotify sends playlist images with the list; no extra requests).
