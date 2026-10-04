@@ -42,11 +42,14 @@ Redefined: the original Phase 5 tasks (difficulty selector, song picker disabled
 ## Phase 7: Library — spec and plan written (Output/phase-7-spec.md, phase-7-plan.md)
 - [ ] Playlists page as cards (Liked Songs, Favorites, Play later first); each playlist on its own page
 - [ ] Search across the whole library and inside a playlist (title and artist)
-- [ ] Filters: only playable (on by default), language, genre (best effort), played / not played
+- [ ] Filters: only playable (on by default), language, played / not played (genre moved to V3)
 - [ ] Favorite and Play later buttons, lists in the library and sections on home
 
 ## Explicitly out of scope for this plan
 Anything from spec.md's V2 list stays out unless you decide otherwise first: sharing with other people or multi-account login, an unsynced-lyrics fallback mode, score history or leaderboards.
+
+## V3 (later than V2)
+- Genre filter (see Output/phase-7-spec.md, V3).
 
 ## Before approving this plan
 - [ ] Confirm the phase order still makes sense to you

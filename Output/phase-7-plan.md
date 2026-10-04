@@ -9,7 +9,7 @@ Order: the saved lists first (the library cards and buttons need them), then the
 - **Addresses stay the same:** `/library` becomes the cards page, and `/library?source=…` (already used by "Back to library" and "Pick another song") becomes a playlist's page. Every existing link keeps working and lands in the right place.
 - **Search across the library loads it on the server in one request:** every playlist's songs, each song once. A playlist that fails is reported, not fatal. Kept in the browser until you leave the page.
 - **Language is worked out on the server** from the cached lyrics, using the English and Spanish word lists the game already has: whichever language has more words found only in its own list. Remembered per song once worked out.
-- **Genres are fetched from Spotify one artist at a time** (the only way allowed since February 2026), a few at a time, and kept in `.data/genres.json`, so each artist is only asked once ever. If Spotify says "slow down", loading pauses and tries again a little later. If it keeps refusing, the Genre chip shows "Genres unavailable right now".
+- ~~Genres~~ (moved to V3): **were to be fetched from Spotify one artist at a time** (the only way allowed since February 2026), a few at a time, and kept in `.data/genres.json`, so each artist is only asked once ever. If Spotify says "slow down", loading pauses and tries again a little later. If it keeps refusing, the Genre chip shows "Genres unavailable right now".
 - **Played** comes from your saved games (any finished game of that song).
 
 ## 1. Saved lists (`src/lib/saved.ts`, `api/saved`)
@@ -65,7 +65,7 @@ Order: the saved lists first (the library cards and buttons need them), then the
 - [x] **Only playable** (on by default): hides songs marked "Lyrics not available". Songs still being checked stay visible until their check finishes.
 - [x] **Played:** Any / Played / Not played. The tracks responses include which songs you've finished (from your games).
 - [x] **Language:** Any / English / Spanish. `dictionary.ts` keeps the two word lists separately as well; `languageOf(lines)` in a new `src/lib/language.ts`. Tracks responses and the lyrics check include each available song's language. Rule checks on a few real songs of each language and a mixed one.
-- [ ] **Genre:** first, a quick check with your account that Spotify still returns genres for artists in Development Mode. **If it returns none, I stop and tell you before building the rest.** Then: tracks gain their main artist's id; `POST /api/library/genres` takes artist ids, answers what's already known and fetches a few unknown ones per call (3 at a time), pausing on "slow down"; the page keeps asking until everything visible is known ("Loading genres…"). Spotify's genres are grouped into broad ones by keywords (e.g. "latin", "reggaeton", "urbano latino" → Latin; "pop" → Pop; "hip hop", "rap", "trap" → Hip hop). A song can be in several. Genre chips only list genres present in the current list.
+- ~~**Genre**~~: moved to V3 (user's decision, 2026-10-04, after the rate-limit problem in 5c). The check page was never run and is deleted.
 - [x] Filters combine; the count reads "12 of 42 songs"; "No songs match these filters." with **Clear filters**.
 
 - Done 2026-10-04 (all but genre): `src/lib/language.ts` (the rule), the word lists now record which language each word is in (`dictionary.ts`), `src/lib/library.ts` adds each song's status, language and "played" to every list, search and lyrics check. `Filters.tsx` for the chips; search and filters combine; "Clear filters" keeps your search.
@@ -103,7 +103,7 @@ Order: the saved lists first (the library cards and buttons need them), then the
 - [ ] Inside a playlist, songs without lyrics are hidden until "Only playable" is switched off
 - [ ] "hawaii" inside Liked Songs finds the Bad Bunny song; on the cards page it finds it once
 - [ ] Spanish + Not played shows only Spanish songs never finished; Played shows only finished ones
-- [ ] Some songs get a genre and picking one narrows the list; songs without one still show under Any
+- ~~Genre~~: moved to V3
 - [ ] Favorite one song, Play later another: both show in their library lists and on home; finishing the Play later song removes it; removing the Favorite removes it
 - [ ] Log out and back in: both lists still there
 - [ ] Old links still work: "Back to library" from a song and "Pick another song" from results land on the right playlist
@@ -111,5 +111,5 @@ Order: the saved lists first (the library cards and buttons need them), then the
 
 ## Before approving this plan
 - [ ] The technical decisions above are fine with you
-- [ ] You're OK with the genre filter possibly being dropped if Spotify returns no genres (step 5 checks this first)
+- [x] Genre filter dropped from this phase (moved to V3)
 - [ ] Nothing from the spec is missing, and nothing from V2 crept in

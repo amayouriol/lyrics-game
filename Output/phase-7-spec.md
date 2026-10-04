@@ -14,7 +14,7 @@ Same as the main spec: a single user (you), using your own Spotify Premium accou
 ### This phase does
 - **Playlists first:** the library opens on a grid of playlist cards. Click one to see its songs on their own page.
 - **Search:** across your whole library from the playlists page, or within one playlist.
-- **Filters:** only playable (on by default), language, genre (best effort) and played / not played.
+- **Filters:** only playable (on by default), language and played / not played. *(Genre moved to V3, 2026-10-04.)*
 - **Favorites and Play later:** a button for each on every song, two lists in the library, and two sections on the home page.
 
 ### This phase does not do
@@ -55,7 +55,7 @@ E. The "Saved in Lyrics Game" side panel only shows on playlist pages; the main 
 12. Above the songs (in a playlist, or on search results), a row of chips:
     - **Only playable**, on by default: songs without synced lyrics are hidden. Switching it off shows them, greyed out as now.
     - **Language:** Any / English / Spanish. Worked out from each song's lyrics. A song whose lyrics haven't been checked yet, or that has none, only shows under Any.
-    - **Genre:** Any, plus the broad genres present in the list (e.g. Pop, Rock, Hip hop, Latin, Electronic, R&B, Indie, Country). Spotify gives genres per artist, so a song takes its main artist's genres and can be in more than one. Songs whose artist has no genre only show under Any. The first time, genres fill in gradually ("Loading genres…"). After that they're remembered.
+    - ~~**Genre**~~: moved to V3 (see below).
     - **Played:** Any / Played / Not played, from your saved games.
 13. Filters combine (e.g. Spanish + Not played + Latin). The count reads "12 of 42 songs".
 14. Filters reset to the defaults when you open another playlist.
@@ -71,7 +71,7 @@ E. The "Saved in Lyrics Game" side panel only shows on playlist pages; the main 
 
 ## Errors and safety
 - **Search can't load some playlists:** results come from the playlists that did load, with a notice "Some playlists couldn't be searched." and Retry.
-- **Genres can't be loaded** (Spotify refuses or limits the requests): the Genre chip shows "Genres unavailable right now" and is disabled. The other filters still work. Nothing is greyed out or hidden because of it.
+- ~~Genres can't be loaded~~: genre moved to V3.
 - **Saving a Favorite or Play later fails:** the button goes back to how it was and a short message says "Couldn't save. Try again."
 - **A saved song becomes unplayable** (lyrics gone, or removed from Spotify): it stays in the list, greyed out like any unavailable song. You can still remove it.
 - **Spotify session problems:** as in every phase, back to the login screen with the expiry banner.
@@ -82,7 +82,7 @@ E. The "Saved in Lyrics Game" side panel only shows on playlist pages; the main 
 - Open a playlist: songs without lyrics are hidden until you switch off "Only playable".
 - Search "hawaii" inside Liked Songs finds the Bad Bunny song. On the playlists page, the same search finds it once, even if it's in several playlists.
 - Spanish + Not played shows only Spanish songs you've never finished. Played shows only songs you have.
-- At least some songs get a genre, and picking one narrows the list. Songs without a genre still appear under Any.
+- ~~Genre filter~~: moved to V3.
 - Favorite a song and add another to Play later. Both appear in the side panel and on home. Finish the Play later song: it leaves the list. Remove the Favorite: it leaves too.
 - Log out and back in: Favorites and Play later are still there.
 
@@ -93,11 +93,14 @@ E. The "Saved in Lyrics Game" side panel only shows on playlist pages; the main 
 - **Filters as chips**, "Only playable" on by default, all reset per playlist.
 - **Both lists on home**, hidden when empty.
 - **Genre kept, best effort** (user's choice after hearing the cost): since February 2026, Spotify only lets this kind of app fetch artists one at a time, and many artists have no genre or very specific ones. They're grouped into broad genres and loaded gradually, and a song without one is never hidden under Any.
+- **Genre moved to V3** (user's decision, 2026-10-04): while building the library page, Spotify started answering "too many requests" just from loading your 30+ playlists. Genre would add one request per artist (hundreds the first time), so it was taken out of v1/V2 rather than risk the library breaking.
 - **Search is titles and artists only.** Searching lyrics would mean fetching lyrics for every song first.
 
 ## V2 (optional)
-- Genres from a better source than Spotify's artist genres.
 - Collaborative playlists (Spotify allows reading those).
 - Sorting, and remembering filters between visits.
 - Syncing Favorites with Spotify likes.
 - Everything from earlier V2 lists (sing mode, missed-words mini-game, …).
+
+## V3
+- **Genre filter**, ideally from a source other than Spotify's artist genres (one request per artist, often missing or oddly specific, and Spotify rate-limits this app quickly). Grouped into broad genres (Pop, Rock, Hip hop, Latin, Electronic…); songs without one only under Any.
