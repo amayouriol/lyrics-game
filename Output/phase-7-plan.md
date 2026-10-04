@@ -91,12 +91,14 @@ Order: the saved lists first (the library cards and buttons need them), then the
 - Not checked on a real account yet: needs Spotify to stop limiting first (usually within a minute or so).
 
 ## 6. Home sections (Phase 6 home page)
-- [ ] `GET /api/progress` also returns the two saved lists (first 5 each) and, per song, the level you last finished it at.
-- [ ] **Play later** and **Favorites** sections between the stats and Recently played, each hidden when empty: cover, title, artist, a **Play** button (your last level for that song, else Medium) and "See all" to its library page.
+- [x] `GET /api/progress` also returns the two saved lists (first 5 each) and, per song, the level you last finished it at.
+- [x] **Play later** and **Favorites** sections between the stats and Recently played, each hidden when empty: cover, title, artist, a **Play** button (your last level for that song, else Medium) and "See all" to its library page.
+- Done 2026-10-04: `/api/progress` also sends both lists (5 each, with the total) and each song's last finished level; `SavedSections` on home, Play later first, each hidden when empty; Play opens the play screen at that level (Medium if never played). Also shown before your first finished game, under the welcome, if you've saved songs. A problem reading the saved lists only hides these sections.
+- Checked on a throwaway preview (deleted): Play later with "See all 7" and two songs, the second's Play at Hard; empty Favorites hidden; first-time home shows the welcome plus Favorites. Lint and build pass.
 
 ## 7. Checks
-- [ ] `npm run lint` and `npm run build` pass.
-- [ ] Rule checks pass (old + new).
+- [x] `npm run lint` and `npm run build` pass.
+- [x] Rule checks pass (old + new).
 
 ## Acceptance check (tied to phase-7-spec.md's Success section)
 - [ ] The library opens on cards: Liked Songs, Favorites, Play later first; every playlist shows its song count

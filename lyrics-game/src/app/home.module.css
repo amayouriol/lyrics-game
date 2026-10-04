@@ -199,3 +199,31 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* Play later and Favorites on home. */
+.savedHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.savedHead h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.savedHead svg {
+  width: 22px;
+  height: 22px;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+}
+
+.seeAll {
+  font: 600 14px var(--font-sans);
+  color: var(--black);
+  white-space: nowrap;
+}

@@ -4,12 +4,18 @@ import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { StatBlock } from "@/components/StatBlock";
-import { DIFFICULTIES } from "@/lib/game";
+import { BookmarkIcon, HeartIcon } from "@/components/icons";
+import { DIFFICULTIES, type Difficulty } from "@/lib/game";
 import type { Game, MissedWord, OverallStats } from "@/lib/progress";
 import { playHref, songHref } from "./library/song/[trackId]/loadSong";
 import styles from "./home.module.css";
 
 type BriefGame = Omit<Game, "words">;
+
+interface SavedSection {
+  count: number;
+  songs: { id: string; title: string; artist: string; cover: string | null; level: Difficulty }[];
+}
 
 interface Progress {
   overall: OverallStats;
@@ -17,6 +23,7 @@ interface Progress {
   best: BriefGame[];
   missed: MissedWord[];
   unavailable: string[];
+  saved: { favorites: SavedSection; later: SavedSection };
 }
 
 type Loaded = { status: "ready"; progress: Progress; loadedAt: number } | { status: "error" };
@@ -107,6 +114,8 @@ export function HomeClient() {
         </div>
       )}
 
+      {state?.status === "ready" && firstTime && <SavedSections saved={state.progress.saved} />}
+
       {state?.status === "ready" && !firstTime && (
         <Sections progress={state.progress} now={state.loadedAt} />
       )}
@@ -146,6 +155,8 @@ function Sections({ progress, now }: { progress: Progress; now: number }) {
           hint="In a row, no misses"
         />
       </section>
+
+      <SavedSections saved={progress.saved} />
 
       <div className={styles.columns}>
         <section className={styles.section}>
@@ -221,5 +232,56 @@ function SongLink({ game, children }: { game: BriefGame; children: ReactNode }) 
         <span className={styles.meta}>{children}</span>
       </div>
     </Link>
+  );
+}
+
+const SAVED: { list: "later" | "favorites"; title: string }[] = [
+  { list: "later", title: "Play later" },
+  { list: "favorites", title: "Favorites" },
+];
+
+/** Play later and Favorites, each hidden when empty. Play starts at the level you last played. */
+function SavedSections({ saved }: { saved: Progress["saved"] }) {
+  const shown = SAVED.filter(({ list }) => saved[list].count > 0);
+  if (shown.length === 0) return null;
+  return (
+    <div className={styles.columns}>
+      {shown.map(({ list, title }) => (
+        <section key={list} className={styles.section}>
+          <div className={styles.savedHead}>
+            <h2>
+              {list === "favorites" ? <HeartIcon filled /> : <BookmarkIcon filled />}
+              {title}
+            </h2>
+            <Link href={`/library?source=${list}`} className={styles.seeAll}>
+              See all {saved[list].count}
+            </Link>
+          </div>
+          <div className={styles.rows}>
+            {saved[list].songs.map((song) => (
+              <div key={song.id} className={styles.row}>
+                <Link href={songHref(song.id, list)} className={styles.song}>
+                  <div
+                    className={styles.cover}
+                    style={song.cover ? { backgroundImage: `url(${song.cover})` } : undefined}
+                  />
+                  <div className={styles.songInfo}>
+                    <span className={styles.title}>{song.title}</span>
+                    <span className={styles.artist}>{song.artist}</span>
+                  </div>
+                </Link>
+                <Link
+                  href={playHref(song.id, list, song.level)}
+                  className="btn btn--secondary btn--sm"
+                  title={`Play on ${DIFFICULTIES[song.level].label}`}
+                >
+                  Play
+                </Link>
+              </div>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
   );
 }
