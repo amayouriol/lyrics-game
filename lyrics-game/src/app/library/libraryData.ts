@@ -1,3 +1,4 @@
+import { normalize } from "@/lib/game";
 import type { LyricsStatus } from "@/lib/lyrics";
 import type { Track } from "@/lib/spotify";
 
@@ -26,4 +27,10 @@ export interface KeyedResult<T> {
 
 export function playlistHref(sourceId: string): string {
   return `/library?source=${encodeURIComponent(sourceId)}`;
+}
+
+/** Whether a song's title or artist contains the search, ignoring capitals and accents. */
+export function matchesSearch(track: { title: string; artist: string }, search: string): boolean {
+  const s = normalize(search);
+  return !s || normalize(`${track.title} ${track.artist}`).includes(s);
 }

@@ -6,11 +6,13 @@ import { useRouter } from "next/navigation";
 import type { Source } from "@/lib/spotify";
 import {
   fetchJson,
+  matchesSearch,
   type KeyedResult,
   type LibraryTrack,
   type LoadState,
 } from "./libraryData";
 import { useSaved } from "./SavedProvider";
+import { SearchBox } from "./SearchBox";
 import { TrackList } from "./TrackList";
 import { useLyricsCheck } from "./useLyricsCheck";
 import styles from "./library.module.css";
@@ -78,6 +80,8 @@ export function PlaylistClient({ source }: { source: string }) {
   );
   const { statusOf, someUnchecked, retry } = useLyricsCheck(tracks, `${source}|${reloadKey}`);
 
+  const [search, setSearch] = useState("");
+  const shown = tracks?.filter((t) => matchesSearch(t, search)) ?? null;
   const count = tracks?.length ?? info?.count;
 
   return (
@@ -89,10 +93,17 @@ export function PlaylistClient({ source }: { source: string }) {
       <div className={styles.heading}>
         <h1>{SAVED_NAMES[source] ?? info?.name ?? (sources ? "Playlist" : "")}</h1>
         <p>
-          {count !== undefined && `${count} ${count === 1 ? "song" : "songs"} · `}
+          {count !== undefined &&
+            (shown && shown.length !== count
+              ? `${shown.length} of ${count} songs · `
+              : `${count} ${count === 1 ? "song" : "songs"} · `)}
           Pick a song. Anything without synced lyrics stays greyed out.
         </p>
       </div>
+
+      {tracks && tracks.length > 0 && (
+        <SearchBox value={search} onChange={setSearch} placeholder="Search this list" />
+      )}
 
       {state === "loading" && <div className={styles.hint}>Loading your songs…</div>}
 
@@ -119,9 +130,11 @@ export function PlaylistClient({ source }: { source: string }) {
         <div className={styles.hint}>{EMPTY[source] ?? "This playlist has no songs."}</div>
       )}
 
-      {tracks && tracks.length > 0 && (
-        <TrackList tracks={tracks} statusOf={statusOf} from={source} />
+      {shown && tracks!.length > 0 && shown.length === 0 && (
+        <div className={styles.hint}>No songs match “{search.trim()}”.</div>
       )}
+
+      {shown && shown.length > 0 && <TrackList tracks={shown} statusOf={statusOf} from={source} />}
     </main>
   );
 }

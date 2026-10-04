@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { NoteIcon } from "@/components/icons";
 import type { Source } from "@/lib/spotify";
 import { fetchJson, playlistHref, type KeyedResult, type LoadState } from "./libraryData";
+import { LibrarySearch } from "./LibrarySearch";
+import { SearchBox } from "./SearchBox";
 import styles from "./library.module.css";
 
 /** The library's first page: your Spotify lists as cards. */
@@ -35,6 +37,8 @@ export function CardsClient() {
 
   const state: LoadState = !result || result.key !== reloadKey ? "loading" : result.status;
   const sources = state === "ready" ? result!.data! : [];
+  const [search, setSearch] = useState("");
+  const searching = search.trim() !== "";
 
   return (
     <main className={styles.page}>
@@ -43,9 +47,15 @@ export function CardsClient() {
         <p>Pick a playlist, then a song.</p>
       </div>
 
-      {state === "loading" && <div className={styles.hint}>Loading your library…</div>}
+      <SearchBox value={search} onChange={setSearch} placeholder="Search your whole library" />
 
-      {state === "error" && (
+      <LibrarySearch search={search} />
+
+      {!searching && state === "loading" && (
+        <div className={styles.hint}>Loading your library…</div>
+      )}
+
+      {!searching && state === "error" && (
         <div className={styles.errorPanel}>
           <h2>Spotify didn&apos;t answer.</h2>
           <p>We couldn&apos;t load your playlists or liked songs. It&apos;s probably a blip.</p>
@@ -55,7 +65,7 @@ export function CardsClient() {
         </div>
       )}
 
-      {state === "ready" && (
+      {!searching && state === "ready" && (
         <>
           <div className={styles.cards}>
             {sources.map((source) => (

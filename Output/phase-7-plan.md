@@ -49,10 +49,12 @@ Order: the saved lists first (the library cards and buttons need them), then the
 - Checked on a throwaway preview with a made-up server (deleted): buttons only on playable songs, the heart fills and the panel updates before the save answers, both stay after it, a failed save goes back with "Couldn't save. Try again." for 3 s, removing a song on the Favorites page takes it off at once. The song screen's buttons weren't previewed (they need a real song); lint and build pass.
 
 ## 4. Search
-- [ ] Inside a playlist: a search box filtering title and artist as you type, ignoring capitals and accents (the game's `normalize`).
-- [ ] On the cards page: `GET /api/library/all`, every song from Liked Songs and your playlists, each once, plus which playlists failed. Loaded on the first keystroke ("Searching your whole library…"), then kept. The cards are replaced by matching songs while the box has text.
-- [ ] Search results get the lyrics check for the songs shown (not the whole library), and the same rows, buttons and filters as a playlist.
-- [ ] "No songs match “xyz”." and, if some playlists failed, "Some playlists couldn't be searched." with Retry.
+- [x] Inside a playlist: a search box filtering title and artist as you type, ignoring capitals and accents (the game's `normalize`).
+- [x] On the cards page: `GET /api/library/all`, every song from Liked Songs and your playlists, each once, plus which playlists failed. Loaded on the first keystroke ("Searching your whole library…"), then kept. The cards are replaced by matching songs while the box has text.
+- [x] Search results get the lyrics check for the songs shown (not the whole library), and the same rows, buttons and filters as a playlist.
+- [x] "No songs match “xyz”." and, if some playlists failed, "Some playlists couldn't be searched." with Retry.
+- Done 2026-10-04: `SearchBox`, `matchesSearch` (the game's `normalize`, so capitals, accents and apostrophes don't matter), search inside `PlaylistClient` ("1 of 4 songs"), `LibrarySearch` on the cards page with `GET /api/library/all` (3 playlists at a time, each song once, Liked Songs first, failed playlists named). The whole-library search waits 250 ms after typing before searching and checking lyrics, so it doesn't check every half-typed word. Search results link to the song screen without a playlist, so "Back to library" returns to the cards.
+- Checked on a throwaway preview with a made-up library (deleted): "hawaii" finds the Bad Bunny song inside a list, "xyz" shows the no-match line, "bad bunny" on the cards page shows "Searching your whole library…" then 3 songs and the failed-playlist notice, "dakiti" finds "Dákiti", a second search doesn't load the library again, clearing the box brings back the cards, lyrics are checked only for the songs found. Lint and build pass.
 
 ## 5. Filters (chips above the songs, reset per playlist)
 - [ ] **Only playable** (on by default): hides songs marked "Lyrics not available". Songs still being checked stay visible until their check finishes.

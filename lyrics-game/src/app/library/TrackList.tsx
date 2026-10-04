@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { LyricsStatus } from "@/lib/lyrics";
 import type { LibraryTrack } from "./libraryData";
+import { songHref } from "./song/[trackId]/loadSong";
 import { SaveButtons, songToSave } from "./SaveButtons";
 import styles from "./library.module.css";
 
@@ -16,8 +17,8 @@ export function TrackList({
 }: {
   tracks: LibraryTrack[];
   statusOf: (t: LibraryTrack) => LyricsStatus;
-  /** The list these songs came from, so "Back to library" returns to it. */
-  from: string;
+  /** The list these songs came from, so "Back to library" returns to it (null: the cards page). */
+  from: string | null;
 }) {
   return (
     <div className={styles.tracks}>
@@ -55,7 +56,7 @@ export function TrackList({
           return (
             <div key={key} className={`${styles.track} ${styles.trackAvailable}`}>
               <Link
-                href={`/library/song/${track.id}?from=${encodeURIComponent(from)}`}
+                href={songHref(track.id, from)}
                 className={styles.trackMain}
               >
                 {row}
