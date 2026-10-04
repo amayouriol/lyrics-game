@@ -72,6 +72,17 @@ Order: the saved lists first (the library cards and buttons need them), then the
 - Language rule, tried on the 1,119 cached songs: the language with more words found only in its own list, unknown with under 8 such words, a tie, or under 72% of words in either list (French and Portuguese songs score 38–72%, since "la" and "de" are Spanish words too). Result: 600 English, 456 Spanish, 63 unknown (mostly French/Portuguese, a few mixed like "Danza Kuduro"). A few French songs still pass as English or Spanish (e.g. GIMS 79%).
 - Checked on a throwaway preview (deleted): default hides the greyed song ("5 of 6 songs"), Spanish, Spanish + Not played, English + Played, English + Not played all correct, no match shows "No songs match these filters." and Clear filters. Lint and build pass.
 
+### 5b. Library main page redesign (spec change, 2026-10-04)
+- [x] `useWholeLibrary`: `/api/library/all` loads when the main page opens (not on the first search), shared by the total, the song of the day and the search column.
+- [x] Heading with the total ("Counting your songs…" until loaded).
+- [x] Three columns: Favorites, Play later (5 each, "See all"), Song of the day (playable, never finished; picked by the date so it holds all day; "Another one" moves to the next one; Play at Medium).
+- [x] Spotify playlist cards below the columns.
+- [x] Right column: search + filters + results; results also without a search once a filter is changed. Song rows there in a compact form (no number or length) to fit.
+- [x] Side panel only on playlist pages.
+- [x] Narrow windows: right column below.
+- Done 2026-10-04: `useWholeLibrary`, `MainColumns.tsx` (Favorites / Play later columns, Song of the day), `CardsClient` rebuilt as the main page, `LibrarySearch` as the right column (results on search or any filter change), compact song rows. Song of the day is picked from today's date among playable, never-finished songs (sorted by id), so it holds all day; "Another one" moves along.
+- Checked on a throwaway preview (deleted): total "7 songs" after loading ("Counting your songs…" before), Favorites column with 2 songs, empty Play later hint, Song of the day + Another one, Spanish + Not played with no search lists only that song, "bunny" finds 2 (the one without lyrics hidden), no side panel on the main page, on a narrow window the search column drops below. Lint and build pass.
+
 ## 6. Home sections (Phase 6 home page)
 - [ ] `GET /api/progress` also returns the two saved lists (first 5 each) and, per song, the level you last finished it at.
 - [ ] **Play later** and **Favorites** sections between the stats and Recently played, each hidden when empty: cover, title, artist, a **Play** button (your last level for that song, else Medium) and "See all" to its library page.

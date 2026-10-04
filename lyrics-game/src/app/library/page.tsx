@@ -8,8 +8,9 @@ import { SavedProvider } from "./SavedProvider";
 import styles from "./library.module.css";
 
 /**
- * `/library`: your Spotify lists as cards. `/library?source=…`: one list's
- * songs. Both with Favorites and Play later in a side panel.
+ * `/library`: the main page (Favorites, Play later, song of the day, your
+ * Spotify lists as cards, search on the right). `/library?source=…`: one
+ * list's songs, with Favorites and Play later in a side panel.
  */
 export default async function LibraryPage({
   searchParams,
@@ -27,10 +28,14 @@ export default async function LibraryPage({
     <>
       <Header />
       <SavedProvider>
-        <div className={styles.layout}>
-          {source ? <PlaylistClient key={source} source={source} /> : <CardsClient />}
-          <SavedPanel />
-        </div>
+        {source ? (
+          <div className={styles.layout}>
+            <PlaylistClient key={source} source={source} />
+            <SavedPanel />
+          </div>
+        ) : (
+          <CardsClient />
+        )}
       </SavedProvider>
     </>
   );

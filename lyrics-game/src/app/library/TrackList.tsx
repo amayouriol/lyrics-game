@@ -15,19 +15,22 @@ export function TrackList({
   tracks,
   statusOf,
   from,
+  compact = false,
 }: {
   tracks: LibraryTrack[];
   statusOf: (t: LibraryTrack) => LyricsStatus;
   /** The list these songs came from, so "Back to library" returns to it (null: the cards page). */
   from: string | null;
+  /** For a narrow column: no number, length or "Synced lyrics" tag. */
+  compact?: boolean;
 }) {
   return (
-    <div className={styles.tracks}>
+    <div className={`${styles.tracks} ${compact ? styles.tracksCompact : ""}`}>
       {tracks.map((track, index) => {
         const status = statusOf(track);
         const row = (
           <>
-            <span className={styles.trackN}>{index + 1}</span>
+            {!compact && <span className={styles.trackN}>{index + 1}</span>}
             <div
               className={styles.trackCover}
               style={
@@ -40,14 +43,14 @@ export function TrackList({
               <span className={styles.trackTitle}>{track.title}</span>
               <span className={styles.trackArtist}>{track.artist}</span>
             </div>
-            {status === "available" && (
+            {status === "available" && !compact && (
               <span className="chip chip--secondary chip--sm">Synced lyrics</span>
             )}
             {status === "unavailable" && (
               <span className={styles.unavailableNote}>Lyrics not available</span>
             )}
             {status === "unknown" && <span className={styles.checkingNote}>Checking…</span>}
-            <span className={styles.trackDur}>{track.duration}</span>
+            {!compact && <span className={styles.trackDur}>{track.duration}</span>}
           </>
         );
         // The same song can appear twice in a playlist.

@@ -13,6 +13,14 @@ export interface FilterState {
 
 export const DEFAULT_FILTERS: FilterState = { onlyPlayable: true, language: "any", played: "any" };
 
+export function isDefault(f: FilterState): boolean {
+  return (
+    f.onlyPlayable === DEFAULT_FILTERS.onlyPlayable &&
+    f.language === DEFAULT_FILTERS.language &&
+    f.played === DEFAULT_FILTERS.played
+  );
+}
+
 /**
  * Whether a song passes the filters. Songs still being checked stay until
  * their check says otherwise; a song with no known language only shows

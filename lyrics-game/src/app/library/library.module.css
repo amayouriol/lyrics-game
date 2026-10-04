@@ -572,3 +572,141 @@
   font: 600 13px var(--font-sans);
   color: var(--grey-500);
 }
+
+/* Song rows in a narrow column: cover, title and artist, then a note if any. */
+.tracksCompact .trackMain {
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  gap: 12px;
+}
+
+.tracksCompact .trackCover {
+  width: 40px;
+  height: 40px;
+}
+
+/* The main page: everything on the left, search and filters on the right. */
+.mainPage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0 32px;
+  max-width: 1500px;
+  margin: 0 auto;
+  width: 100%;
+  padding-right: clamp(20px, 3vw, 48px);
+}
+
+.total {
+  font-weight: 400;
+  color: var(--grey-500);
+}
+
+.sectionTitle {
+  margin: 16px 0 0;
+  font: 500 24px / 1.2 var(--font-sans);
+  letter-spacing: -0.4px;
+  color: var(--black);
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 16px;
+  border-radius: 16px;
+}
+
+.column_favorites {
+  background: var(--tertiary-100);
+}
+
+.column_later {
+  background: var(--quaternary-100);
+}
+
+.column_day {
+  background: var(--secondary-100);
+}
+
+.columnTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 600 15px var(--font-sans);
+  color: var(--black);
+  text-decoration: none;
+}
+
+a.columnTitle:hover {
+  color: var(--black);
+  text-decoration: underline;
+}
+
+.columnTitle svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+}
+
+.columnTitle .count {
+  margin-left: auto;
+}
+
+.seeAll {
+  font: 600 13px var(--font-sans);
+  color: var(--black);
+}
+
+.daySong {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: inherit;
+  text-decoration: none;
+  min-width: 0;
+}
+
+.dayCover {
+  width: 100%;
+  max-width: 160px;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.06) center / cover no-repeat;
+}
+
+.dayActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Search and filters for the whole library. */
+.searchColumn {
+  flex: 1 1 360px;
+  max-width: 460px;
+  position: sticky;
+  top: 96px;
+  margin: 40px 0;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 16px;
+  background: var(--grey-100);
+}
+
+.searchColumn .search {
+  max-width: none;
+}

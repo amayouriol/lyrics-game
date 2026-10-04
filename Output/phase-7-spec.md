@@ -26,7 +26,14 @@ Same as the main spec: a single user (you), using your own Spotify Premium accou
 
 ## Expected behavior
 
-### The playlists page
+### The library's main page *(redesigned 2026-10-04 at the user's request; replaces items 1–4 and 9–10)*
+A. The heading reads "Your library · 412 songs": every song in Liked Songs and your playlists, each counted once. The page shows straight away; the total appears once your whole library has loaded in the background ("Counting your songs…").
+B. Below it, three columns: **Favorites** and **Play later** (up to 5 songs each, newest first, with "See all" to the full list), and **Song of the day**: a random song from your library that has synced lyrics and you've never finished, the same all day and a new one tomorrow, with **Play** and **Another one**. If every song with lyrics has been played, it says so.
+C. Below the columns, **Your Spotify playlists** as cards (Liked Songs first, then Spotify's order), each opening its page.
+D. **On the right, search and filters for your whole library:** a search box with the filter chips under it, and the results below. Results show as soon as you type or change a filter (e.g. Spanish + Not played lists every such song in your library with no search typed). With an empty search and the filters at their defaults, it says "Search, or pick a filter, to browse your whole library." On narrow windows this column goes below the rest.
+E. The "Saved in Lyrics Game" side panel only shows on playlist pages; the main page has the Favorites and Play later columns instead.
+
+### The playlists page (original, superseded by the main page above)
 1. "Library" (from the header or "Pick a song" on home) opens a grid of cards. Each card shows a cover, a name and a song count ("179 songs").
 2. **Liked Songs** comes first, then your playlists in the order Spotify gives apps (your library's own order). If your Spotify app sorts by "Recents", the order will differ: Spotify doesn't let apps read that sort. Only Spotify lists are cards. Favorites and Play later live in the side panel (below), so they're never mistaken for Spotify playlists.
 2b. **The side panel:** on the right of every library page, a tinted panel titled "Saved in Lyrics Game" (with "Not on Spotify" underneath). It has two sections, **Favorites** and **Play later**, each with its count and its songs listed (cover, title, artist; click to open the song). Each section's title opens its full page, with the same search and filters as a playlist. A button hides the panel down to a small "Saved" tab at the edge, and the app remembers whether you hid it. On narrow windows, the panel goes below the songs. *(Changed 2026-10-04 at the user's request: Favorites and Play later were cards in the grid, which made them look like Spotify playlists.)*
