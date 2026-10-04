@@ -39,7 +39,7 @@ Redefined: the original Phase 5 tasks (difficulty selector, song picker disabled
 - [x] Home page: Recently played, Best songs, Words you keep missing, Overall stats
 - [x] Land on home after login; "Home" / "Library" in the header
 
-## Phase 7: Library — spec written 2026-10-03 (Output/phase-7-spec.md)
+## Phase 7: Library — spec and plan written (Output/phase-7-spec.md, phase-7-plan.md)
 - [ ] Playlists page as cards (Liked Songs, Favorites, Play later first); each playlist on its own page
 - [ ] Search across the whole library and inside a playlist (title and artist)
 - [ ] Filters: only playable (on by default), language, genre (best effort), played / not played
