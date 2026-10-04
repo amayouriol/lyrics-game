@@ -38,5 +38,5 @@ export async function GET(request: NextRequest) {
     redirect("/denied");
   }
 
-  redirect("/library");
+  redirect("/");
 }

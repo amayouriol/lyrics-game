@@ -1,5 +1,6 @@
-import { redirect } from "next/navigation";
+import { Header } from "@/components/Header";
 import { getSession, hasActiveSession } from "@/lib/session";
+import { HomeClient } from "./HomeClient";
 import styles from "./page.module.css";
 
 export default async function HomePage({
@@ -9,7 +10,12 @@ export default async function HomePage({
 }) {
   const session = await getSession();
   if (hasActiveSession(session)) {
-    redirect("/library");
+    return (
+      <>
+        <Header />
+        <HomeClient />
+      </>
+    );
   }
 
   const { expired } = await searchParams;
@@ -20,7 +26,7 @@ export default async function HomePage({
 
       {expired && (
         <div className={styles.banner}>
-          Your session expired. Reconnect and you&apos;ll land right back in your library.
+          Your session expired. Reconnect and you&apos;ll land right back on your home page.
         </div>
       )}
 

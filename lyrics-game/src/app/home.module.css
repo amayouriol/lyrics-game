@@ -1,0 +1,201 @@
+/* Home: your progress. No design in the prototype; built from the library and results styles. */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+  padding: 56px clamp(20px, 5vw, 72px) 72px;
+  max-width: 1260px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.hero h1 {
+  margin: 0;
+  font: 500 clamp(36px, 5vw, 56px) / 1.19 var(--font-sans);
+  letter-spacing: -1.2px;
+  color: var(--black);
+  text-wrap: balance;
+}
+
+.hero p {
+  margin: 0 0 8px;
+  font: 400 18px/1.5 var(--font-sans);
+  color: var(--text-body);
+}
+
+.hint {
+  margin: 0;
+  font: 400 16px/1.5 var(--font-sans);
+  color: var(--grey-500);
+}
+
+.errorPanel {
+  background: var(--grey-100);
+  border-radius: 16px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.errorPanel h2 {
+  margin: 0;
+  font: 500 28px / 1.19 var(--font-sans);
+  letter-spacing: -0.5px;
+  color: var(--black);
+}
+
+.errorPanel p {
+  margin: 0;
+  font: 400 16px/1.6 var(--font-sans);
+  color: var(--text-body);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr));
+  gap: 48px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.section h2 {
+  margin: 0;
+  font: 500 28px / 1.19 var(--font-sans);
+  letter-spacing: -0.5px;
+  color: var(--black);
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.row:hover {
+  background: var(--grey-100);
+}
+
+.song {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.cover {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  background: var(--grey-100) center / cover no-repeat;
+}
+
+.songInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.title {
+  font: 600 15px/1.4 var(--font-sans);
+  color: var(--black);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.artist {
+  font: 400 14px/1.4 var(--font-sans);
+  color: var(--grey-500);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta {
+  font: 400 13px/1.4 var(--font-sans);
+  color: var(--grey-500);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bigNumber {
+  flex: none;
+  font: 500 24px var(--font-sans);
+  letter-spacing: -0.5px;
+  color: var(--black);
+}
+
+.gone {
+  flex: none;
+  font: 400 13px var(--font-sans);
+  color: var(--grey-400);
+}
+
+.missed {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.missedWord {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--tertiary-100);
+  min-width: 0;
+}
+
+.word {
+  font: 400 28px/1.3 var(--font-display);
+  color: var(--tertiary-600);
+}
+
+.missedCount {
+  font: 600 14px var(--font-sans);
+  color: var(--text-body);
+}
+
+.missedSongs {
+  font: 400 13px/1.4 var(--font-sans);
+  color: var(--grey-500);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

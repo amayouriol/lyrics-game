@@ -232,3 +232,26 @@ button.chip--tertiary[aria-pressed="true"] {
 .app-header__spacer {
   flex: 1;
 }
+
+.app-header__nav {
+  display: flex;
+  gap: 4px;
+}
+
+.app-header__link {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font: 500 15px var(--font-sans);
+  color: var(--grey-500);
+  text-decoration: none;
+}
+
+.app-header__link:hover {
+  color: var(--black);
+  background: var(--grey-100);
+}
+
+.app-header__link--active {
+  color: var(--black);
+  background: var(--grey-100);
+}

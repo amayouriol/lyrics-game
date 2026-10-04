@@ -33,28 +33,31 @@ Order: storage and saving first (nothing to show without it), then the progress 
 - Not yet seen on a real account: the first game saved will create `.data/games.json`.
 
 ## 4. Home page (`src/app/page.tsx` + `HomeClient` or server-rendered sections)
-- [ ] `/` when logged in shows home instead of redirecting to the library. Logged out: the login screen, as now.
-- [ ] Greeting and a big **"Pick a song"** button to `/library`.
-- [ ] Overall stats: four `StatBlock`s, like the results screen.
-- [ ] Recently played: cover, title, artist, difficulty chip, score, accuracy, "2 days ago" (the browser's own relative time formatting). The row opens the song screen; **Play again** opens the play screen at that level.
-- [ ] Best songs: cover, title, artist, best accuracy, the level it was set at; opens the song screen.
-- [ ] Words you keep missing: word, "missed 3 of 4 times", song name(s).
-- [ ] Empty history: only the welcome ("Play your first song to start tracking your progress.") and the button. A history with no repeat misses: "No repeat misses yet. Nice."
-- [ ] Can't read the history file: "Your progress didn't load." with Retry (reloads); the "Pick a song" button still shows.
-- [ ] Styled with the design system already in use (cards, chips, stat blocks); no new design to follow, since the prototype has no home page.
+- [x] `/` when logged in shows home instead of redirecting to the library. Logged out: the login screen, as now.
+- [x] Greeting and a big **"Pick a song"** button to `/library`.
+- [x] Overall stats: four `StatBlock`s, like the results screen.
+- [x] Recently played: cover, title, artist, difficulty chip, score, accuracy, "2 days ago" (the browser's own relative time formatting). The row opens the song screen; **Play again** opens the play screen at that level.
+- [x] Best songs: cover, title, artist, best accuracy, the level it was set at; opens the song screen.
+- [x] Words you keep missing: word, "missed 3 of 4 times", song name(s).
+- [x] Empty history: only the welcome ("Play your first song to start tracking your progress.") and the button. A history with no repeat misses: "No repeat misses yet. Nice."
+- [x] Can't read the history file: "Your progress didn't load." with Retry (reloads); the "Pick a song" button still shows.
+- [x] Styled with the design system already in use (cards, chips, stat blocks); no new design to follow, since the prototype has no home page.
 
 ## 5. Getting around
-- [ ] Header: "Home" and "Library" links, the current one marked. The logo goes to home.
-- [ ] Login now lands on home (callback redirect, and the expiry banner's "you'll land right back in your library" → "…on your home page").
-- [ ] Results' "Pick another song" still goes to the library list you came from.
+- [x] Header: "Home" and "Library" links, the current one marked. The logo goes to home.
+- [x] Login now lands on home (callback redirect, and the expiry banner's "you'll land right back in your library" → "…on your home page").
+- [x] Results' "Pick another song" still goes to the library list you came from.
 
 ## 6. "No longer available" (spec: Errors and safety)
-- [ ] Play again is disabled with "No longer available." when the lyrics cache says the song has no synced lyrics.
-- [ ] *Deviation to approve:* songs removed from Spotify can't be detected without one Spotify request per song on every home visit (Spotify no longer allows fetching several songs at once). Instead, Play again on such a song opens the song screen, which already shows "Spotify didn't answer." with a way back. Cheaper, and these songs should be rare.
+- [x] Play again is disabled with "No longer available." when the lyrics cache says the song has no synced lyrics.
+- [x] *Deviation to approve:* songs removed from Spotify can't be detected without one Spotify request per song on every home visit (Spotify no longer allows fetching several songs at once). Instead, Play again on such a song opens the song screen, which already shows "Spotify didn't answer." with a way back. Cheaper, and these songs should be rare.
+- Done 2026-10-03: `GET /api/progress` (the four sections from your games, plus which songs can't be played again), `HomeClient` and `home.module.css`, Header with Home/Library (now a client component, so it can mark the current page), login and the expiry banner pointing home.
+- Layout change from the plan: score, accuracy and time go on one line under the artist ("Medium · 1650 pts · 83% · 5 minutes ago"), so Play again fits beside each row. Best songs shows the accuracy big on the right and "Set on Medium" under the artist.
+- Checked with made-up games on a throwaway preview page (deleted): full history, empty history (welcome only), load error (panel with Retry), a "No longer available." row, long titles cut with "…", no console errors. Logged out, `/` still shows the login screen and `/api/progress` answers 401.
 
 ## 7. Checks
-- [ ] `npm run lint` and `npm run build` pass.
-- [ ] Rule checks pass (old + new).
+- [x] `npm run lint` and `npm run build` pass.
+- [x] Rule checks pass (old + new).
 
 ## Acceptance check (tied to phase-6-spec.md's Success section)
 - [ ] Finish three songs (one twice, at two levels): Recently played shows them newest first with the right scores and accuracy; each Play again starts the right song at the right level
@@ -68,6 +71,6 @@ Order: storage and saving first (nothing to show without it), then the progress 
 - [ ] Phase 5's game still plays as before
 
 ## Before approving this plan
-- [ ] The technical decisions above are fine with you (file on the server; songs removed from Spotify handled by the song screen)
-- [ ] Nothing from the spec is missing
-- [ ] Nothing from Phase 7 (library search, filters, Favorites, Play later) crept in
+- [x] The technical decisions above are fine with you (file on the server; songs removed from Spotify handled by the song screen)
+- [x] Nothing from the spec is missing
+- [x] Nothing from Phase 7 (library search, filters, Favorites, Play later) crept in
