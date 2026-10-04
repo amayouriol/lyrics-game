@@ -11,8 +11,9 @@ Order: storage and saving first (nothing to show without it), then the progress 
 - **The server works out the numbers:** the browser sends each hidden word's result. The server recomputes score and accuracy with the same rules as the game, so stored numbers can't drift from the rules.
 
 ## 1. Who you are (`src/lib/session.ts`, `api/auth/callback`)
-- [ ] Store your Spotify user id in the session at login (one `/me` request in the callback).
-- [ ] Sessions from before this phase have no id: fetch `/me` once when needed and save it into the session. If that fails because the session expired, the usual expiry path applies.
+- [x] Store your Spotify user id in the session at login (one `/me` request in the callback).
+- [x] Sessions from before this phase have no id: fetch `/me` once when needed and save it into the session. If that fails because the session expired, the usual expiry path applies.
+- Done 2026-10-03: `getCurrentUserId` (spotify.ts), `userId` in the session, set at login (a failed `/me` doesn't fail the login), and `getUserId()` (session.ts) for route handlers. It fetches and saves the id for older sessions, using the same session object as the token refresh, so it can't overwrite refreshed tokens. Lint and build pass. Nothing uses it yet; step 2 is the first user.
 
 ## 2. Saving games (`src/lib/games.ts`, `api/games`)
 - [ ] `games.ts`: load and save `.data/games.json`, `{ [userId]: Game[] }`. Writes are chained (as in the lyrics cache) and go to a temporary file that then replaces the real one, so a crash mid-write can't corrupt your history. Unlike the lyrics cache, a failed write is reported, not swallowed.

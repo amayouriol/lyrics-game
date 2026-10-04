@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { exchangeCodeForTokens } from "@/lib/spotify";
+import { exchangeCodeForTokens, getCurrentUserId } from "@/lib/spotify";
 import { getSession } from "@/lib/session";
 
 export async function GET(request: NextRequest) {
@@ -28,6 +28,11 @@ export async function GET(request: NextRequest) {
     session.refreshToken = tokens.refresh_token;
     session.expiresAt = Date.now() + tokens.expires_in * 1000;
     session.scope = tokens.scope;
+    try {
+      session.userId = await getCurrentUserId(tokens.access_token);
+    } catch {
+      // Not worth failing the login over: getUserId fetches it when needed.
+    }
     await session.save();
   } catch {
     redirect("/denied");

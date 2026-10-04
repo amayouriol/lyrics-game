@@ -201,6 +201,12 @@ interface SpotifyUser {
   id: string;
 }
 
+/** Your Spotify user id, which your saved games are kept under. */
+export async function getCurrentUserId(accessToken: string): Promise<string> {
+  const me: SpotifyUser = await spotifyGet("/me", accessToken);
+  return me.id;
+}
+
 interface SpotifyPage<T> {
   items: T[];
   next: string | null;
