@@ -22,11 +22,13 @@ Order: the saved lists first (the library cards and buttons need them), then the
 - Rule checks: 12 new (saved lists) plus the 35 progress/store and 28 game checks, all pass. Without a login: bad body → 400, valid → 401, nothing written. Lint and build pass.
 
 ## 2. Playlists page and playlist pages (`src/app/library/…`)
-- [ ] `listSources` also returns each playlist's cover (Spotify sends playlist images with the list; no extra requests).
-- [ ] `/library` with no source: a grid of cards. Liked Songs, Favorites and Play later first (simple tiles: a gradient, a heart, a bookmark), then your playlists with cover and "N songs". The "playlists you only follow" note goes under the grid.
-- [ ] `/library?source=…`: "All playlists" back button, name, count, the songs as now (including the lyrics check and its outage notice). `source=favorites` and `source=later` read from the saved lists.
-- [ ] The sidebar goes away. `LibraryClient` splits into a cards view and a playlist view, sharing the song row.
-- [ ] Error states as now: sources fail → "Spotify didn't answer." with Retry; tracks fail → same panel inside the playlist.
+- [x] `listSources` also returns each playlist's cover (Spotify sends playlist images with the list; no extra requests).
+- [x] `/library` with no source: a grid of cards. Liked Songs, Favorites and Play later first (simple tiles: a gradient, a heart, a bookmark), then your playlists with cover and "N songs". The "playlists you only follow" note goes under the grid.
+- [x] `/library?source=…`: "All playlists" back button, name, count, the songs as now (including the lyrics check and its outage notice). `source=favorites` and `source=later` read from the saved lists.
+- [x] The sidebar goes away. `LibraryClient` splits into a cards view and a playlist view, sharing the song row.
+- [x] Error states as now: sources fail → "Spotify didn't answer." with Retry; tracks fail → same panel inside the playlist.
+- Done 2026-10-04: `CardsClient` (cards page), `PlaylistClient` (one list's page), shared `TrackList` rows and `useLyricsCheck` (ready for search in step 4). `LibraryClient` removed. Playlist covers come with the list Spotify already sends. `source=favorites` and `source=later` read the saved lists.
+- Checked on a throwaway preview with made-up data (deleted): six cards per row at desktop width in the right order, counts ("1 song"), song links keep `?from=` so "Back to library" returns to the list, greyed songs not clickable, a still-checking song turns playable when its check returns, empty Favorites shows its hint, no console errors. Lint and build pass.
 
 ## 3. Favorite and Play later buttons
 - [ ] Heart and bookmark on every playable song row (not on greyed or still-checking songs), and on the song screen next to "Play the song".

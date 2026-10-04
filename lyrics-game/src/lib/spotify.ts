@@ -150,9 +150,12 @@ export async function startPlayback(
 }
 
 export interface Source {
+  /** A playlist id, or "liked", "favorites" or "later". */
   id: string;
   name: string;
   count: number;
+  kind: "liked" | "favorites" | "later" | "playlist";
+  cover: string | null;
 }
 
 export interface Track {
@@ -195,6 +198,7 @@ interface SpotifyPlaylist {
   name: string;
   items?: { total: number };
   owner: { id: string };
+  images?: SpotifyImage[] | null;
 }
 
 interface SpotifyUser {
@@ -266,7 +270,7 @@ export async function listSources(accessToken: string): Promise<Source[]> {
     spotifyGet("/me/tracks?limit=1", accessToken),
     spotifyGet("/me", accessToken),
   ]);
-  sources.push({ id: "liked", name: "Liked Songs", count: liked.total });
+  sources.push({ id: "liked", name: "Liked Songs", count: liked.total, kind: "liked", cover: null });
 
   let path: string | null = "/me/playlists?limit=50";
   while (path) {
@@ -278,6 +282,8 @@ export async function listSources(accessToken: string): Promise<Source[]> {
         id: playlist.id,
         name: playlist.name ?? "Untitled playlist",
         count: playlist.items?.total ?? 0,
+        kind: "playlist",
+        cover: pickCover(playlist.images ?? undefined, 300),
       });
     }
     path = page.next ? page.next.replace(API_URL, "") : null;

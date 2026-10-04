@@ -1,7 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getCachedStatuses } from "@/lib/lyrics";
-import { getSession, getValidAccessToken } from "@/lib/session";
-import { listTracks, SpotifySessionExpiredError } from "@/lib/spotify";
+import { getSaved } from "@/lib/saved";
+import { getSession, getUserId, getValidAccessToken } from "@/lib/session";
+import { listTracks, SpotifySessionExpiredError, type Track } from "@/lib/spotify";
 
 export async function GET(request: NextRequest) {
   const source = request.nextUrl.searchParams.get("source");
@@ -10,8 +11,25 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const accessToken = await getValidAccessToken();
-    const tracks = await listTracks(accessToken, source);
+    let tracks: Track[];
+    if (source === "favorites" || source === "later") {
+      // Kept by the app, not on Spotify; newest first.
+      const saved = await getSaved(await getUserId());
+      tracks = saved[source].map(
+        ({ id, title, artist, primaryArtist, album, durationMs, duration, cover }) => ({
+          id,
+          title,
+          artist,
+          primaryArtist,
+          album,
+          durationMs,
+          duration,
+          cover,
+        })
+      );
+    } else {
+      tracks = await listTracks(await getValidAccessToken(), source);
+    }
     const statuses = await getCachedStatuses(tracks.map((t) => t.id));
     return NextResponse.json({
       tracks: tracks.map((t) => ({ ...t, lyricsStatus: statuses[t.id] })),
