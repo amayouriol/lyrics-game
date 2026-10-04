@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
@@ -58,6 +58,12 @@ const LAST_LINE_HOLD_MS = 1_500;
 const WAIT_LIMIT_MS = 15_000;
 /** The countdown turns red for its last seconds. */
 const WAIT_WARNING_SEC = 5;
+/** How long lines take to glide into place when the song reaches a new one. */
+const GLIDE_MS = 350;
+
+function prefersReducedMotion(): boolean {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
 
 interface GameResult {
   level: Difficulty;
@@ -214,6 +220,7 @@ function PlayScreen({
     retry,
     stop,
     setHoldBeforeMs,
+    getPositionMs,
   } = usePlayer({ trackId, durationMs: track.durationMs, lineTimesMs, onEnded });
 
   const currentLine = lineIndex - 1;
@@ -367,13 +374,24 @@ function PlayScreen({
   }
 
   function renderLine(li: number) {
-    return tokenize(lines[li].text).map((token, wi) => {
+    const tokens = tokenize(lines[li].text);
+    // Each word's place in the line (0–1, by characters), where the sweep lights it.
+    const totalChars = tokens.reduce((n, t) => n + t.raw.length + 1, 0);
+    let charsBefore = 0;
+    return tokens.map((token, wi) => {
+      const at = (charsBefore / totalChars).toFixed(3);
+      charsBefore += token.raw.length + 1;
       const blank = blankById.get(`${li}-${wi}`);
-      if (!blank) return <span key={wi}>{token.raw}</span>;
+      if (!blank)
+        return (
+          <span key={wi} data-at={at}>
+            {token.raw}
+          </span>
+        );
       const state = blankState(blank, answers[blank.id], currentLine, activeId);
       const wrongTries = answers[blank.id]?.wrongTries ?? 0;
       return (
-        <span key={wi} className={styles.word}>
+        <span key={wi} className={styles.word} data-at={at}>
           {token.lead}
           <LyricBlank
             // A new key per wrong try remounts the box, replaying its shake.
@@ -399,6 +417,84 @@ function PlayScreen({
       );
     });
   }
+
+  // Lines glide when the song reaches a new one. Each line stays the same
+  // element as it moves from current to previous, so its position before
+  // and after can be compared (layout positions, which transforms don't
+  // affect) and the difference animated away. The line shown always comes
+  // from the song's position; the animation only follows it.
+  const lyricsRef = useRef<HTMLDivElement>(null);
+  const placesRef = useRef(new Map<string, { x: number; y: number; font: number }>());
+  const placedLineRef = useRef(currentLine);
+  useLayoutEffect(() => {
+    const root = lyricsRef.current;
+    if (!root) {
+      placesRef.current.clear();
+      return;
+    }
+    const els = [...root.querySelectorAll<HTMLElement>("[data-key]")];
+    const places = new Map(
+      els.map((el) => [
+        el.dataset.key!,
+        {
+          x: el.offsetLeft + el.offsetWidth / 2,
+          y: el.offsetTop + el.offsetHeight / 2,
+          font: parseFloat(getComputedStyle(el).fontSize),
+        },
+      ])
+    );
+    if (placedLineRef.current !== currentLine && !prefersReducedMotion()) {
+      for (const el of els) {
+        const before = placesRef.current.get(el.dataset.key!);
+        const after = places.get(el.dataset.key!)!;
+        el.style.transition = "none";
+        el.style.transform = "";
+        if (!before) continue;
+        const dx = before.x - after.x;
+        const dy = before.y - after.y;
+        const scale = before.font / after.font;
+        if (dx || dy || scale !== 1) {
+          el.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
+        }
+      }
+      void root.offsetWidth; // apply the starting positions before animating
+      for (const el of els) {
+        if (!el.style.transform) continue;
+        el.style.transition = `transform ${GLIDE_MS}ms ease, color ${GLIDE_MS}ms ease`;
+        el.style.transform = "";
+      }
+    }
+    placedLineRef.current = currentLine;
+    placesRef.current = places;
+  });
+
+  // The sweep: lights each word of the current line as the song gets to
+  // it, spread evenly from the line's start to the next line's. Written
+  // straight to the page each frame, so typing never waits for it. While
+  // the song waits for an answer, the whole line is lit (the song stops a
+  // little before the next line, which would leave the last word dim).
+  const lyricsShown = status.kind === "playing" && !hidden;
+  useEffect(() => {
+    const line = lyricsRef.current?.querySelector<HTMLElement>(`[data-key="${currentLine}"]`);
+    if (!lyricsShown || !line || currentLine < 0) return;
+    const words = [...line.querySelectorAll<HTMLElement>("[data-at]")];
+    const start = lines[currentLine].timeMs;
+    const end =
+      currentLine + 1 < lines.length
+        ? lines[currentLine + 1].timeMs
+        : track.durationMs - LAST_LINE_HOLD_MS;
+    const full = held || prefersReducedMotion();
+    let frame = 0;
+    const paint = () => {
+      const progress = full
+        ? 1
+        : Math.min(1, Math.max(0, (getPositionMs() - start) / Math.max(1, end - start)));
+      for (const word of words) word.toggleAttribute("data-lit", progress >= Number(word.dataset.at));
+      if (progress < 1) frame = requestAnimationFrame(paint);
+    };
+    paint();
+    return () => cancelAnimationFrame(frame);
+  }, [lyricsShown, held, currentLine, lines, track.durationMs, getPositionMs]);
 
   async function quit() {
     await stop();
@@ -449,14 +545,30 @@ function PlayScreen({
             </div>
           )}
 
-          {status.kind === "playing" && !hidden && (
-            <>
-              <div className={styles.prevLine}>{currentLine >= 1 && renderLine(currentLine - 1)}</div>
-              <div className={styles.currentLine}>
+          {lyricsShown && (
+            <div className={styles.lyrics} ref={lyricsRef}>
+              {currentLine >= 1 ? (
+                <div
+                  key={currentLine - 1}
+                  data-key={currentLine - 1}
+                  className={`${styles.line} ${styles.prevLine}`}
+                >
+                  {renderLine(currentLine - 1)}
+                </div>
+              ) : (
+                <div key="top" data-key="top" className={`${styles.line} ${styles.prevLine}`} />
+              )}
+              <div
+                key={currentLine >= 0 ? currentLine : "intro"}
+                data-key={currentLine >= 0 ? currentLine : "intro"}
+                className={`${styles.line} ${styles.currentLine} ${styles.enter}`}
+              >
                 {currentLine >= 0 ? renderLine(currentLine) : "· · ·"}
               </div>
-              <div className={styles.nextLine}>{currentLine < lines.length - 1 ? "· · ·" : ""}</div>
-            </>
+              <div key="next" data-key="next" className={`${styles.line} ${styles.nextLine}`}>
+                {currentLine < lines.length - 1 ? "· · ·" : ""}
+              </div>
+            </div>
           )}
 
           {status.kind === "blocked" && (

@@ -407,6 +407,9 @@ export function usePlayer({
     window.location.reload();
   }, []);
 
+  /** The song's position right now, between re-renders (for animations). */
+  const getPositionMs = useCallback(() => clockPosition(clockRef.current), []);
+
   /** Pauses before leaving, so the music stops right away. */
   const stop = useCallback(async () => {
     try {
@@ -429,5 +432,6 @@ export function usePlayer({
     retry,
     stop,
     setHoldBeforeMs,
+    getPositionMs,
   };
 }

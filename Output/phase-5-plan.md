@@ -26,12 +26,14 @@ Order: the rule change first (pure and easy to check), then the countdown (build
 - Result (2026-10-03): 28 rule checks pass, lint and build pass. Not yet seen on a real account.
 
 ## 3. Lyrics that move (`play/PlayClient.tsx`, `play.module.css`, `usePlayer.ts`)
-- [ ] **Glide:** render the previous, current and "· · ·" lines as elements keyed by line number, so when the line changes the same element moves from "current" to "previous" instead of being replaced. Animate `transform` and `opacity` (not font size, which would make the layout jump). The new line slides in from below; the line before the previous one fades out above. About 350 ms.
-- [ ] **Sweep:** `usePlayer` exposes `getPositionMs()` (reads its existing clock). A `requestAnimationFrame` loop on the play screen works out how far through the current line the song is, from the line's start to the next line's start (or the song's end on the last line). It lights each word once the sweep reaches its share of the line's characters, by writing a data attribute straight onto the word elements, so typing doesn't re-render at 60 fps. Blanks light up like words (their border/underline).
-- [ ] While held, the clock already stays just before the next line, so the sweep sits at the end of the line with no extra logic. While paused or dropped, the loop stops. On resume it reads the clock again, so it continues from the right spot.
-- [ ] `prefers-reduced-motion`: no glide transition, and the whole current line is lit (no sweep). `LyricBlank`'s shake already respects it.
-- [ ] Focus: the active blank's text box keeps focus across the glide. Check it doesn't lose focus when its element moves.
-- [ ] The line shown always comes from `lineIndex` (the song's position), never from the animation. The animation only follows it.
+- [x] **Glide:** render the previous, current and "· · ·" lines as elements keyed by line number, so when the line changes the same element moves from "current" to "previous" instead of being replaced. Animate `transform` and `opacity` (not font size, which would make the layout jump). The new line slides in from below; the line before the previous one fades out above. About 350 ms.
+- [x] **Sweep:** `usePlayer` exposes `getPositionMs()` (reads its existing clock). A `requestAnimationFrame` loop on the play screen works out how far through the current line the song is, from the line's start to the next line's start (or the song's end on the last line). It lights each word once the sweep reaches its share of the line's characters, by writing a data attribute straight onto the word elements, so typing doesn't re-render at 60 fps. Blanks light up like words (their border/underline).
+- [x] While held, the clock already stays just before the next line, so the sweep sits at the end of the line with no extra logic. While paused or dropped, the loop stops. On resume it reads the clock again, so it continues from the right spot.
+- [x] `prefers-reduced-motion`: no glide transition, and the whole current line is lit (no sweep). `LyricBlank`'s shake already respects it.
+- [x] Focus: the active blank's text box keeps focus across the glide. Check it doesn't lose focus when its element moves.
+- [x] The line shown always comes from `lineIndex` (the song's position), never from the animation. The animation only follows it.
+- Also: while the song waits for an answer, the whole line is lit. The song stops ~300 ms before the next line, which would otherwise leave the last word dim.
+- Result (2026-10-03): lint and build pass. Not yet seen on a real account.
 
 ## 4. Close v1 (on your real account)
 Each of these, seen on screen, with a clear message (never a crash, blank or frozen screen):
@@ -48,11 +50,11 @@ Each of these, seen on screen, with a clear message (never a crash, blank or fro
 - [ ] Rule checks pass (old + new).
 
 ## Acceptance check (tied to phase-5-spec.md's Success section)
-- [ ] Leave a word open: the song pauses, the 15 s countdown runs and turns red at 5, at 0 the word is revealed, scores 0, resets the streak, and the song continues by itself
-- [ ] Answering mid-countdown continues the song immediately
-- [ ] On Hard, a line with two open words has one countdown
+- [x] Leave a word open: the song pauses, the 15 s countdown runs and turns red at 5, at 0 the word is revealed, scores 0, resets the streak, and the song continues by itself
+- [x] Answering mid-countdown continues the song immediately
+- [x] On Hard, a line with two open words has one countdown
 - [ ] Spotify moving to another device during the countdown cancels it; after Resume, a fresh 15 s
-- [ ] A short, repetitive song on Medium: no word hidden twice within 8 lines; the song screen's blank count matches the play screen
+- [x] A short, repetitive song on Medium: no word hidden twice within 8 lines; the song screen's blank count matches the play screen
 - [ ] Lines glide up; the sweep reaches the end of each line about when the next one starts; typing is never interrupted
 - [ ] With "reduce motion" on, nothing glides and the line is fully lit
 - [ ] All four untested error states seen on screen (section 4)
