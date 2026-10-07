@@ -104,7 +104,8 @@ Order: the saved lists first (the library cards and buttons need them), then the
 - [x] "Try again after" shows the day when it isn't today.
 - Done 2026-10-04: `src/lib/spotify-block.ts` (the block, on disk; seeded with today's block until Mon 1:15 PM so the new code doesn't ask Spotify to find out), the library copy and `getSources`/`getTracks`/`markListsOutdated` in `src/lib/library.ts`, `?refresh=1` on the sources route, old-copy notes on the main page, playlist pages and search. Song of the day and the total removed (moved to V2 in the spec).
 - Checked on a throwaway preview (deleted): "Updated from Spotify 2 hours ago" + Refresh (asks with `?refresh=1`), older copy while blocked ("…limiting this app until tomorrow at 1:12 PM; showing your playlists as of yesterday"), blocked with no copy ("Try again after tomorrow at 1:12 PM"), the whole library loads only after typing. Lint and build pass.
-- [ ] After the block ends (Mon 2026-10-05 ~1:15 PM): the library loads, then reloads within 6 hours come from the copy (no new Spotify requests in the log).
+- [x] After the block ends (Mon 2026-10-05 ~1:15 PM): the library loads, then reloads within 6 hours come from the copy (no new Spotify requests in the log).
+- Checked 2026-10-06 on the real account: the first load at 11:24 PM fetched the playlist list + 47 playlists in 43 s with no 429 (block file unchanged); later reloads didn't rewrite the copy.
 
 ## 6. Home sections (Phase 6 home page)
 - [x] `GET /api/progress` also returns the two saved lists (first 5 each) and, per song, the level you last finished it at.
@@ -117,17 +118,19 @@ Order: the saved lists first (the library cards and buttons need them), then the
 - [x] Rule checks pass (old + new).
 
 ## Acceptance check (tied to phase-7-spec.md's Success section)
-- [ ] The library opens on cards: Liked Songs, Favorites, Play later first; every playlist shows its song count
-- [ ] Inside a playlist, songs without lyrics are hidden until "Only playable" is switched off
-- [ ] "hawaii" inside Liked Songs finds the Bad Bunny song; on the cards page it finds it once
-- [ ] Spanish + Not played shows only Spanish songs never finished; Played shows only finished ones
+- [x] The library opens on cards: Liked Songs first, then playlists, each with its song count; Favorites and Play later in the side panel (2b)
+- [x] Inside a playlist, songs without lyrics are hidden until "Only playable" is switched off
+- [x] "hawaii" inside Liked Songs finds the Bad Bunny song; on the cards page it finds it once
+- [x] Spanish + Not played shows only Spanish songs never finished; Played shows only finished ones
 - ~~Genre~~: moved to V3
-- [ ] Favorite one song, Play later another: both show in their library lists and on home; finishing the Play later song removes it; removing the Favorite removes it
-- [ ] Log out and back in: both lists still there
-- [ ] Old links still work: "Back to library" from a song and "Pick another song" from results land on the right playlist
-- [ ] Phase 6's home and the game still work as before
+- [x] Favorite one song, Play later another: both show in their library lists and on home; finishing the Play later song removes it; removing the Favorite removes it
+- [x] Log out and back in: both lists still there
+- [x] Old links still work: "Back to library" from a song and "Pick another song" from results land on the right playlist
+- [x] Phase 6's home and the game still work as before
+
+- Confirmed 2026-10-06 in a play-test on the real account. Phase 7 closed.
 
 ## Before approving this plan
-- [ ] The technical decisions above are fine with you
+- [x] The technical decisions above are fine with you
 - [x] Genre filter dropped from this phase (moved to V3)
-- [ ] Nothing from the spec is missing, and nothing from V2 crept in
+- [x] Nothing from the spec is missing, and nothing from V2 crept in
