@@ -39,11 +39,17 @@ Redefined: the original Phase 5 tasks (difficulty selector, song picker disabled
 - [x] Home page: Recently played, Best songs, Words you keep missing, Overall stats
 - [x] Land on home after login; "Home" / "Library" in the header
 
-## Phase 7: Library — spec and plan written (Output/phase-7-spec.md, phase-7-plan.md)
-- [ ] Playlists page as cards (Liked Songs, Favorites, Play later first); each playlist on its own page
-- [ ] Search across the whole library and inside a playlist (title and artist)
-- [ ] Filters: only playable (on by default), language, played / not played (genre moved to V3)
-- [ ] Favorite and Play later buttons, lists in the library and sections on home
+## Phase 7: Library — DONE 2026-10-06 (Output/phase-7-spec.md, phase-7-plan.md)
+- [x] Playlists page as cards (Favorites and Play later in a side panel); each playlist on its own page
+- [x] Search across the whole library and inside a playlist (title and artist)
+- [x] Filters: only playable (on by default), language, played / not played (genre moved to V3)
+- [x] Favorite and Play later buttons, lists in the library and sections on home
+
+## Phase 8: Sing mode — spec written (Output/phase-8-spec.md)
+- [ ] Step 0: one-hour test of the browser hearing you sing (English, Spanish, whole song, headphones, speed); results into the spec
+- [ ] Choose Type or Sing on a song's screen
+- [ ] Sing hidden lines over the music: slots fill in as heard, points per word
+- [ ] Results and saved progress for sung games (marked, compared only with sung games)
 
 ## Explicitly out of scope for this plan
 Anything from spec.md's V2 list stays out unless you decide otherwise first: sharing with other people or multi-account login, an unsynced-lyrics fallback mode, score history or leaderboards.
