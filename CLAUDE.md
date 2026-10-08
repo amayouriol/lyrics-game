@@ -4,7 +4,7 @@ A personal Next.js web app: connects to my Spotify Premium account, plays a song
 
 ## Where things are
 - `lyrics-game/` — the app. Read `lyrics-game/AGENTS.md` first: Next.js 16 has breaking changes; check `node_modules/next/dist/docs/` before writing Next code.
-- `spec.md` — the whole project. `plan.md` — the phase roadmap. (`phase-1-spec.md` at the root is an old draft; the one in `Output/` is current.)
+- `spec.md` — the whole project. `plan.md` — the phase roadmap. `Lyrics Game prototype flow-handoff.zip` — the design handoff (screens, copy, colors) the specs and `globals.css` refer to.
 - `Output/phase-N-spec.md` (what and why) and `Output/phase-N-plan.md` (checklist) — one pair per phase. `Output/retrospective.md` — lessons so far.
 - `lyrics-game/src/lib/` — server logic: `spotify.ts`, `library.ts` (library + on-disk copy), `spotify-block.ts` (rate-limit block), `lyrics.ts` / `lyrics-cache.ts`, `game.ts` (blanks, guesses, scoring), `games.ts` / `progress.ts` / `saved.ts` (my data), `json-file.ts`.
 - `lyrics-game/src/app/` — pages and `api/` routes. `src/components/` — shared UI.
