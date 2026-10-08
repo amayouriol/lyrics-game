@@ -87,7 +87,7 @@ The results are written into this spec under "Dependencies and risks".
 ## Dependencies and risks
 - **The browser's speech recognition** (the only voice service this phase relies on). Risk: built for speaking, not singing over music; may be worse in Spanish; may stop after pauses; may send audio to an outside service. Checked in step 0 before the plan.
 
-### Step 0 results (2026-10-08, Chrome, wired-in test page, your voice)
+### Step 0 results (2026-10-08, on a test page in your browser, with your voice)
 | Question | Answer | Evidence |
 |---|---|---|
 | 1. Understands singing, English and Spanish | **Yes** | Shakira "Inevitable" (Spanish, Latin America setting): 78% of words heard, 84% if a word may count for the line next to it. The Beatles "I Will" (English): 65%, 71% with the same rule. |
