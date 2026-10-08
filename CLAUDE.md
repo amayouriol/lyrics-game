@@ -13,7 +13,7 @@ A personal Next.js web app: connects to my Spotify Premium account, plays a song
 ## Commands (run in `lyrics-game/`)
 - `npm run dev` — dev server on port 3000 (or preview `lyrics-game-dev` from `.claude/launch.json`). Spotify login redirects to `http://127.0.0.1:3000`.
 - `npm run lint` and `npm run build` — both must pass before a step is done.
-- No test suite yet. Game rules are checked with a throwaway script ("rule checks"), results noted in the plan.
+- `npm test` — rule checks for the game (`src/lib/*.test.ts`, Node's built-in runner, no extra packages). Must pass too. When a game rule changes, update or add a check.
 
 ## How we work
 - Before building, read the current phase's spec and plan. Build one plan step at a time, tick it in the plan with a short "Done (date): …" note, and commit per step: `Phase N step X: <what it does>`.
