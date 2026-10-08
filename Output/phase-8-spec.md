@@ -48,7 +48,8 @@ The results are written into this spec under "Dependencies and risks".
 5. The play screen looks like Type mode: the lyrics scroll, the current line is lit. Lines that aren't hidden show as normal. A small microphone light shows the app is listening (it pulses when it hears sound).
 6. A hidden line shows **one empty slot per word** (on Easy and Medium). While the line is being sung, each word the app hears fills its slot. Words must match the lyrics the same forgiving way typing does (case, accents and apostrophes don't matter).
 7. Words heard out of order still count if they belong to that line, each word once. Words from another line don't count.
-8. The app keeps listening a little after the line ends (about a second), so a slightly late word still counts.
+8. A word counts for its line if it's heard during the line, or up to about a second before it starts or after it ends. *(Changed after step 0: first words of a line were often sung, or timed in the lyrics, slightly early and got lost to the line before.)*
+8b. Small differences in how a word is heard count as a match when they're clearly the same word: a missing accent or final letter ("parque" for "parqués"), or a word heard split in two ("amando te" for "amándote"). *(Added after step 0.)*
 9. When the line ends, any empty slots show the missing word in red, and the line shows its count ("5 of 7").
 10. The music never stops or waits. There's no countdown, unlike Type mode.
 11. A **Pause** button pauses both the music and the listening, as in Type mode.
@@ -66,7 +67,7 @@ The results are written into this spec under "Dependencies and risks".
 ## Errors and safety
 - **No microphone, or permission denied:** Sing can't start. The song screen shows "Sing mode needs your microphone." with how to allow it, and Type stays available.
 - **The browser can't understand speech:** Sing is shown greyed out with "Sing mode doesn't work in this browser." Type works as normal.
-- **Listening stops mid-song** (the browser stops on its own, or the connection drops): the app restarts listening without stopping the music. If it can't, the microphone light turns red with "Not listening — tap to retry", and lines sung while it was off count as missed (the results say "Listening was off for part of this song").
+- **Listening stops mid-song** (the browser stops on its own, or the connection drops; step 0 saw it stop every ~8 seconds of silence and twice mid-song): the app restarts listening without stopping the music. If it can't, the microphone light turns red with "Not listening — tap to retry", and lines sung while it was off count as missed (the results say "Listening was off for part of this song").
 - **Silence or mumbling:** nothing fills in; the line scores 0. No guessing on your behalf.
 - **The singer heard instead of you** (no headphones): the app can't tell, so it can't block it. The note on choosing Sing and the "This phase does not do" rule cover it; the success test checks it.
 - **Quitting mid-song:** as in Type mode, nothing is saved.
@@ -84,7 +85,21 @@ The results are written into this spec under "Dependencies and risks".
 - Type mode plays exactly as before.
 
 ## Dependencies and risks
-- **The browser's speech recognition** (the only voice service this phase relies on). Risk: built for speaking, not singing over music; may be worse in Spanish; may stop after pauses; may send audio to an outside service. Checked in step 0 before the plan. *Results: to fill in after step 0.*
+- **The browser's speech recognition** (the only voice service this phase relies on). Risk: built for speaking, not singing over music; may be worse in Spanish; may stop after pauses; may send audio to an outside service. Checked in step 0 before the plan.
+
+### Step 0 results (2026-10-08, Chrome, wired-in test page, your voice)
+| Question | Answer | Evidence |
+|---|---|---|
+| 1. Understands singing, English and Spanish | **Yes** | Shakira "Inevitable" (Spanish, Latin America setting): 78% of words heard, 84% if a word may count for the line next to it. The Beatles "I Will" (English): 65%, 71% with the same rule. |
+| 2. Keeps listening for a whole song | **Yes, if restarted** | The browser stops by itself (twice mid-song, and every ~8 s when it hears nothing). Restarting right away took 10–17 ms; nothing was lost. |
+| 3. Headphones keep the music out | **Yes** | Whole song at normal volume, staying silent: 0 words heard, no speech detected. |
+| 4. Fast enough | **Yes** | 89–95% of heard words showed up before their line ended, the rest within 1 second after. |
+
+What the misses were, and what changed in this spec because of them:
+- **First word of a line credited to the line before** (sung slightly early, or the lyrics' timing slightly late) → item 8 now allows about a second either side.
+- **Near-misses:** "parque" / "parqués", "amando te" / "amándote", "and dear" / "endear", "uno mismo" / "un mismo" → item 8b.
+- **Plain mishearing** ("comí una vez" for "conmigo nada es"): can't be fixed; it's why scoring is per word.
+- **Privacy:** recognition ran through the browser's online speech service (your voice is sent to Google to be turned into words). On-device recognition wasn't tried. The first-time note says so.
 - **Spotify:** no new requests. Sing mode uses the same playback and lyrics as Type.
 - **LRCLIB lyrics timing:** each line's start time decides when a hidden line begins and ends. Lines with poor timing will feel unfair; no new risk, but more noticeable when singing whole lines.
 

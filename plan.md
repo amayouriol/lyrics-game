@@ -46,7 +46,7 @@ Redefined: the original Phase 5 tasks (difficulty selector, song picker disabled
 - [x] Favorite and Play later buttons, lists in the library and sections on home
 
 ## Phase 8: Sing mode — spec written (Output/phase-8-spec.md)
-- [ ] Step 0: one-hour test of the browser hearing you sing (English, Spanish, whole song, headphones, speed); results into the spec
+- [x] Step 0: one-hour test of the browser hearing you sing (English, Spanish, whole song, headphones, speed); results into the spec — all four yes (2026-10-08)
 - [ ] Choose Type or Sing on a song's screen
 - [ ] Sing hidden lines over the music: slots fill in as heard, points per word
 - [ ] Results and saved progress for sung games (marked, compared only with sung games)
