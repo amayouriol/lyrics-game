@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getDictionary, getLanguage } from "@/lib/dictionary";
 import { DIFFICULTY_ORDER, pickBlanks } from "@/lib/game";
 import { getLyrics } from "@/lib/lyrics";
+import { singableWords } from "@/lib/sing";
 import { getSession, getValidAccessToken } from "@/lib/session";
 import { getTrack, SpotifySessionExpiredError } from "@/lib/spotify";
 
@@ -49,6 +50,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tra
       DIFFICULTY_ORDER.map((level) => [level, pickBlanks(lyrics.lines, level, isWord)])
     );
 
+    // Sing mode: which words of each line are sung for points (not "oh", not names).
+    const singable = lyrics.lines.map((line) => singableWords(line.text, isWord));
+
     // Sing mode listens for this language.
     const language = lyrics.lines.length ? await getLanguage(trackId, lyrics.lines) : null;
 
@@ -59,6 +63,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tra
       lineCount: lyrics.lines.length,
       lines: lyrics.lines,
       blanks,
+      singable,
     });
   } catch (error) {
     console.error("[/api/lyrics/[trackId]]", error);

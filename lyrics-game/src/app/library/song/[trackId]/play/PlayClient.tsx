@@ -158,6 +158,7 @@ export function PlayClient({
           trackId={trackId}
           track={song.track}
           lines={song.lines}
+          singable={song.singable}
           level={level}
           listenLang={LISTEN_LANG[language ?? "en"]}
           backHref={backHref}

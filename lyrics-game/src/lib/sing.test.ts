@@ -1,8 +1,17 @@
 /** Rule checks for Sing mode: run with `npm test`. Cases from the step 0 test (Output/phase-8-spec.md). */
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import type { TimedLine } from "./game.ts";
-import { isLineOver, matchSung, singLines, singStats, type HeardWord } from "./sing.ts";
+import { makeIsWord, type TimedLine } from "./game.ts";
+import {
+  isLineOver,
+  lineCounts,
+  matchSung,
+  singableWords,
+  singLines,
+  singStats,
+  singWaits,
+  type HeardWord,
+} from "./sing.ts";
 
 // Lines 4 s apart; the song ends 4 s after the last one.
 const lines = (...texts: string[]): TimedLine[] =>
@@ -13,18 +22,61 @@ const songEnd = (l: TimedLine[]) => l.length * 4000;
 const sing = (fromMs: number, text: string): HeardWord[] =>
   text.split(" ").map((w, i) => ({ text: w, atMs: fromMs + i * 300 }));
 
-const run = (l: TimedLine[], heard: HeardWord[], level: "easy" | "medium" | "hard" = "medium") =>
+// Hard sings every line, so the matching checks below see them all.
+const run = (l: TimedLine[], heard: HeardWord[], level: "easy" | "medium" | "hard" = "hard") =>
   matchSung(l, singLines(l, level), heard, songEnd(l));
 
 const got = (r: { heardAt: (number | null)[] }) => r.heardAt.filter((t) => t !== null).length;
 
 // --- Which lines you sing ---
 
-test("easy sings every other line with words, medium and hard every line with words", () => {
-  const song = lines("one line here", "♪", "two line here", "three line", "four line");
-  assert.deepEqual(singLines(song, "easy"), [0, 3]);
-  assert.deepEqual(singLines(song, "medium"), [0, 2, 3, 4]);
-  assert.deepEqual(singLines(song, "hard"), [0, 2, 3, 4]);
+test("easy sings one line in three, medium every other one, hard every one", () => {
+  const song = lines("one", "♪", "two", "three", "four", "five", "six", "seven");
+  assert.deepEqual(singLines(song, "easy"), [0, 4, 7]);
+  assert.deepEqual(singLines(song, "medium"), [0, 3, 5, 7]);
+  assert.deepEqual(singLines(song, "hard"), [0, 2, 3, 4, 5, 6, 7]);
+});
+
+test("the song waits for you on easy and medium, not on hard", () => {
+  assert.deepEqual(
+    [singWaits("easy"), singWaits("medium"), singWaits("hard")],
+    [true, true, false]
+  );
+});
+
+// --- Sounds and names aren't sung for points ---
+
+const isWord = makeIsWord(new Set(["te", "quiero", "baby", "oh", "yeah", "la", "with", "me"]));
+
+test("sounds like oh and yeah, and names, aren't sung for points", () => {
+  assert.deepEqual(singableWords("Oh, te quiero, baby, yeah", isWord), [
+    false,
+    true,
+    true,
+    true,
+    false,
+  ]);
+  // "Shakira" and "Balvin" aren't in the word lists.
+  assert.deepEqual(singableWords("Shakira with J Balvin", isWord), [false, true, false, false]);
+  assert.deepEqual(singableWords("Ohhh uuhh la la", isWord), [false, false, false, false]);
+});
+
+test("a line of only sounds is never hidden", () => {
+  const song = lines("Ooh, yeah", "te quiero", "la la la", "with me");
+  const singable = song.map((l) => singableWords(l.text, isWord));
+  assert.deepEqual(singLines(song, "hard", singable), [1, 3]);
+  // Every other line counts only lines with words to sing.
+  assert.deepEqual(singLines(song, "medium", singable), [1]);
+});
+
+test("left-out words can't be heard and don't count", () => {
+  const song = lines("Oh, te quiero, yeah");
+  const singable = song.map((l) => singableWords(l.text, isWord));
+  const [r] = matchSung(song, [0], sing(100, "oh te quiero yeah"), songEnd(song), singable);
+  assert.deepEqual(lineCounts(r), { heard: 2, total: 2 });
+  assert.equal(r.heardAt[0], null);
+  const stats = singStats([r], Infinity, "hard");
+  assert.deepEqual([stats.total, stats.correct, stats.bestStreak], [2, 2, 1]);
 });
 
 // --- What counts as heard ---
@@ -116,13 +168,14 @@ test("anything looser than that doesn't count", () => {
 test("points per word heard, by level", () => {
   const song = lines("one two three four", "five six seven eight");
   const heard = [...sing(100, "one two three four"), ...sing(4100, "five six")];
-  const medium = singStats(run(song, heard), Infinity, "medium");
-  assert.equal(medium.correct, 6);
-  assert.equal(medium.total, 8);
-  assert.equal(medium.score, 900);
-  assert.equal(medium.accuracy, 75);
-  assert.equal(singStats(run(song, heard, "hard"), Infinity, "hard").score, 1200);
-  // Easy sings only the first line.
+  const hard = singStats(run(song, heard), Infinity, "hard");
+  assert.equal(hard.correct, 6);
+  assert.equal(hard.total, 8);
+  assert.equal(hard.score, 1200);
+  assert.equal(hard.accuracy, 75);
+  // Easy and medium sing only the first of these two lines.
+  const medium = singStats(run(song, heard, "medium"), Infinity, "medium");
+  assert.deepEqual([medium.total, medium.correct, medium.score], [4, 4, 600]);
   const easy = singStats(run(song, heard, "easy"), Infinity, "easy");
   assert.deepEqual([easy.total, easy.correct, easy.score], [4, 4, 400]);
 });
@@ -137,8 +190,8 @@ test("the streak counts full lines in a row, once each line is over", () => {
   ];
   const sung = run(song, heard);
   // Mid-way through line 2 (index 1): only line 1 is over.
-  assert.equal(singStats(sung, 6000, "medium").streak, 1);
-  const end = singStats(sung, Infinity, "medium");
+  assert.equal(singStats(sung, 6000, "hard").streak, 1);
+  const end = singStats(sung, Infinity, "hard");
   assert.equal(end.bestStreak, 2);
   assert.equal(end.streak, 1);
 });

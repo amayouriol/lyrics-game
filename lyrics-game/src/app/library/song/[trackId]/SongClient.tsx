@@ -44,7 +44,7 @@ export function SongClient({ trackId, from }: { trackId: string; from: string | 
   const backHref = from ? `/library?source=${encodeURIComponent(from)}` : "/library";
   const retry = () => setReloadKey((k) => k + 1);
   const blankCount = song?.kind === "ready" ? song.blanks[level].length : 0;
-  const singCount = song?.kind === "ready" ? singLines(song.lines, level).length : 0;
+  const singCount = song?.kind === "ready" ? singLines(song.lines, level, song.singable).length : 0;
   const [language, setLanguage] = useSingLanguage(
     trackId,
     song?.kind === "ready" ? song.language : null

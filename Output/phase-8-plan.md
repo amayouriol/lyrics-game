@@ -67,11 +67,18 @@ Order: the rules first (which lines are hidden, how heard words match, scoring),
 - [x] Delete the step 0 test page (`src/app/lab/`, `src/app/api/lab/`) and `.data/sing-tests.json`.
 - Done 2026-10-10: test page, its save route and `.data/sing-tests.json` deleted (results are in the spec). Lint, 42 checks and build pass; GitHub check green on step 6.
 
+## 8. Changes from play-testing (spec change, 2026-10-10)
+- [x] Levels: Easy one line in three, Medium every other line, Hard every line; slots on all three.
+- [x] Easy and Medium: at the end of a sung line with words missing, the song waits just before the next line (like Type mode), keeps listening, shows the lyrics and a countdown; carries on when every word is heard or after 10 s. Hard never waits.
+- [x] Sounds ("oh", "yeah", "la"…) and words not in the word lists (most names) aren't sung for points: visible, not counted, not saved. Lines of only those are never hidden. Worked out on the server with the word lists and sent with the lyrics.
+- [x] Checks for the new levels, the waiting rule and left-out words.
+- Done 2026-10-10: `singLines` (1 in 3 / every other / every line), `singWaits` and `SING_WAIT_MS`, `singableWords` with a list of sounds; the lyrics service sends `singable` per line; left-out words show as plain text and aren't saved. 46 checks pass. Checked by you on all three levels.
+
 ## Acceptance check (tied to phase-8-spec.md's Success section)
 - [ ] With headphones, one English and one Spanish song you know well, on Medium: at least 70% of the words
 - [ ] Same song, silent: 0. Mumbling: under 10%
 - [ ] Words you clearly sang fill their slot before the line ends or within a second
-- [ ] On Hard, no slots show how many words a line has
+- [ ] Easy and Medium wait for an unfinished line, Hard doesn't; "oh", "yeah" and names aren't counted
 - [ ] A sung game on home has the microphone; Best songs shows the song separately typed and sung; Words you keep missing doesn't change after a sung game
 - [ ] Refusing the microphone leaves Type fully playable
 - [ ] Type mode plays exactly as before

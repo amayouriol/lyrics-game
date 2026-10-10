@@ -28,7 +28,7 @@ The results are written into this spec under "Dependencies and risks".
 ### This phase does not do
 - Judge pitch, rhythm or how well you sing. Only the words count.
 - Work without headphones. The app asks you to put them on; it doesn't try to remove the singer's voice from what it hears.
-- Pause or slow the music for you. The song keeps playing, as in karaoke.
+- Pause or slow the music for you on Hard. The song keeps playing, as in karaoke. *(Easy and Medium wait for you since 2026-10-10, see item 10.)*
 - Show the full lyrics of a hidden line before it ends (the "lyrics never shown in full" rule still holds for hidden lines).
 - Record or keep your voice. Nothing you sing is saved, only which words were heard.
 - Change Type mode in any way.
@@ -39,20 +39,22 @@ The results are written into this spec under "Dependencies and risks".
 1. On a song's screen, above the levels, a choice: **Type** (as now, selected by default) or **Sing**.
 2. The first time you pick Sing, a short note: "Sing mode listens through your microphone. Put on headphones so it hears you, not the singer." Then the browser asks for microphone permission. The note isn't shown again once you've allowed it.
 3. The levels describe what they mean in Sing mode:
-   - **Easy:** every other line is hidden. 100 points per word.
-   - **Medium:** every line is hidden. 150 points per word.
-   - **Hard:** every line is hidden, and the slots don't show how many words the line has; words appear only as they're heard. 200 points per word.
+   - **Easy:** one line in three is hidden, and the song waits up to 10 seconds at the end of a hidden line for you to finish it. 100 points per word.
+   - **Medium:** every other line is hidden, and the song waits the same way. 150 points per word.
+   - **Hard:** every line is hidden, and the song doesn't wait. 200 points per word.
+   *(Levels changed 2026-10-10 after play-testing: the first Easy became Medium, the first Medium became Hard, and the first Hard's "no slots" rule was dropped.)*
 3b. Under the levels, a small grey note says which language the app will listen for: **"Listens for Spanish words · Change"**, picked from the song's lyrics. "Change" swaps it (remembered for that song). A small **?** next to it explains: "Sing mode turns your voice into words in one language at a time. We picked Spanish from this song's lyrics. If you'll sing it in English, change it. The song itself doesn't change." If the app can't tell the song's language, the note asks instead: **"Will you sing in English or Spanish?"** with two small buttons. *(Added 2026-10-09 while approving the plan: a wrong language would score a perfectly sung song near 0. A note rather than a switch, so normal songs need no click and it can't be mistaken for a translation.)*
 4. The app remembers your last choice (Type or Sing) for the next song.
 
 ### Playing
 5. The play screen looks like Type mode: the lyrics scroll, the current line is lit. Lines that aren't hidden show as normal. A small microphone light shows the app is listening (it pulses when it hears sound).
-6. A hidden line shows **one empty slot per word** (on Easy and Medium). While the line is being sung, each word the app hears fills its slot. Words must match the lyrics the same forgiving way typing does (case, accents and apostrophes don't matter).
+6. A hidden line shows **one empty slot per word**, on every level. While the line is being sung, each word the app hears fills its slot. Words must match the lyrics the same forgiving way typing does (case, accents and apostrophes don't matter).
 7. Words heard out of order still count if they belong to that line, each word once. Words from another line don't count.
 8. A word counts for its line if it's heard during the line, or up to about a second before it starts or after it ends. *(Changed after step 0: first words of a line were often sung, or timed in the lyrics, slightly early and got lost to the line before.)*
+6b. **Sounds and names aren't sung for points:** "oh", "ooh", "yeah", "la", "uh" and the like, and words that aren't in the English or Spanish word lists (most artist names, like "Shakira" or "J Balvin"), stay visible on the line and don't count. A line made only of those is never hidden. Levels count only lines with words to sing. *(Added 2026-10-10 after play-testing.)*
 8b. Small differences in how a word is heard count as a match when they're clearly the same word: a missing accent or final letter ("parque" for "parqués"), or a word heard split in two ("amando te" for "amándote"). *(Added after step 0.)*
 9. When the line ends, any empty slots show the missing word in red, and the line shows its count ("5 of 7").
-10. The music never stops or waits. There's no countdown, unlike Type mode.
+10. On Hard the music never stops or waits, and there's no countdown. **On Easy and Medium**, when a hidden line ends with words still missing, the song waits just before the next line, the lyrics stay up and the app keeps listening, with a countdown in the help line ("The song waits for you. Finish the line: 7 s left."). It carries on as soon as every word is heard, or after 10 seconds. *(Changed 2026-10-10 after play-testing: fast songs were too hard to sing in time even on Easy.)*
 11. A **Pause** button pauses both the music and the listening, as in Type mode.
 
 ### Results
@@ -80,7 +82,8 @@ The results are written into this spec under "Dependencies and risks".
 - With headphones on, you sing **one English and one Spanish song you know well on Medium** and get at least **70%** of the words.
 - On the same song, staying silent scores 0, and mumbling scores under 10%.
 - Every word you clearly sang in a line fills its slot before the line is over, or within a second of its end.
-- On Hard, the slots don't show the number of words.
+- On Easy and Medium, a line you don't finish makes the song wait, and it carries on when you finish it or after 10 seconds. On Hard it never waits.
+- "Oh", "yeah" and names on a hidden line stay visible and don't count.
 - A sung game shows on home with a microphone. Best songs shows the song separately for typed and sung. Words you keep missing doesn't change after a sung game.
 - Denying the microphone leaves Type fully playable.
 - Type mode plays exactly as before.
@@ -106,7 +109,7 @@ What the misses were, and what changed in this spec because of them:
 
 ## Scope decisions made in this pass
 - **Whole lines, not single words** (your choice): closer to karaoke, harder to check, hence step 0.
-- **Levels like typing:** Easy every other line, Medium every line, Hard every line without word slots. *(Hard's rule was proposed in writing this spec; change it if you'd rather Hard work differently.)*
+- **Levels:** Easy one line in three, Medium every other line (both wait up to 10 s for you), Hard every line without waiting. *(Changed 2026-10-10 from the first version: Easy every other line, Medium every line, Hard every line without slots.)*
 - **Points per word heard**, not right/wrong per line, so one misheard word doesn't cost a whole line.
 - **The music keeps playing**, so headphones are required.
 - **Slots fill in as heard** for live feedback, without giving the words away.
@@ -116,7 +119,7 @@ What the misses were, and what changed in this spec because of them:
 ## V2 (optional)
 - Singing just the hidden word in a typed-style game, or a sing-along mode with no blanks where each word lights up as you sing it.
 - Only the chorus hidden.
-- Pausing the song for you to sing a line, or lowering the singer's voice instead of requiring headphones.
+- Lowering the singer's voice instead of requiring headphones. *(Waiting for you moved into this phase on 2026-10-10, for Easy and Medium.)*
 - Judging pitch or rhythm.
 - Sung misses in "Words you keep missing".
 - Everything from earlier V2 lists (missed-words mini-game, progress over time, game variety, …).

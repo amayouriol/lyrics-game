@@ -23,6 +23,8 @@ export type SongResult =
       lines: TimedLine[];
       /** The hidden words per level, picked on the server against the dictionaries. */
       blanks: Record<Difficulty, Blank[]>;
+      /** Sing mode: per line, which words are sung for points (worked out on the server). */
+      singable: boolean[][];
     }
   | { kind: "lyrics_error"; track: TrackSummary }
   | { kind: "error" }
@@ -45,6 +47,7 @@ export async function loadSong(trackId: string): Promise<SongResult | "expired">
       lineCount: body.lineCount,
       lines: body.lines,
       blanks: body.blanks,
+      singable: body.singable,
     };
   } catch {
     return { kind: "error" };

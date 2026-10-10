@@ -281,14 +281,6 @@
 
 /* Sing mode */
 
-/* Hard: what's been heard of the current line, without its length. */
-.singHidden {
-  display: inline-flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  column-gap: 0.32em;
-  color: var(--grey-400);
-}
 
 /* "5 of 7" after a sung line is over. */
 .lineCount {

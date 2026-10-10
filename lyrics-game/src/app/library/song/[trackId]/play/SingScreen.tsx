@@ -18,10 +18,13 @@ import {
 import type { WordResult } from "@/lib/progress";
 import {
   isLineOver,
+  lineCounts,
   matchSung,
   SING_DESCRIPTIONS,
+  SING_WAIT_MS,
   singLines,
   singStats,
+  singWaits,
   type SingStats,
   type SungLine,
 } from "@/lib/sing";
@@ -31,6 +34,9 @@ import type { ListeningProblem } from "./useListening";
 import { useListening } from "./useListening";
 import { usePlayer, type PlayerError } from "./usePlayer";
 import styles from "./play.module.css";
+
+/** On the last line, the song waits this close to its end (as in Type mode). */
+const LAST_LINE_HOLD_MS = 1_500;
 
 /** Not listening for longer than this in a song is mentioned on the results. */
 const OFF_NOTE_MS = 3_000;
@@ -58,6 +64,7 @@ export function SingScreen({
   trackId,
   track,
   lines,
+  singable,
   level,
   listenLang,
   backHref,
@@ -67,6 +74,8 @@ export function SingScreen({
   trackId: string;
   track: TrackSummary;
   lines: TimedLine[];
+  /** Per line, which words are sung for points. */
+  singable: boolean[][];
   level: Difficulty;
   /** The browser's language setting to listen with ("es-US"). */
   listenLang: string;
@@ -76,7 +85,7 @@ export function SingScreen({
 }) {
   const router = useRouter();
   const lineTimesMs = useMemo(() => lines.map((l) => l.timeMs), [lines]);
-  const sungLines = useMemo(() => singLines(lines, level), [lines, level]);
+  const sungLines = useMemo(() => singLines(lines, level, singable), [lines, level, singable]);
   const [gameId] = useState(() => crypto.randomUUID());
 
   const finishRef = useRef<() => void>(() => {});
@@ -84,6 +93,8 @@ export function SingScreen({
   const {
     status,
     paused,
+    held,
+    heldSince,
     positionSec,
     lineIndex,
     togglePause,
@@ -91,15 +102,16 @@ export function SingScreen({
     unblock,
     retry,
     stop,
+    setHoldBeforeMs,
     getPositionMs,
   } = usePlayer({ trackId, durationMs: track.durationMs, lineTimesMs, onEnded });
 
-  // The music never waits in Sing mode: no hold point is ever set.
-  const playing = status.kind === "playing" && !paused;
+  // Listening goes on while the song waits for you (Easy).
+  const playing = status.kind === "playing" && (!paused || held);
   const listening = useListening({ lang: listenLang, active: playing, getPositionMs });
   const sung = useMemo(
-    () => matchSung(lines, sungLines, listening.heard, track.durationMs),
-    [lines, sungLines, listening.heard, track.durationMs]
+    () => matchSung(lines, sungLines, listening.heard, track.durationMs, singable),
+    [lines, sungLines, listening.heard, track.durationMs, singable]
   );
   const byLine = useMemo(() => new Map(sung.map((s) => [s.line, s])), [sung]);
 
@@ -108,6 +120,45 @@ export function SingScreen({
   // misses showing once its grace second is over.
   const positionMs = positionSec * 1000;
   const stats = singStats(sung, positionMs, level);
+
+  // Easy: at the end of a sung line with words still missing, the song waits
+  // (just before the next line) until they're all heard or the wait runs out.
+  // Otherwise the music never waits in Sing mode.
+  const [waitedOut, setWaitedOut] = useState<Set<number>>(() => new Set());
+  const singing = byLine.get(currentLine);
+  const holdBeforeMs =
+    singWaits(level) &&
+    singing &&
+    !waitedOut.has(currentLine) &&
+    lineCounts(singing).heard < lineCounts(singing).total
+      ? currentLine + 1 < lines.length
+        ? lines[currentLine + 1].timeMs
+        : track.durationMs - LAST_LINE_HOLD_MS
+      : null;
+  useEffect(() => {
+    setHoldBeforeMs(holdBeforeMs);
+  }, [holdBeforeMs, setHoldBeforeMs]);
+
+  // The wait's countdown, from the clock like Type mode's, so a background
+  // tab (slower timers) still ends it on time.
+  const [now, setNow] = useState(0);
+  useEffect(() => {
+    if (heldSince === null) return;
+    const line = currentLine;
+    const id = setInterval(() => {
+      const t = performance.now();
+      setNow(t);
+      if (t - heldSince >= SING_WAIT_MS) {
+        clearInterval(id);
+        setWaitedOut((done) => new Set(done).add(line));
+      }
+    }, 250);
+    return () => clearInterval(id);
+  }, [heldSince, currentLine]);
+  const secondsLeft =
+    heldSince === null
+      ? null
+      : Math.max(0, Math.ceil((SING_WAIT_MS - Math.max(0, now - heldSince)) / 1000));
 
   useEffect(() => {
     finishRef.current = () =>
@@ -121,14 +172,16 @@ export function SingScreen({
       });
   });
 
-  const hidden = status.kind === "dropped" || (status.kind === "playing" && paused);
+  // Paused by you or by another device: lyrics hidden. Waiting for you is
+  // different: the lyrics stay up so you can sing.
+  const hidden = status.kind === "dropped" || (status.kind === "playing" && paused && !held);
   const lyricsShown = status.kind === "playing" && !hidden;
   const lyricsRef = useRef<HTMLDivElement>(null);
   useLineGlide(lyricsRef, currentLine);
   useSweep({
     lyricsRef,
     shown: lyricsShown,
-    full: false,
+    full: held,
     currentLine,
     lines,
     lastLineEndMs: track.durationMs,
@@ -143,22 +196,6 @@ export function SingScreen({
     let charsBefore = 0;
     let k = -1;
 
-    // Hard: no slots, so the number of words stays hidden until the line is over.
-    if (s && level === "hard" && !over) {
-      const heard = s.words.filter((_, i) => s.heardAt[i] !== null);
-      return (
-        <span className={styles.singHidden}>
-          {heard.length
-            ? heard.map((w, i) => (
-                <span key={i} className={styles.word}>
-                  <LyricBlank answer={w} state="correct" />
-                </span>
-              ))
-            : "· · ·"}
-        </span>
-      );
-    }
-
     const words = tokens.map((token, wi) => {
       const at = (charsBefore / totalChars).toFixed(3);
       charsBefore += token.raw.length + 1;
@@ -170,6 +207,14 @@ export function SingScreen({
         );
       }
       k++;
+      // Sounds and names stay as written: they aren't sung for points.
+      if (!s.sing[k]) {
+        return (
+          <span key={wi} data-at={at}>
+            {token.raw}
+          </span>
+        );
+      }
       const state = s.heardAt[k] !== null ? "correct" : over ? "wrong" : "waiting";
       return (
         <span key={wi} className={styles.word} data-at={at}>
@@ -180,10 +225,10 @@ export function SingScreen({
       );
     });
     if (s && over) {
-      const got = s.heardAt.filter((t) => t !== null).length;
+      const { heard, total } = lineCounts(s);
       words.push(
         <span key="count" className={styles.lineCount}>
-          {got} of {s.words.length}
+          {heard} of {total}
         </span>
       );
     }
@@ -193,15 +238,18 @@ export function SingScreen({
   function help(): { text: string; tone: "muted" | "good" | "bad" } {
     if (listening.problem) return { text: PROBLEMS[listening.problem], tone: "bad" };
     if (currentLine < 0) return { text: "Get ready. The first line is coming.", tone: "muted" };
+    if (held && secondsLeft !== null) {
+      return {
+        text: `The song waits for you. Finish the line: ${secondsLeft} s left.`,
+        tone: secondsLeft <= 3 ? "bad" : "muted",
+      };
+    }
     const last = [...sung].reverse().find((s) => isLineOver(s, positionMs));
     if (last && last.line >= currentLine - 1) {
-      const got = last.heardAt.filter((t) => t !== null).length;
+      const { heard, total } = lineCounts(last);
       return {
-        text:
-          got === last.words.length
-            ? "Every word. Nice."
-            : `${got} of ${last.words.length} words heard.`,
-        tone: got === last.words.length ? "good" : "muted",
+        text: heard === total ? "Every word. Nice." : `${heard} of ${total} words heard.`,
+        tone: heard === total ? "good" : "muted",
       };
     }
     return {
@@ -223,7 +271,7 @@ export function SingScreen({
       ? { label: "Not listening — tap to retry", className: styles.micOff }
       : listening.state === "on"
         ? { label: "Listening", className: listening.hearing ? styles.micHearing : styles.micOn }
-        : { label: paused ? "Paused" : "Starting…", className: styles.micIdle };
+        : { label: paused && !held ? "Paused" : "Starting…", className: styles.micIdle };
 
   return (
     <main className={styles.main}>
@@ -269,7 +317,7 @@ export function SingScreen({
             </div>
           )}
 
-          {status.kind === "playing" && paused && (
+          {status.kind === "playing" && paused && !held && (
             <div className={styles.panel}>
               <h2>Paused.</h2>
               <p>The lyrics are hidden and the app isn&apos;t listening. Press play to continue.</p>
@@ -350,7 +398,7 @@ export function SingScreen({
           positionSec={positionSec}
           durationSec={track.durationMs / 1000}
           onToggle={togglePause}
-          disabled={status.kind !== "playing"}
+          disabled={status.kind !== "playing" || held}
         />
       </div>
     </main>
@@ -364,13 +412,19 @@ async function saveSingResult(
   result: SingGameResult
 ): Promise<"saved" | "failed" | "expired"> {
   const words: WordResult[] = result.sung.flatMap((s) =>
-    s.words.map((answer, i) => ({
-      answer,
-      result: s.heardAt[i] !== null ? ("right" as const) : ("revealed" as const),
-      wrongTries: 0,
-      guess: "",
-      line: s.line,
-    }))
+    s.words.flatMap((answer, i) =>
+      s.sing[i]
+        ? [
+            {
+              answer,
+              result: s.heardAt[i] !== null ? ("right" as const) : ("revealed" as const),
+              wrongTries: 0,
+              guess: "",
+              line: s.line,
+            },
+          ]
+        : []
+    )
   );
   try {
     const res = await fetch("/api/games", {
@@ -520,6 +574,7 @@ export function SingResults({
                   {tokenize(lines[s.line].text).map((t, wi) => {
                     if (!t.core) return <span key={wi}>{t.raw} </span>;
                     k++;
+                    if (!s.sing[k]) return <span key={wi}>{t.raw} </span>;
                     return (
                       <span key={wi}>
                         {t.lead}

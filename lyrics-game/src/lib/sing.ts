@@ -1,13 +1,29 @@
 /** Sing mode's rules: which lines you sing, what counts as heard, the score. Pure, like game.ts. */
 
-import { DIFFICULTIES, normalize, tokenize, type Difficulty, type TimedLine } from "./game.ts";
+import {
+  DIFFICULTIES,
+  normalize,
+  tokenize,
+  type Difficulty,
+  type IsWord,
+  type TimedLine,
+} from "./game.ts";
 
 /** What each level means in Sing mode, for the song screen. */
 export const SING_DESCRIPTIONS: Record<Difficulty, string> = {
-  easy: "Every other line is hidden. Sing it. 100 points a word.",
-  medium: "Every line is hidden. Sing it. 150 points a word.",
-  hard: "Every line is hidden, and you won't see how many words it has. 200 points a word.",
+  easy: "One line in three is hidden. Sing it; the song waits up to 10 seconds for you to finish. 100 points a word.",
+  medium:
+    "Every other line is hidden. Sing it; the song waits up to 10 seconds for you to finish. 150 points a word.",
+  hard: "Every line is hidden, and the song doesn't wait. 200 points a word.",
 };
+
+/** Easy and Medium: how long the song waits at the end of a sung line for its missing words. */
+export const SING_WAIT_MS = 10_000;
+
+/** Whether the song waits for you at the end of a sung line. */
+export function singWaits(level: Difficulty): boolean {
+  return level !== "hard";
+}
 
 /** A word heard this long before its line starts, or after it ends, still counts for it. */
 export const SING_GRACE_MS = 1000;
@@ -22,13 +38,81 @@ export function lineWords(text: string): string[] {
     .filter(Boolean);
 }
 
+// Sounds, not words: never sung for points, even when a dictionary lists them.
+const SOUNDS = new Set(
+  [
+    "oh",
+    "ohh",
+    "ooh",
+    "oooh",
+    "uh",
+    "uhh",
+    "uuh",
+    "um",
+    "uhm",
+    "ah",
+    "ahh",
+    "aah",
+    "ay",
+    "ayy",
+    "ey",
+    "eh",
+    "hey",
+    "yeah",
+    "yeh",
+    "yea",
+    "ya",
+    "yah",
+    "yo",
+    "la",
+    "na",
+    "nah",
+    "da",
+    "mm",
+    "mmm",
+    "hmm",
+    "huh",
+    "woah",
+    "whoa",
+    "wo",
+    "uy",
+    "ja",
+    "je",
+    "oye",
+    "ole",
+    "wuh",
+    "brr",
+  ].map(normalize)
+);
+
 /**
- * The lines you sing at a level, by index. Lines without words (instrumental
- * gaps, "♪") are never hidden. Easy hides every other line with words.
+ * Which words of a line you sing for points: real words (in the English or
+ * Spanish word lists) that aren't sounds like "oh" or "yeah". Most names
+ * ("Shakira", "J Balvin") aren't in the lists, so they're left out too. Left
+ * out words stay visible and don't count.
  */
-export function singLines(lines: TimedLine[], level: Difficulty): number[] {
-  const withWords = lines.flatMap((line, i) => (lineWords(line.text).length ? [i] : []));
-  return level === "easy" ? withWords.filter((_, k) => k % 2 === 0) : withWords;
+export function singableWords(text: string, isWord: IsWord): boolean[] {
+  return lineWords(text).map((word) => isWord(word) && !SOUNDS.has(normalize(word)));
+}
+
+/** Every word counts, when the server hasn't said which to leave out. */
+function allWords(lines: TimedLine[]): boolean[][] {
+  return lines.map((line) => lineWords(line.text).map(() => true));
+}
+
+/**
+ * The lines you sing at a level, by index: lines with at least one word to
+ * sing (so not instrumental gaps, "♪" or "Ooh, yeah"). Easy hides one in
+ * three, Medium every other one, Hard every one.
+ */
+export function singLines(
+  lines: TimedLine[],
+  level: Difficulty,
+  singable: boolean[][] = allWords(lines)
+): number[] {
+  const withWords = lines.flatMap((_, i) => (singable[i]?.some(Boolean) ? [i] : []));
+  const every = level === "easy" ? 3 : level === "medium" ? 2 : 1;
+  return withWords.filter((_, k) => k % every === 0);
 }
 
 /** A word the browser heard, and when (ms into the song). */
@@ -44,8 +128,22 @@ export interface SungLine {
   endMs: number;
   /** The words as written in the lyrics. */
   words: string[];
+  /** For each word, whether it's sung for points (not "oh", not a name). */
+  sing: boolean[];
   /** For each word, when it was heard (ms into the song), or null. */
   heardAt: (number | null)[];
+}
+
+/** Words sung for points on a line, and how many of them were heard. */
+export function lineCounts(line: SungLine): { heard: number; total: number } {
+  let heard = 0;
+  let total = 0;
+  line.sing.forEach((sing, i) => {
+    if (!sing) return;
+    total++;
+    if (line.heardAt[i] !== null) heard++;
+  });
+  return { heard, total };
 }
 
 /** A heard word as the browser wrote it, compared the forgiving way typing is. */
@@ -72,7 +170,8 @@ export function matchSung(
   lines: TimedLine[],
   sung: number[],
   heard: HeardWord[],
-  songEndMs: number
+  songEndMs: number,
+  singable: boolean[][] = allWords(lines)
 ): SungLine[] {
   const result: SungLine[] = sung.map((i) => {
     const words = lineWords(lines[i].text);
@@ -81,6 +180,7 @@ export function matchSung(
       startMs: lines[i].timeMs,
       endMs: lines[i + 1]?.timeMs ?? songEndMs,
       words,
+      sing: words.map((_, j) => singable[i]?.[j] ?? true),
       heardAt: words.map(() => null),
     };
   });
@@ -99,9 +199,10 @@ export function matchSung(
       .map(({ k }) => k);
 
   const take = (k: number, matches: (w: string) => boolean, atMs: number): boolean => {
-    const i = lyric[k].findIndex((w, j) => result[k].heardAt[j] === null && matches(w));
+    const r = result[k];
+    const i = lyric[k].findIndex((w, j) => r.sing[j] && r.heardAt[j] === null && matches(w));
     if (i < 0) return false;
-    result[k].heardAt[i] = atMs;
+    r.heardAt[i] = atMs;
     return true;
   };
 
@@ -154,11 +255,11 @@ export function singStats(sung: SungLine[], positionMs: number, level: Difficult
   let streak = 0;
   let bestStreak = 0;
   for (const line of sung) {
-    const heard = line.heardAt.filter((t) => t !== null).length;
-    total += line.words.length;
-    correct += heard;
+    const counts = lineCounts(line);
+    total += counts.total;
+    correct += counts.heard;
     if (!isLineOver(line, positionMs)) continue;
-    streak = heard === line.words.length ? streak + 1 : 0;
+    streak = counts.heard === counts.total ? streak + 1 : 0;
     bestStreak = Math.max(bestStreak, streak);
   }
   return {
