@@ -278,3 +278,91 @@
   color: var(--tertiary-600);
   font: 400 15px/1.5 var(--font-sans);
 }
+
+/* Sing mode */
+
+/* Hard: what's been heard of the current line, without its length. */
+.singHidden {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  column-gap: 0.32em;
+  color: var(--grey-400);
+}
+
+/* "5 of 7" after a sung line is over. */
+.lineCount {
+  align-self: center;
+  font: 600 13px var(--font-sans);
+  color: var(--grey-500);
+  background: var(--grey-100);
+  border-radius: 8px;
+  padding: 2px 8px;
+}
+
+/* The microphone light. */
+.mic {
+  border: none;
+  gap: 6px;
+}
+
+.mic:disabled {
+  cursor: default;
+}
+
+.micDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.micIdle {
+  background: var(--grey-100);
+  color: var(--grey-500);
+}
+
+.micOn {
+  background: var(--secondary-100);
+  color: var(--secondary-700);
+}
+
+.micHearing {
+  background: var(--secondary-100);
+  color: var(--secondary-700);
+}
+
+.micHearing .micDot {
+  animation: micPulse 0.7s ease-in-out infinite alternate;
+}
+
+.micOff {
+  background: var(--tertiary-100);
+  color: var(--tertiary-600);
+  cursor: pointer;
+}
+
+@keyframes micPulse {
+  to {
+    transform: scale(1.6);
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .micHearing .micDot {
+    animation: none;
+  }
+}
+
+/* Results: every sung line, words heard or missed. */
+.sungLines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font: 400 22px/1.6 var(--font-display);
+  color: var(--grey-600);
+}

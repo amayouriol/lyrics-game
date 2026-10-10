@@ -9,7 +9,7 @@ export default async function PlayPage({
   searchParams,
 }: {
   params: Promise<{ trackId: string }>;
-  searchParams: Promise<{ from?: string; level?: string }>;
+  searchParams: Promise<{ from?: string; level?: string; mode?: string }>;
 }) {
   const session = await getSession();
   if (!hasActiveSession(session)) {
@@ -17,13 +17,14 @@ export default async function PlayPage({
   }
 
   const { trackId } = await params;
-  const { from, level } = await searchParams;
+  const { from, level, mode } = await searchParams;
 
   return (
     <PlayClient
       trackId={trackId}
       from={from ?? null}
       initialLevel={isDifficulty(level) ? level : "medium"}
+      initialMode={mode === "sing" ? "sing" : "type"}
     />
   );
 }

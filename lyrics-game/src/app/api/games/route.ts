@@ -19,21 +19,30 @@ function isText(value: unknown, max: number): value is string {
 function parseWord(value: unknown): WordResult | null {
   const w = value as Record<string, unknown> | null;
   if (!w || typeof w !== "object") return null;
-  const { answer, result, wrongTries, guess } = w;
+  const { answer, result, wrongTries, guess, line } = w;
   if (!isText(answer, 100) || !answer) return null;
   if (typeof result !== "string" || !RESULTS.has(result)) return null;
   if (!Number.isInteger(wrongTries) || (wrongTries as number) < 0) return null;
   if ((wrongTries as number) > MAX_TRIES) return null;
   if (!isText(guess, 200)) return null;
-  return { answer, result: result as WordResult["result"], wrongTries: wrongTries as number, guess };
+  if (line !== undefined && (!Number.isInteger(line) || (line as number) < 0)) return null;
+  const word: WordResult = {
+    answer,
+    result: result as WordResult["result"],
+    wrongTries: wrongTries as number,
+    guess,
+  };
+  if (line !== undefined) word.line = line as number;
+  return word;
 }
 
 /** A finished game from the results screen; the numbers are worked out here, not trusted. */
 function parseGame(body: unknown) {
   const b = body as Record<string, unknown> | null;
   if (!b || typeof b !== "object") return null;
-  const { id, level, song, words } = b;
+  const { id, level, mode, song, words } = b;
   if (typeof id !== "string" || !GAME_ID.test(id) || !isDifficulty(level)) return null;
+  if (mode !== undefined && mode !== "sing") return null;
 
   const s = song as Record<string, unknown> | null;
   if (!s || typeof s !== "object") return null;
@@ -47,8 +56,22 @@ function parseGame(body: unknown) {
   if (!Array.isArray(words) || words.length > MAX_WORDS) return null;
   const parsed = words.map(parseWord);
   if (parsed.some((w) => w === null)) return null;
+  // A sung word is heard or not, on a line: no tries, no typed guess.
+  const sung = mode === "sing";
+  if (
+    sung &&
+    parsed.some((w) => w!.line === undefined || w!.wrongTries > 0 || w!.result === "wrong")
+  ) {
+    return null;
+  }
 
-  return { id, level, song: gameSong, words: parsed as WordResult[] };
+  return {
+    id,
+    level,
+    ...(sung ? { mode: "sing" as const } : {}),
+    song: gameSong,
+    words: parsed as WordResult[],
+  };
 }
 
 /** Saves a finished game to your progress. Saving the same game twice is harmless. */
@@ -69,7 +92,7 @@ export async function POST(request: Request) {
     const game: Game = {
       ...parsed,
       playedAt: Date.now(),
-      ...summarizeGame(parsed.words, parsed.level),
+      ...summarizeGame(parsed.words, parsed.level, parsed.mode),
     };
     const status = await saveGame(userId, game);
     try {

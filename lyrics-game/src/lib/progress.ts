@@ -1,6 +1,6 @@
 /** Saved games and the progress worked out from them. Pure, so the rules can be checked. */
 
-import { normalize, pointsFor, type Difficulty } from "./game";
+import { normalize, pointsFor, type Difficulty } from "./game.ts";
 
 /** How one hidden word went. "revealed": missed without a guess to show. */
 export interface WordResult {
@@ -9,6 +9,8 @@ export interface WordResult {
   wrongTries: number;
   /** What was in the box at the end ("" if nothing). */
   guess: string;
+  /** Sing mode: the line the word was sung on (for full-line streaks). */
+  line?: number;
 }
 
 export interface GameSong {
@@ -35,14 +37,18 @@ export interface Game extends GameSummary {
   playedAt: number;
   song: GameSong;
   level: Difficulty;
+  /** "sing" for Sing mode; typed games (and every game before Phase 8) have none. */
+  mode?: "sing";
   words: WordResult[];
 }
 
 /**
  * A game's numbers from its word results, by the game's own rules: points
  * halve per wrong try, and the streak only counts words right on the first try.
+ * Sung games: points per word heard, and the streak counts full lines.
  */
-export function summarizeGame(words: WordResult[], level: Difficulty): GameSummary {
+export function summarizeGame(words: WordResult[], level: Difficulty, mode?: "sing"): GameSummary {
+  if (mode === "sing") return summarizeSung(words, level);
   let score = 0;
   let correct = 0;
   let streak = 0;
@@ -59,6 +65,28 @@ export function summarizeGame(words: WordResult[], level: Difficulty): GameSumma
   }
   return {
     score,
+    accuracy: words.length ? Math.round((correct / words.length) * 100) : 0,
+    correct,
+    total: words.length,
+    bestStreak,
+  };
+}
+
+function summarizeSung(words: WordResult[], level: Difficulty): GameSummary {
+  const correct = words.filter((w) => w.result === "right").length;
+  const lines = new Map<number, boolean>();
+  for (const word of words) {
+    const line = word.line ?? -1;
+    lines.set(line, (lines.get(line) ?? true) && word.result === "right");
+  }
+  let streak = 0;
+  let bestStreak = 0;
+  for (const full of [...lines.entries()].sort((a, b) => a[0] - b[0]).map(([, f]) => f)) {
+    streak = full ? streak + 1 : 0;
+    bestStreak = Math.max(bestStreak, streak);
+  }
+  return {
+    score: correct * pointsFor(level, 0),
     accuracy: words.length ? Math.round((correct / words.length) * 100) : 0,
     correct,
     total: words.length,

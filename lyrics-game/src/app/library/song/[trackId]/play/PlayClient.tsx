@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
@@ -27,6 +27,10 @@ import {
 } from "@/lib/game";
 import type { WordResult } from "@/lib/progress";
 import { loadSong, playHref, songHref, type SongResult, type TrackSummary } from "../loadSong";
+import { useSingLanguage, type PlayMode } from "../singPrefs";
+import { useLineGlide, useSweep } from "./lyricsMotion";
+import { SingResults, SingScreen, type SingGameResult } from "./SingScreen";
+import { LISTEN_LANG } from "./speech";
 import { usePlayer, type PlayerError } from "./usePlayer";
 import styles from "./play.module.css";
 
@@ -59,16 +63,10 @@ const LAST_LINE_HOLD_MS = 1_500;
 const WAIT_LIMIT_MS = 15_000;
 /** The countdown turns red for its last seconds. */
 const WAIT_WARNING_SEC = 5;
-/** How long lines take to glide into place when the song reaches a new one. */
-const GLIDE_MS = 350;
-
-function prefersReducedMotion(): boolean {
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
-
 interface GameResult {
   /** Made when the round starts, so the game is saved once however often it's sent. */
   id: string;
+  mode: "type";
   level: Difficulty;
   blanks: Blank[];
   answers: Record<string, Answer>;
@@ -79,17 +77,20 @@ export function PlayClient({
   trackId,
   from,
   initialLevel,
+  initialMode,
 }: {
   trackId: string;
   from: string | null;
   initialLevel: Difficulty;
+  initialMode: PlayMode;
 }) {
   const router = useRouter();
   const [reloadKey, setReloadKey] = useState(0);
   const [result, setResult] = useState<{ key: number; value: SongResult } | null>(null);
   const [level, setLevel] = useState(initialLevel);
   const [round, setRound] = useState(0);
-  const [gameResult, setGameResult] = useState<GameResult | null>(null);
+  const [mode, setMode] = useState(initialMode);
+  const [gameResult, setGameResult] = useState<GameResult | SingGameResult | null>(null);
 
   useEffect(() => {
     let ignore = false;
@@ -108,27 +109,60 @@ export function PlayClient({
 
   const song = result && result.key === reloadKey ? result.value : null;
   const backHref = songHref(trackId, from);
+  const [language] = useSingLanguage(trackId, song?.kind === "ready" ? song.language : null);
+  const libraryHref = from ? `/library?source=${encodeURIComponent(from)}` : "/library";
 
-  const startRound = (nextLevel: Difficulty) => {
-    if (nextLevel !== level) {
+  const startRound = (nextLevel: Difficulty, nextMode: PlayMode = mode) => {
+    if (nextLevel !== level || nextMode !== mode) {
       setLevel(nextLevel);
-      // Keep the URL in step, so a refresh replays at the same level.
-      window.history.replaceState(null, "", playHref(trackId, from, nextLevel));
+      setMode(nextMode);
+      // Keep the URL in step, so a refresh replays at the same level and mode.
+      window.history.replaceState(null, "", playHref(trackId, from, nextLevel, nextMode));
     }
     setGameResult(null);
     setRound((r) => r + 1);
   };
 
   if (song?.kind === "ready" && song.status === "available") {
+    if (gameResult?.mode === "sing") {
+      return (
+        <SingResults
+          trackId={trackId}
+          track={song.track}
+          lines={song.lines}
+          result={gameResult}
+          libraryHref={libraryHref}
+          onPlayAgain={() => startRound(gameResult.level)}
+          onTryNext={(next) => startRound(next)}
+          onTryTyping={() => startRound(gameResult.level, "type")}
+        />
+      );
+    }
     if (gameResult) {
       return (
         <Results
           trackId={trackId}
           track={song.track}
           result={gameResult}
-          libraryHref={from ? `/library?source=${encodeURIComponent(from)}` : "/library"}
+          libraryHref={libraryHref}
           onPlayAgain={() => startRound(gameResult.level)}
           onTryNext={(next) => startRound(next)}
+        />
+      );
+    }
+    if (mode === "sing") {
+      return (
+        <SingScreen
+          // A new key per round resets the game; the page's Spotify player is reused.
+          key={`sing-${level}-${round}`}
+          trackId={trackId}
+          track={song.track}
+          lines={song.lines}
+          level={level}
+          listenLang={LISTEN_LANG[language ?? "en"]}
+          backHref={backHref}
+          errors={ERRORS}
+          onFinished={setGameResult}
         />
       );
     }
@@ -211,6 +245,7 @@ function PlayScreen({
   const onEnded = useCallback(() => {
     onFinished({
       id: gameId,
+      mode: "type",
       level,
       blanks,
       answers,
@@ -320,7 +355,11 @@ function PlayScreen({
     const wrongTries = (answers[blank.id]?.wrongTries ?? 0) + 1;
     if (wrongTries >= MAX_TRIES) {
       setAnswers({ ...answers, [blank.id]: { value, status: "missed", wrongTries } });
-      setLastEvent({ line: currentLine, text: `Out of tries. It was “${blank.answer}”.`, bad: true });
+      setLastEvent({
+        line: currentLine,
+        text: `Out of tries. It was “${blank.answer}”.`,
+        bad: true,
+      });
       return;
     }
     // Clear the box for the next try.
@@ -378,7 +417,11 @@ function PlayScreen({
       const last = missed[missed.length - 1];
       const answer = answers[last.id];
       const lead =
-        answer?.status !== "missed" ? "Too slow." : answer.timedOut ? "Time's up." : "Out of tries.";
+        answer?.status !== "missed"
+          ? "Too slow."
+          : answer.timedOut
+            ? "Time's up."
+            : "Out of tries.";
       return { text: `${lead} It was “${last.answer}”.`, tone: "bad" };
     }
     return { text: HELP_DEFAULT, tone: "muted" };
@@ -429,83 +472,21 @@ function PlayScreen({
     });
   }
 
-  // Lines glide when the song reaches a new one. Each line stays the same
-  // element as it moves from current to previous, so its position before
-  // and after can be compared (layout positions, which transforms don't
-  // affect) and the difference animated away. The line shown always comes
-  // from the song's position; the animation only follows it.
   const lyricsRef = useRef<HTMLDivElement>(null);
-  const placesRef = useRef(new Map<string, { x: number; y: number; font: number }>());
-  const placedLineRef = useRef(currentLine);
-  useLayoutEffect(() => {
-    const root = lyricsRef.current;
-    if (!root) {
-      placesRef.current.clear();
-      return;
-    }
-    const els = [...root.querySelectorAll<HTMLElement>("[data-key]")];
-    const places = new Map(
-      els.map((el) => [
-        el.dataset.key!,
-        {
-          x: el.offsetLeft + el.offsetWidth / 2,
-          y: el.offsetTop + el.offsetHeight / 2,
-          font: parseFloat(getComputedStyle(el).fontSize),
-        },
-      ])
-    );
-    if (placedLineRef.current !== currentLine && !prefersReducedMotion()) {
-      for (const el of els) {
-        const before = placesRef.current.get(el.dataset.key!);
-        const after = places.get(el.dataset.key!)!;
-        el.style.transition = "none";
-        el.style.transform = "";
-        if (!before) continue;
-        const dx = before.x - after.x;
-        const dy = before.y - after.y;
-        const scale = before.font / after.font;
-        if (dx || dy || scale !== 1) {
-          el.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
-        }
-      }
-      void root.offsetWidth; // apply the starting positions before animating
-      for (const el of els) {
-        if (!el.style.transform) continue;
-        el.style.transition = `transform ${GLIDE_MS}ms ease, color ${GLIDE_MS}ms ease`;
-        el.style.transform = "";
-      }
-    }
-    placedLineRef.current = currentLine;
-    placesRef.current = places;
-  });
+  useLineGlide(lyricsRef, currentLine);
 
-  // The sweep: lights each word of the current line as the song gets to
-  // it, spread evenly from the line's start to the next line's. Written
-  // straight to the page each frame, so typing never waits for it. While
-  // the song waits for an answer, the whole line is lit (the song stops a
-  // little before the next line, which would leave the last word dim).
+  // While the song waits for an answer, the whole line is lit (the song
+  // stops a little before the next line, which would leave the last word dim).
   const lyricsShown = status.kind === "playing" && !hidden;
-  useEffect(() => {
-    const line = lyricsRef.current?.querySelector<HTMLElement>(`[data-key="${currentLine}"]`);
-    if (!lyricsShown || !line || currentLine < 0) return;
-    const words = [...line.querySelectorAll<HTMLElement>("[data-at]")];
-    const start = lines[currentLine].timeMs;
-    const end =
-      currentLine + 1 < lines.length
-        ? lines[currentLine + 1].timeMs
-        : track.durationMs - LAST_LINE_HOLD_MS;
-    const full = held || prefersReducedMotion();
-    let frame = 0;
-    const paint = () => {
-      const progress = full
-        ? 1
-        : Math.min(1, Math.max(0, (getPositionMs() - start) / Math.max(1, end - start)));
-      for (const word of words) word.toggleAttribute("data-lit", progress >= Number(word.dataset.at));
-      if (progress < 1) frame = requestAnimationFrame(paint);
-    };
-    paint();
-    return () => cancelAnimationFrame(frame);
-  }, [lyricsShown, held, currentLine, lines, track.durationMs, getPositionMs]);
+  useSweep({
+    lyricsRef,
+    shown: lyricsShown,
+    full: held,
+    currentLine,
+    lines,
+    lastLineEndMs: track.durationMs - LAST_LINE_HOLD_MS,
+    getPositionMs,
+  });
 
   async function quit() {
     await stop();
@@ -540,8 +521,8 @@ function PlayScreen({
             <div className={styles.panel}>
               <h2>Paused: Spotify is playing somewhere else.</h2>
               <p>
-                The music moved to another device, or the connection to Spotify dropped. Your
-                place in the song is saved.
+                The music moved to another device, or the connection to Spotify dropped. Your place
+                in the song is saved.
               </p>
               <button className="btn btn--lg" onClick={resume}>
                 Resume here
@@ -728,7 +709,10 @@ function Results({
           {saveFailed && (
             <div className={styles.saveError}>
               <span>Couldn&apos;t save this game to your progress.</span>
-              <button className="btn btn--ghost btn--sm" onClick={() => setSaveAttempt((n) => n + 1)}>
+              <button
+                className="btn btn--ghost btn--sm"
+                onClick={() => setSaveAttempt((n) => n + 1)}
+              >
                 Retry
               </button>
             </div>

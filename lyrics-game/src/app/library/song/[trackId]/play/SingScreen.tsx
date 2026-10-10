@@ -1,0 +1,542 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Header } from "@/components/Header";
+import { LyricBlank } from "@/components/LyricBlank";
+import { PlayerBar } from "@/components/PlayerBar";
+import { StatBlock } from "@/components/StatBlock";
+import {
+  DIFFICULTIES,
+  nextDifficulty,
+  tokenize,
+  verdict,
+  type Difficulty,
+  type TimedLine,
+} from "@/lib/game";
+import type { WordResult } from "@/lib/progress";
+import {
+  isLineOver,
+  matchSung,
+  SING_DESCRIPTIONS,
+  singLines,
+  singStats,
+  type SingStats,
+  type SungLine,
+} from "@/lib/sing";
+import type { TrackSummary } from "../loadSong";
+import { useLineGlide, useSweep } from "./lyricsMotion";
+import type { ListeningProblem } from "./useListening";
+import { useListening } from "./useListening";
+import { usePlayer, type PlayerError } from "./usePlayer";
+import styles from "./play.module.css";
+
+/** Not listening for longer than this in a song is mentioned on the results. */
+const OFF_NOTE_MS = 3_000;
+
+export interface SingGameResult {
+  /** Made when the round starts, so the game is saved once however often it's sent. */
+  id: string;
+  mode: "sing";
+  level: Difficulty;
+  sung: SungLine[];
+  stats: SingStats;
+  /** Time spent not listening while the song played. */
+  offMs: number;
+}
+
+const PROBLEMS: Record<ListeningProblem, string> = {
+  denied:
+    "Sing mode needs your microphone. Allow it from the icon at the left of the address bar, then tap the microphone above.",
+  no_mic: "No microphone found. Plug one in, then tap the microphone above.",
+  stopped: "Not listening. Tap the microphone above to try again.",
+  unsupported: "This browser can't listen. Sing mode works in Chrome and Edge.",
+};
+
+export function SingScreen({
+  trackId,
+  track,
+  lines,
+  level,
+  listenLang,
+  backHref,
+  errors,
+  onFinished,
+}: {
+  trackId: string;
+  track: TrackSummary;
+  lines: TimedLine[];
+  level: Difficulty;
+  /** The browser's language setting to listen with ("es-US"). */
+  listenLang: string;
+  backHref: string;
+  errors: Record<PlayerError, { title: string; body: string }>;
+  onFinished: (result: SingGameResult) => void;
+}) {
+  const router = useRouter();
+  const lineTimesMs = useMemo(() => lines.map((l) => l.timeMs), [lines]);
+  const sungLines = useMemo(() => singLines(lines, level), [lines, level]);
+  const [gameId] = useState(() => crypto.randomUUID());
+
+  const finishRef = useRef<() => void>(() => {});
+  const onEnded = useCallback(() => finishRef.current(), []);
+  const {
+    status,
+    paused,
+    positionSec,
+    lineIndex,
+    togglePause,
+    resume,
+    unblock,
+    retry,
+    stop,
+    getPositionMs,
+  } = usePlayer({ trackId, durationMs: track.durationMs, lineTimesMs, onEnded });
+
+  // The music never waits in Sing mode: no hold point is ever set.
+  const playing = status.kind === "playing" && !paused;
+  const listening = useListening({ lang: listenLang, active: playing, getPositionMs });
+  const sung = useMemo(
+    () => matchSung(lines, sungLines, listening.heard, track.durationMs),
+    [lines, sungLines, listening.heard, track.durationMs]
+  );
+  const byLine = useMemo(() => new Map(sung.map((s) => [s.line, s])), [sung]);
+
+  const currentLine = lineIndex - 1;
+  // Re-rendered every second by the player, which is fine for a line's
+  // misses showing once its grace second is over.
+  const positionMs = positionSec * 1000;
+  const stats = singStats(sung, positionMs, level);
+
+  useEffect(() => {
+    finishRef.current = () =>
+      onFinished({
+        id: gameId,
+        mode: "sing",
+        level,
+        sung,
+        stats: singStats(sung, Infinity, level),
+        offMs: listening.getOffMs(),
+      });
+  });
+
+  const hidden = status.kind === "dropped" || (status.kind === "playing" && paused);
+  const lyricsShown = status.kind === "playing" && !hidden;
+  const lyricsRef = useRef<HTMLDivElement>(null);
+  useLineGlide(lyricsRef, currentLine);
+  useSweep({
+    lyricsRef,
+    shown: lyricsShown,
+    full: false,
+    currentLine,
+    lines,
+    lastLineEndMs: track.durationMs,
+    getPositionMs,
+  });
+
+  function renderLine(li: number) {
+    const tokens = tokenize(lines[li].text);
+    const s = byLine.get(li);
+    const over = s ? isLineOver(s, positionMs) : false;
+    const totalChars = tokens.reduce((n, t) => n + t.raw.length + 1, 0);
+    let charsBefore = 0;
+    let k = -1;
+
+    // Hard: no slots, so the number of words stays hidden until the line is over.
+    if (s && level === "hard" && !over) {
+      const heard = s.words.filter((_, i) => s.heardAt[i] !== null);
+      return (
+        <span className={styles.singHidden}>
+          {heard.length
+            ? heard.map((w, i) => (
+                <span key={i} className={styles.word}>
+                  <LyricBlank answer={w} state="correct" />
+                </span>
+              ))
+            : "· · ·"}
+        </span>
+      );
+    }
+
+    const words = tokens.map((token, wi) => {
+      const at = (charsBefore / totalChars).toFixed(3);
+      charsBefore += token.raw.length + 1;
+      if (!s || !token.core) {
+        return (
+          <span key={wi} data-at={at}>
+            {token.raw}
+          </span>
+        );
+      }
+      k++;
+      const state = s.heardAt[k] !== null ? "correct" : over ? "wrong" : "waiting";
+      return (
+        <span key={wi} className={styles.word} data-at={at}>
+          {token.lead}
+          <LyricBlank answer={token.core} state={state} />
+          {token.trail}
+        </span>
+      );
+    });
+    if (s && over) {
+      const got = s.heardAt.filter((t) => t !== null).length;
+      words.push(
+        <span key="count" className={styles.lineCount}>
+          {got} of {s.words.length}
+        </span>
+      );
+    }
+    return words;
+  }
+
+  function help(): { text: string; tone: "muted" | "good" | "bad" } {
+    if (listening.problem) return { text: PROBLEMS[listening.problem], tone: "bad" };
+    if (currentLine < 0) return { text: "Get ready. The first line is coming.", tone: "muted" };
+    const last = [...sung].reverse().find((s) => isLineOver(s, positionMs));
+    if (last && last.line >= currentLine - 1) {
+      const got = last.heardAt.filter((t) => t !== null).length;
+      return {
+        text:
+          got === last.words.length
+            ? "Every word. Nice."
+            : `${got} of ${last.words.length} words heard.`,
+        tone: got === last.words.length ? "good" : "muted",
+      };
+    }
+    return {
+      text: byLine.has(currentLine)
+        ? "Sing it."
+        : "Sing the hidden lines. Words fill in as they're heard.",
+      tone: "muted",
+    };
+  }
+
+  async function quit() {
+    await stop();
+    router.push(backHref);
+  }
+
+  const helpLine = help();
+  const mic =
+    listening.state === "failed"
+      ? { label: "Not listening — tap to retry", className: styles.micOff }
+      : listening.state === "on"
+        ? { label: "Listening", className: listening.hearing ? styles.micHearing : styles.micOn }
+        : { label: paused ? "Paused" : "Starting…", className: styles.micIdle };
+
+  return (
+    <main className={styles.main}>
+      <div className={styles.body}>
+        <div className={styles.topBar}>
+          <button className="btn btn--ghost btn--sm" onClick={quit}>
+            Quit song
+          </button>
+          <div className={styles.chips}>
+            <button
+              type="button"
+              className={`chip chip--sm ${styles.mic} ${mic.className}`}
+              onClick={listening.state === "failed" ? listening.retry : undefined}
+              disabled={listening.state !== "failed"}
+            >
+              <span className={styles.micDot} aria-hidden="true" />
+              {mic.label}
+            </button>
+            <span className="chip chip--tertiary chip--sm">Sing · {DIFFICULTIES[level].label}</span>
+            <span className="chip chip--grey chip--sm">
+              Line {Math.max(0, lineIndex)} of {lines.length}
+            </span>
+            <span className="chip chip--primary chip--sm">{stats.score} pts</span>
+            <span className="chip chip--quaternary chip--sm">Full lines {stats.streak}</span>
+          </div>
+        </div>
+
+        <div className={styles.center}>
+          {status.kind === "connecting" && (
+            <div className={styles.status}>Getting the player ready…</div>
+          )}
+
+          {status.kind === "dropped" && (
+            <div className={styles.panel}>
+              <h2>Paused: Spotify is playing somewhere else.</h2>
+              <p>
+                The music moved to another device, or the connection to Spotify dropped. Your place
+                in the song is saved.
+              </p>
+              <button className="btn btn--lg" onClick={resume}>
+                Resume here
+              </button>
+            </div>
+          )}
+
+          {status.kind === "playing" && paused && (
+            <div className={styles.panel}>
+              <h2>Paused.</h2>
+              <p>The lyrics are hidden and the app isn&apos;t listening. Press play to continue.</p>
+            </div>
+          )}
+
+          {lyricsShown && (
+            <div className={styles.lyrics} ref={lyricsRef}>
+              {currentLine >= 1 ? (
+                <div
+                  key={currentLine - 1}
+                  data-key={currentLine - 1}
+                  className={`${styles.line} ${styles.prevLine}`}
+                >
+                  {renderLine(currentLine - 1)}
+                </div>
+              ) : (
+                <div key="top" data-key="top" className={`${styles.line} ${styles.prevLine}`} />
+              )}
+              <div
+                key={currentLine >= 0 ? currentLine : "intro"}
+                data-key={currentLine >= 0 ? currentLine : "intro"}
+                className={`${styles.line} ${styles.currentLine} ${styles.enter}`}
+              >
+                {currentLine >= 0 ? renderLine(currentLine) : "· · ·"}
+              </div>
+              <div key="next" data-key="next" className={`${styles.line} ${styles.nextLine}`}>
+                {currentLine < lines.length - 1 ? "· · ·" : ""}
+              </div>
+            </div>
+          )}
+
+          {status.kind === "blocked" && (
+            <div className={styles.panel}>
+              <h2>Your browser blocked the sound.</h2>
+              <p>Browsers only allow sound after you click something.</p>
+              <button className="btn btn--lg" onClick={unblock}>
+                Start the music
+              </button>
+            </div>
+          )}
+
+          {status.kind === "error" && (
+            <div className={styles.panel}>
+              <h2>{errors[status.error].title}</h2>
+              <p>{errors[status.error].body}</p>
+              <div className={styles.actions}>
+                {status.error === "permissions" && (
+                  // Plain link: this is a server route, not a page to prefetch.
+                  <a href="/api/auth/login" className="btn">
+                    Reconnect Spotify
+                  </a>
+                )}
+                {status.error === "start_failed" && (
+                  <button className="btn" onClick={retry}>
+                    Retry
+                  </button>
+                )}
+                <Link href={backHref} className="btn btn--ghost">
+                  Back to song
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {status.kind === "playing" && !hidden && (
+          <div className={`${styles.help} ${styles[helpLine.tone]}`}>{helpLine.text}</div>
+        )}
+      </div>
+
+      <div className={styles.playerBar}>
+        <PlayerBar
+          title={track.title}
+          artist={track.artist}
+          cover={track.cover}
+          playing={playing}
+          positionSec={positionSec}
+          durationSec={track.durationMs / 1000}
+          onToggle={togglePause}
+          disabled={status.kind !== "playing"}
+        />
+      </div>
+    </main>
+  );
+}
+
+/** Sends a finished sung game to your progress: each sung word heard or not, with its line. */
+async function saveSingResult(
+  trackId: string,
+  track: TrackSummary,
+  result: SingGameResult
+): Promise<"saved" | "failed" | "expired"> {
+  const words: WordResult[] = result.sung.flatMap((s) =>
+    s.words.map((answer, i) => ({
+      answer,
+      result: s.heardAt[i] !== null ? ("right" as const) : ("revealed" as const),
+      wrongTries: 0,
+      guess: "",
+      line: s.line,
+    }))
+  );
+  try {
+    const res = await fetch("/api/games", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: result.id,
+        mode: "sing",
+        level: result.level,
+        song: {
+          trackId,
+          title: track.title,
+          artist: track.artist,
+          cover: track.cover,
+          durationMs: track.durationMs,
+        },
+        words,
+      }),
+    });
+    if (res.status === 401) return "expired";
+    return res.ok ? "saved" : "failed";
+  } catch {
+    return "failed";
+  }
+}
+
+export function SingResults({
+  trackId,
+  track,
+  lines,
+  result,
+  libraryHref,
+  onPlayAgain,
+  onTryNext,
+  onTryTyping,
+}: {
+  trackId: string;
+  track: TrackSummary;
+  lines: TimedLine[];
+  result: SingGameResult;
+  libraryHref: string;
+  onPlayAgain: () => void;
+  onTryNext: (level: Difficulty) => void;
+  onTryTyping: () => void;
+}) {
+  const router = useRouter();
+  const { level, sung, stats } = result;
+  const next = nextDifficulty(level);
+  const info = DIFFICULTIES[level];
+
+  // Saved as soon as the results open. The server ignores a game it already
+  // has, so Retry (or a double send) can't count it twice.
+  const [saveAttempt, setSaveAttempt] = useState(0);
+  const [saveResult, setSaveResult] = useState<{ attempt: number; failed: boolean } | null>(null);
+  useEffect(() => {
+    let ignore = false;
+    saveSingResult(trackId, track, result).then((outcome) => {
+      if (ignore) return;
+      if (outcome === "expired") router.push("/?expired=1");
+      else setSaveResult({ attempt: saveAttempt, failed: outcome === "failed" });
+    });
+    return () => {
+      ignore = true;
+    };
+  }, [trackId, track, result, saveAttempt, router]);
+  const saveFailed = saveResult?.attempt === saveAttempt && saveResult.failed;
+
+  return (
+    <>
+      <Header />
+      <main className={styles.results}>
+        <section className={styles.resultsTop}>
+          <span className="chip chip--primary chip--sm">
+            {track.title} — {track.artist}
+          </span>
+          <h1 className={styles.verdict}>{verdict(stats.accuracy)}</h1>
+          <p className={styles.summary}>
+            You sang {stats.correct} of {stats.total} words in {track.title}.
+          </p>
+          {result.offMs >= OFF_NOTE_MS && (
+            <p className={styles.summary}>
+              Listening was off for part of this song, so some lines may count as missed.
+            </p>
+          )}
+          {saveFailed && (
+            <div className={styles.saveError}>
+              <span>Couldn&apos;t save this game to your progress.</span>
+              <button
+                className="btn btn--ghost btn--sm"
+                onClick={() => setSaveAttempt((n) => n + 1)}
+              >
+                Retry
+              </button>
+            </div>
+          )}
+          <div className={styles.stats}>
+            <StatBlock
+              label="Score"
+              value={stats.score}
+              tone="primary"
+              hint={`${info.points} per word`}
+            />
+            <StatBlock
+              label="Accuracy"
+              value={`${stats.accuracy}%`}
+              tone="secondary"
+              hint={`${stats.correct} of ${stats.total} words heard`}
+            />
+            <StatBlock
+              label="Best streak"
+              value={stats.bestStreak}
+              tone="quaternary"
+              hint="Full lines in a row"
+            />
+            <StatBlock
+              label="Sing"
+              value={info.label}
+              tone="tertiary"
+              hint={SING_DESCRIPTIONS[level].split(".")[0]}
+            />
+          </div>
+          <div className={styles.actions}>
+            <button className="btn btn--lg" onClick={onPlayAgain}>
+              Sing again
+            </button>
+            {next && (
+              <button className="btn btn--lg btn--secondary" onClick={() => onTryNext(next)}>
+                Try {DIFFICULTIES[next].label}
+              </button>
+            )}
+            <button className="btn btn--lg btn--secondary" onClick={onTryTyping}>
+              Try typing
+            </button>
+            <Link href={libraryHref} className="btn btn--lg btn--ghost">
+              Pick another song
+            </Link>
+          </div>
+        </section>
+
+        <section className={styles.guesses}>
+          <h2>Your lines</h2>
+          <ol className={styles.sungLines}>
+            {sung.map((s) => {
+              let k = -1;
+              return (
+                <li key={s.line}>
+                  {tokenize(lines[s.line].text).map((t, wi) => {
+                    if (!t.core) return <span key={wi}>{t.raw} </span>;
+                    k++;
+                    return (
+                      <span key={wi}>
+                        {t.lead}
+                        <LyricBlank
+                          answer={t.core}
+                          state={s.heardAt[k] !== null ? "correct" : "wrong"}
+                        />
+                        {t.trail}{" "}
+                      </span>
+                    );
+                  })}
+                </li>
+              );
+            })}
+          </ol>
+        </section>
+      </main>
+    </>
+  );
+}

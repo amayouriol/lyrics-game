@@ -38,18 +38,20 @@ Order: the rules first (which lines are hidden, how heard words match, scoring),
 - Done 2026-10-10: "How you play: Type | Sing" on the song screen (`SongClient.tsx`), choices kept in the browser (`singPrefs.ts`: mode, headphones note seen, language per song). The lyrics service now sends each song's language. Checked by you in your browser: Sing texts, the language note with Change and ?, the headphones panel, choices remembered after reload. Lint, tests and build pass.
 
 ## 4. Play screen in Sing mode
-- [ ] Same screen as Type: lyrics scroll and glide, current line lit. Lines that aren't hidden show as normal.
-- [ ] Hidden lines: one empty slot per word (Easy, Medium), filling in as heard. On Hard, no slots; heard words appear as they come.
-- [ ] When a hidden line ends (plus the 1 s grace): missing words in red, the count "5 of 7".
-- [ ] No waiting, no countdown, no typing box. Pause stops music and listening together.
-- [ ] Microphone light: pulses with sound, red when not listening.
-- [ ] Score and streak in the corner update as words fill in.
+- [x] Same screen as Type: lyrics scroll and glide, current line lit. Lines that aren't hidden show as normal.
+- [x] Hidden lines: one empty slot per word (Easy, Medium), filling in as heard. On Hard, no slots; heard words appear as they come.
+- [x] When a hidden line ends (plus the 1 s grace): missing words in red, the count "5 of 7".
+- [x] No waiting, no countdown, no typing box. Pause stops music and listening together.
+- [x] Microphone light: pulses with sound, red when not listening.
+- [x] Score and streak in the corner update as words fill in.
+- Done 2026-10-10: `play/SingScreen.tsx`. The line glide and sweep moved, unchanged, to `play/lyricsMotion.ts` so both screens share them. Slots are the same blanks as Type mode; a missed word shows red once its line's grace second is over, with the count beside it. Checked by you on Medium and Hard; Type mode plays as before.
 
 ## 5. Results
-- [ ] "Sing" next to the level; score, words heard of hidden, best streak of full lines, verdict.
-- [ ] "Listening was off for part of this song" when it was.
-- [ ] "Play again" (Sing, same level), "Try typing" (Type, same level), "Try Hard" etc. stays in Sing.
-- [ ] Saved like typed games, with the mode; saving errors as in Phase 6.
+- [x] "Sing" next to the level; score, words heard of hidden, best streak of full lines, verdict.
+- [x] "Listening was off for part of this song" when it was.
+- [x] "Play again" (Sing, same level), "Try typing" (Type, same level), "Try Hard" etc. stays in Sing.
+- [x] Saved like typed games, with the mode; saving errors as in Phase 6.
+- Done 2026-10-10: `SingResults` (Sing again, Try Hard, Try typing, Pick another song; your lines with heard and missed words). Saved with `mode: "sing"` and each word's line; the server recounts score and full-line streaks (`summarizeGame`), checked in the new `progress.test.ts` (38 checks in all). Checked by you.
 
 ## 6. Progress on home
 - [ ] Recently played: a microphone mark on sung games (keyboard mark on typed ones only where both appear side by side, e.g. Best songs).
