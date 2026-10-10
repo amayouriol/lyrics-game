@@ -20,6 +20,8 @@ import {
   pointsFor,
   tokenize,
   verdict,
+  WAIT_LIMIT_MS,
+  WAIT_WARNING_SEC,
   type Answer,
   type Blank,
   type Difficulty,
@@ -60,10 +62,6 @@ const HELP_WAITING =
   "The song waits for you. Type the word, or press Enter on an empty blank to skip.";
 /** On the last line, the song waits this close to its end. */
 const LAST_LINE_HOLD_MS = 1_500;
-/** How long the song waits for an open word before it counts as missed. Same as Sing mode. */
-const WAIT_LIMIT_MS = 10_000;
-/** The countdown turns red for its last seconds. */
-const WAIT_WARNING_SEC = 5;
 interface GameResult {
   /** Made when the round starts, so the game is saved once however often it's sent. */
   id: string;

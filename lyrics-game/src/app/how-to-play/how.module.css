@@ -1,0 +1,514 @@
+/* How to play, from the Figma design (design/figma-make: .how-screen). Small
+   labels set larger than in the design, as on the home page. */
+.main {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "DM Sans", sans-serif;
+}
+
+/* Dark top: title and intro. */
+.hero {
+  position: relative;
+  display: grid;
+  min-height: 400px;
+  align-items: end;
+  gap: clamp(45px, 9vw, 145px);
+  padding: 56px clamp(24px, 6vw, 96px) 68px;
+  overflow: hidden;
+  background: var(--ink);
+  color: var(--paper);
+  grid-template-columns: 0.9fr 1.1fr;
+}
+
+.hero::after {
+  position: absolute;
+  top: -45%;
+  right: -10%;
+  width: 520px;
+  aspect-ratio: 1;
+  border: 1px solid rgb(149 115 255 / 20%);
+  border-radius: 50%;
+  content: "";
+  box-shadow:
+    0 0 0 45px rgb(149 115 255 / 4%),
+    0 0 0 90px rgb(149 115 255 / 3%),
+    0 0 0 135px rgb(149 115 255 / 2%);
+  pointer-events: none;
+}
+
+.heading,
+.intro {
+  position: relative;
+  z-index: 2;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 40px;
+  color: #a6a1aa;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.back:hover {
+  color: var(--paper);
+}
+
+.back svg {
+  width: 16px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+  transform: rotate(180deg);
+}
+
+.heading h1 {
+  margin: 0;
+  font-family: "Archivo Black", sans-serif;
+  font-size: clamp(62px, 7vw, 106px);
+  font-weight: 400;
+  line-height: 0.84;
+  letter-spacing: -0.065em;
+  text-transform: uppercase;
+}
+
+.heading h1 em {
+  color: var(--violet);
+  font-style: normal;
+}
+
+.intro {
+  max-width: 560px;
+  padding: 29px 0 5px 30px;
+  border-left: 1px solid #4b4650;
+}
+
+.intro strong {
+  display: block;
+  margin-bottom: 12px;
+  font-family: "Archivo Black", sans-serif;
+  font-size: clamp(20px, 2vw, 29px);
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+
+.intro p {
+  color: #b3aeb7;
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+/* Three steps on the violet band. */
+.steps {
+  display: grid;
+  padding: 0 clamp(24px, 6vw, 96px);
+  border-bottom: 1px solid #c6c1c6;
+  background: var(--violet);
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.step {
+  display: grid;
+  min-height: 150px;
+  align-items: center;
+  gap: 18px;
+  padding: 24px;
+  border-left: 1px solid rgb(12 12 15 / 30%);
+  grid-template-columns: auto 1fr;
+}
+
+.step:last-child {
+  border-right: 1px solid rgb(12 12 15 / 30%);
+}
+
+.step > span {
+  color: #4c397d;
+  font-family: "Archivo Black", sans-serif;
+  font-size: 30px;
+}
+
+.step strong {
+  font-size: 17px;
+}
+
+.step p {
+  max-width: 260px;
+  margin-top: 5px;
+  color: #3f2f6c;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* Section titles. */
+.sectionTitle > p {
+  margin: 0 0 16px;
+  color: #6f6872;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.sectionTitle h2 {
+  margin: 0;
+  font-family: "Archivo Black", sans-serif;
+  font-size: clamp(33px, 4vw, 58px);
+  font-weight: 400;
+  line-height: 0.94;
+  letter-spacing: -0.055em;
+  text-transform: uppercase;
+}
+
+/* Good to know. */
+.good {
+  display: grid;
+  gap: clamp(45px, 9vw, 130px);
+  padding: 78px clamp(24px, 6vw, 96px) 90px;
+  border-bottom: 1px solid #b6a7db;
+  background: #e2daf5;
+  grid-template-columns: 0.65fr 1.35fr;
+}
+
+.goodList {
+  border-top: 1px solid #a99bc8;
+}
+
+.goodList > div {
+  display: grid;
+  min-height: 76px;
+  align-items: center;
+  gap: 18px;
+  border-bottom: 1px solid #a99bc8;
+  grid-template-columns: 34px 1fr;
+}
+
+.goodList span {
+  color: var(--violet-dark);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.goodList p {
+  color: #4e4656;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+/* Two ways to play. */
+.modes {
+  padding: 82px clamp(24px, 6vw, 96px) 100px;
+}
+
+.modesHeading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 30px;
+  margin-bottom: 38px;
+}
+
+.switch {
+  display: flex;
+  padding: 5px;
+  border: 1px solid #bcb6bf;
+  background: #e4e0e5;
+}
+
+.switch button {
+  display: flex;
+  min-width: 130px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 22px;
+  border: 0;
+  background: transparent;
+  color: #5d5660;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.switch button:hover {
+  color: var(--ink);
+}
+
+.switch .switchOn,
+.switch .switchOn:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.switch svg {
+  width: 16px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.modeContent {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: 0.72fr 1.28fr;
+}
+
+.summary {
+  display: flex;
+  min-height: 290px;
+  justify-content: flex-end;
+  padding: 30px;
+  background: var(--ink);
+  color: var(--paper);
+  flex-direction: column;
+}
+
+.summary > span,
+.levelsTitle span,
+.rule > span,
+.scoreGrid article > span {
+  color: var(--violet-light);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.summary h3 {
+  max-width: 410px;
+  margin: 14px 0 12px;
+  font-family: "Archivo Black", sans-serif;
+  font-size: clamp(27px, 3vw, 43px);
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+}
+
+.summary p {
+  max-width: 390px;
+  color: #a9a4ad;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.summarySing {
+  background: var(--violet);
+  color: var(--ink);
+}
+
+.summarySing > span,
+.summarySing p {
+  color: #3f2f6c;
+}
+
+.levels {
+  border: 1px solid #bdb8bd;
+}
+
+.levelsTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  background: #ddd7e8;
+}
+
+.levelsTitle span {
+  color: #5a477c;
+  font-size: 14px;
+}
+
+.levelsTitle small {
+  color: #514a54;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.level {
+  display: grid;
+  min-height: 76px;
+  align-items: center;
+  gap: 15px;
+  padding: 14px 20px;
+  border-top: 1px solid #c7c2c7;
+  grid-template-columns: 96px 1fr auto;
+}
+
+.level strong {
+  font-size: 16px;
+}
+
+.level span {
+  color: #5d5660;
+  font-size: 15px;
+}
+
+.level b {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--violet);
+  font-size: 13px;
+}
+
+.rules {
+  display: grid;
+  gap: 1px;
+  background: #c4bfc5;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.rule {
+  min-height: 210px;
+  padding: 24px;
+  background: #ebe8e4;
+}
+
+.featured {
+  background: #ded5f5;
+  grid-column: span 2;
+}
+
+.wide {
+  grid-column: span 2;
+}
+
+.rule > span {
+  color: #67587d;
+}
+
+.rule > strong {
+  display: block;
+  margin: 25px 0 10px;
+  font-family: "Archivo Black", sans-serif;
+  font-size: clamp(18px, 1.8vw, 25px);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+
+.rule > p,
+.rule > small {
+  color: #5d5660;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.rule > small {
+  display: block;
+  margin-top: 13px;
+  color: #544463;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* Understand your score. */
+.score {
+  padding: 75px clamp(24px, 6vw, 96px) 90px;
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.score .sectionTitle {
+  margin-bottom: 32px;
+}
+
+.score .sectionTitle > p {
+  color: var(--violet-light);
+}
+
+.scoreGrid {
+  display: grid;
+  border-top: 1px solid #423e46;
+  border-left: 1px solid #423e46;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.scoreGrid article {
+  min-height: 190px;
+  padding: 24px;
+  border-right: 1px solid #423e46;
+  border-bottom: 1px solid #423e46;
+}
+
+.scoreGrid article > span {
+  font-size: 14px;
+}
+
+.scoreGrid article > strong {
+  display: block;
+  margin: 34px 0 10px;
+  font-family: "Archivo Black", sans-serif;
+  font-size: clamp(21px, 2.4vw, 34px);
+  font-weight: 400;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+}
+
+.scoreGrid article p {
+  max-width: 330px;
+  color: #a39ea7;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* Your progress. */
+.progress {
+  display: grid;
+  align-items: center;
+  gap: clamp(50px, 10vw, 160px);
+  padding: 80px clamp(24px, 6vw, 96px);
+  background: var(--violet);
+  grid-template-columns: 0.9fr 1.1fr;
+}
+
+.progress .sectionTitle > p {
+  color: #3f2f6c;
+}
+
+.progressCopy {
+  padding-left: 30px;
+  border-left: 1px solid rgb(12 12 15 / 35%);
+}
+
+.progressCopy p {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.progressCopy p + p {
+  margin-top: 17px;
+}
+
+@media (max-width: 1050px) {
+  .hero,
+  .good,
+  .modeContent,
+  .progress {
+    grid-template-columns: 1fr;
+  }
+
+  .steps,
+  .scoreGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .rules {
+    grid-template-columns: 1fr 1fr;
+  }
+}

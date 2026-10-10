@@ -52,6 +52,12 @@ export function isMatch(guess: string, answer: string): boolean {
 /** Wrong tries allowed per word; the next wrong one after this is a miss. */
 export const MAX_TRIES = 3;
 
+/** How long the song waits for an open word before it counts as missed. Same as Sing mode. */
+export const WAIT_LIMIT_MS = 10_000;
+
+/** The countdown turns red for its last seconds. */
+export const WAIT_WARNING_SEC = 5;
+
 /** A hidden word isn't hidden again until this many lines have passed. */
 export const SPACING_LINES = 8;
 

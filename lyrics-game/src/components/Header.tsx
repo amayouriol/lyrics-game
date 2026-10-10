@@ -23,6 +23,7 @@ export function Header({ profile }: { profile: Profile }) {
   const links = [
     { href: "/", label: "Home", active: pathname === "/" },
     { href: "/library", label: "Library", active: pathname.startsWith("/library") },
+    { href: "/how-to-play", label: "How to play", active: pathname === "/how-to-play" },
   ];
 
   const [open, setOpen] = useState(false);

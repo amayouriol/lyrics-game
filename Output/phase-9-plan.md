@@ -46,8 +46,9 @@ Order: the two new pieces behind the screens first (current streak, your name), 
 - Done 2026-10-10: `LibraryHome.tsx` (top band with search, the two tabs, kept in the address as `?tab=spotify` so "All playlists" returns to it) replaces the cards page and its columns; `PlaylistClient.tsx` gets the dark title band, search and square filter chips, song rows with a "Start game" button, and the purple saved panel beside them; `library.module.css` rewritten (heart and bookmark styles kept, the song screen still uses them). Small text set to 11–15 px instead of the design's 7–9 px. Spotify's official black logo (`public/spotify-logo-black.svg`, from developer.spotify.com, your OK) with the credit line on From Spotify, 88 px wide with clear space, per Spotify's rules. One change: the filters now show once you type a search (filter-only browsing of the whole library is gone; inside each list they work as before). Approved by you. Lint, tests and build pass.
 
 ## 6. How to play
-- [ ] New page at `/how-to-play` with the intro, three steps, Good to know.
-- [ ] Type / Sing switch with each mode's levels, rules and score text, exactly as in the spec.
+- [x] New page at `/how-to-play` with the intro, three steps, Good to know.
+- [x] Type / Sing switch with each mode's levels, rules and score text, exactly as in the spec.
+- Done 2026-10-10: `app/how-to-play/` (`page.tsx`, `HowToPlay.tsx`, `how.module.css`) from the Figma How to play screen, and "How to play" in the top bar. Every number is read from the game's rules (`DIFFICULTIES`, `MAX_TRIES`, `SPACING_LINES`, `SING_WAIT_MS`, `SING_GRACE_MS`, `STREAK_ACCURACY`, `MISSED_WORD_MIN`); Type mode's wait (`WAIT_LIMIT_MS`, `WAIT_WARNING_SEC`) moved from the game screen into `game.ts` for this, no change in play. The score section follows the switch (Best streak: first-try words / full lines). Draft text corrected as the spec says. Approved by you. Lint, tests and build pass.
 
 ## 7. Checks and play-test
 - [ ] `npm run lint`, `npm test`, `npm run build` pass; GitHub check passes.
