@@ -78,6 +78,7 @@ Same as the main spec: a single user (you), using your own Spotify Premium accou
 ## Scope decisions made in this pass
 - **Plan.md's Phase 5 was already built:** the difficulty selector (Phase 4), greyed-out songs without lyrics (Phase 2) and styling (following the design all along). Phase 5 was redefined as closing v1, plus the time limit Phase 4 left open and two play-test complaints.
 - **Time limit:** a fixed 15 seconds, the same on every level, starting when the song pauses, not when the line begins. The word is missed when it runs out. Rejected: points that shrink while waiting, and a limit per difficulty.
+  - **Changed 2026-10-10:** 15 → **10 seconds**, so Type and Sing mode wait the same time (user's request). The countdown still turns red for the last 5 seconds.
 - **Repeats:** spaced out (8 lines), not banned for the whole song, so a word in a chorus can come back later in the song.
 - **Motion:** follows each line's time, since the lyrics have no word or beat timing. The sweep is an estimate, accepted as "roughly where the singer is".
 - **Split:** the main-page ideas from this interview (home page with progress, library search, filters and pins) became Phase 6, a separate spec, so this phase stays small enough to test.
