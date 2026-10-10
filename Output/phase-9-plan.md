@@ -54,5 +54,6 @@ Order: the two new pieces behind the screens first (current streak, your name), 
 - [x] `npm run lint`, `npm test`, `npm run build` pass; GitHub check passes.
 - [x] Compared side by side with the published Figma page at desktop size.
 - Done 2026-10-10: all checks pass (48 rule checks), GitHub's check passed on every step. Each screen was compared with the Figma page by you while building (sizes changed on request, see steps 4–5). No new Spotify requests: the code diff for Phase 9 adds no Spotify call; the library now asks for your playlists only when the From Spotify tab opens.
-- [ ] Play-test on your account: log out and in, see your name; play a song, check the streak and Play again; open both library tabs; read How to play in both modes; the song and game screens unchanged.
-- [ ] plan.md gets a Phase 9 section; close with `Close Phase 9: …` after your play-test.
+- [x] Play-test on your account: log out and in, see your name; play a song, check the streak and Play again; open both library tabs; read How to play in both modes; the song and game screens unchanged.
+- [x] plan.md gets a Phase 9 section; close with `Close Phase 9: …` after your play-test.
+- Closed 2026-10-10: you play-tested on your account and said all good. Tag `phase-9`.
