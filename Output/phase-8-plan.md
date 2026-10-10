@@ -15,11 +15,12 @@ Order: the rules first (which lines are hidden, how heard words match, scoring),
 - **The test page from step 0** (`src/app/lab/`, not committed) is reused as a starting point for the listening code, then deleted in step 7.
 
 ## 1. Sing rules (`src/lib/sing.ts`) and their checks
-- [ ] Hidden lines per level: Easy every other line with words, Medium and Hard every line with words. Lines with no words (instrumental gaps) are never hidden.
-- [ ] Matching heard words to lines: a word counts for the line it was heard in, or the one starting within 1 s after / ended within 1 s before, if that line still needs it. Each lyric word once; out of order is fine.
-- [ ] Near-misses as above.
-- [ ] Score: 100 / 150 / 200 per word heard; accuracy = words heard out of words hidden; best streak = full lines in a row.
-- [ ] `npm test` checks for each rule, using the real misses from step 0 ("parque", "amando te", the first word of a line sung early, "and dear" not counting, silence scoring 0).
+- [x] Hidden lines per level: Easy every other line with words, Medium and Hard every line with words. Lines with no words (instrumental gaps) are never hidden.
+- [x] Matching heard words to lines: a word counts for the line it was heard in, or the one starting within 1 s after / ended within 1 s before, if that line still needs it. Each lyric word once; out of order is fine.
+- [x] Near-misses as above.
+- [x] Score: 100 / 150 / 200 per word heard; accuracy = words heard out of words hidden; best streak = full lines in a row.
+- [x] `npm test` checks for each rule, using the real misses from step 0 ("parque", "amando te", the first word of a line sung early, "and dear" not counting, silence scoring 0).
+- Done 2026-10-09: `src/lib/sing.ts` (`singLines`, `matchSung`, `singStats`, `isLineOver`) and 14 checks in `sing.test.ts` (34 in all with the game's). Near-miss is one letter more or less at the end, for words of 3+ letters; two words heard within 1.5 s can join. Lint, tests and build pass.
 
 ## 2. Listening (`useListening`)
 - [ ] Starts and stops with the song; pauses with Pause.
