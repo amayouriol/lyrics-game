@@ -40,9 +40,10 @@ Order: the two new pieces behind the screens first (current streak, your name), 
 - Done 2026-10-10: `HomeClient.tsx` and `home.module.css` rebuilt from the Figma home (dark page, record spinning with the streak, floating notes; both still when the computer asks for less motion). The greeting uses your first name. `/api/progress` no longer sends Favorites and Play later. Words that keep dropping shows your most-missed word, how many words in all, "Missed X of Y times" and its song; turning it over shows "Start practice queue · Coming soon", greyed, nothing to click. Your changes after looking at it: 5 songs per list (not the design's 3); bigger greeting, "Your progress", "All-time totals", card text and song rows (picture 48 px, name 16, artist 14, details 12); no line under Top performances. Lint, tests and build pass.
 
 ## 5. Library
-- [ ] Top: "Your music", "Find your next song.", search box.
-- [ ] Tabs: Saved in Lyric Drop (Favorites, Play later, empty message) and From Spotify (Liked Songs and playlists, with Spotify's logo and credit).
-- [ ] Playlist pages, search results and filters restyled, working as before.
+- [x] Top: "Your music", "Find your next song.", search box.
+- [x] Tabs: Saved in Lyric Drop (Favorites, Play later, empty message) and From Spotify (Liked Songs and playlists, with Spotify's logo and credit).
+- [x] Playlist pages, search results and filters restyled, working as before.
+- Done 2026-10-10: `LibraryHome.tsx` (top band with search, the two tabs, kept in the address as `?tab=spotify` so "All playlists" returns to it) replaces the cards page and its columns; `PlaylistClient.tsx` gets the dark title band, search and square filter chips, song rows with a "Start game" button, and the purple saved panel beside them; `library.module.css` rewritten (heart and bookmark styles kept, the song screen still uses them). Small text set to 11–15 px instead of the design's 7–9 px. Spotify's official black logo (`public/spotify-logo-black.svg`, from developer.spotify.com, your OK) with the credit line on From Spotify, 88 px wide with clear space, per Spotify's rules. One change: the filters now show once you type a search (filter-only browsing of the whole library is gone; inside each list they work as before). Approved by you. Lint, tests and build pass.
 
 ## 6. How to play
 - [ ] New page at `/how-to-play` with the intro, three steps, Good to know.

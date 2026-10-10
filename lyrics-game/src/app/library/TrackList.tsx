@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PlayIcon } from "@/components/icons";
 import type { LyricsStatus } from "@/lib/lyrics";
 import type { LibraryTrack } from "./libraryData";
 import { songHref } from "./song/[trackId]/loadSong";
@@ -15,23 +16,26 @@ export function TrackList({
   tracks,
   statusOf,
   from,
-  compact = false,
 }: {
   tracks: LibraryTrack[];
   statusOf: (t: LibraryTrack) => LyricsStatus;
-  /** The list these songs came from, so "Back to library" returns to it (null: the cards page). */
+  /** The list these songs came from, so "Back to library" returns to it (null: the main page). */
   from: string | null;
-  /** For a narrow column: no number, length or "Synced lyrics" tag. */
-  compact?: boolean;
 }) {
   return (
-    <div className={`${styles.tracks} ${compact ? styles.tracksCompact : ""}`}>
+    <div className={styles.tracks}>
+      <div className={styles.tracksHeading} aria-hidden="true">
+        <span>
+          {tracks.length} {tracks.length === 1 ? "song" : "songs"}
+        </span>
+        <span>Save</span>
+      </div>
       {tracks.map((track, index) => {
         const status = statusOf(track);
         const row = (
           <>
-            {!compact && <span className={styles.trackN}>{index + 1}</span>}
-            <div
+            <span className={styles.trackN}>{String(index + 1).padStart(2, "0")}</span>
+            <span
               className={styles.trackCover}
               style={
                 track.cover && status !== "unavailable"
@@ -39,18 +43,22 @@ export function TrackList({
                   : undefined
               }
             />
-            <div className={styles.trackInfo}>
-              <span className={styles.trackTitle}>{track.title}</span>
-              <span className={styles.trackArtist}>{track.artist}</span>
-            </div>
-            {status === "available" && !compact && (
-              <span className="chip chip--secondary chip--sm">Synced lyrics</span>
-            )}
+            <span className={styles.trackInfo}>
+              <strong>{track.title}</strong>
+              <small>{track.artist}</small>
+            </span>
+            {status === "available" && <span className={styles.tag}>Synced lyrics</span>}
             {status === "unavailable" && (
-              <span className={styles.unavailableNote}>Lyrics not available</span>
+              <span className={`${styles.tag} ${styles.tagOff}`}>Lyrics not available</span>
             )}
-            {status === "unknown" && <span className={styles.checkingNote}>Checking…</span>}
-            {!compact && <span className={styles.trackDur}>{track.duration}</span>}
+            {status === "unknown" && <span className={styles.checking}>Checking…</span>}
+            <span className={styles.trackDur}>{track.duration}</span>
+            {status !== "unavailable" && (
+              <span className={styles.start}>
+                Start game
+                <PlayIcon />
+              </span>
+            )}
           </>
         );
         // The same song can appear twice in a playlist.
@@ -58,7 +66,7 @@ export function TrackList({
 
         if (status !== "unavailable") {
           return (
-            <div key={key} className={`${styles.track} ${styles.trackAvailable}`}>
+            <div key={key} className={styles.track}>
               <Link href={songHref(track.id, from)} className={styles.trackMain}>
                 {row}
               </Link>

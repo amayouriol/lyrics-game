@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ArrowIcon } from "@/components/icons";
 import type { Source } from "@/lib/spotify";
 import {
   fetchJson,
@@ -30,7 +31,7 @@ const EMPTY: Record<string, string> = {
 };
 
 /** One list's page: its songs, checked for synced lyrics as they show. */
-export function PlaylistClient({ source }: { source: string }) {
+export function PlaylistClient({ source, sidebar }: { source: string; sidebar: ReactNode }) {
   const router = useRouter();
 
   // The list's name and count, from the same list as the cards page.
@@ -96,74 +97,88 @@ export function PlaylistClient({ source }: { source: string }) {
   const shown = found?.filter((t) => passesFilters(t, filters, statusOf, languageOf)) ?? null;
   const count = tracks?.length ?? info?.count;
 
+  const saved = source === "favorites" || source === "later";
+
   return (
-    <main className={styles.page}>
-      <Link href="/library" className={`btn btn--ghost btn--sm ${styles.back}`}>
-        All playlists
-      </Link>
+    <main className={styles.screen}>
+      <section className={`${styles.top} ${styles.topList}`}>
+        <div className={styles.title}>
+          <Link href={saved ? "/library" : "/library?tab=spotify"} className={styles.back}>
+            <ArrowIcon />
+            {saved ? "Back to library" : "All playlists"}
+          </Link>
+          <p>{saved ? "Saved in Lyric Drop" : "From Spotify"}</p>
+          <h1>{SAVED_NAMES[source] ?? info?.name ?? (sources ? "Playlist" : "")}</h1>
+          <span>
+            {count !== undefined &&
+              (shown && shown.length !== count
+                ? `${shown.length} of ${count} songs · `
+                : `${count} ${count === 1 ? "song" : "songs"} · `)}
+            Pick a song. Anything without synced lyrics stays greyed out.
+          </span>
+        </div>
+      </section>
 
-      <div className={styles.heading}>
-        <h1>{SAVED_NAMES[source] ?? info?.name ?? (sources ? "Playlist" : "")}</h1>
-        <p>
-          {count !== undefined &&
-            (shown && shown.length !== count
-              ? `${shown.length} of ${count} songs · `
-              : `${count} ${count === 1 ? "song" : "songs"} · `)}
-          Pick a song. Anything without synced lyrics stays greyed out.
-        </p>
+      <div className={styles.listPage}>
+        {tracks && tracks.length > 0 && (
+          <div className={styles.tools}>
+            <SearchBox value={search} onChange={setSearch} placeholder="Search this list" />
+            <Filters value={filters} onChange={setFilters} />
+          </div>
+        )}
+
+        <div className={styles.listLayout}>
+          <section className={styles.listSongs}>
+            {state === "loading" && <div className={styles.hint}>Loading your songs…</div>}
+
+            {state === "error" && (
+              <div className={styles.errorPanel}>
+                <h2>{spotifyTrouble(result?.rateLimited, result?.retryAt).title}</h2>
+                <p>
+                  We couldn&apos;t load this list.{" "}
+                  {spotifyTrouble(result?.rateLimited, result?.retryAt).body}
+                </p>
+                <button className={styles.smallButton} onClick={() => setReloadKey((k) => k + 1)}>
+                  Retry
+                </button>
+              </div>
+            )}
+
+            {blockedUntil && (
+              <p className={styles.hint}>
+                Spotify is limiting this app until {moment(blockedUntil)}, so this is an older
+                saved copy of the list.
+              </p>
+            )}
+
+            {someUnchecked && (
+              <div className={styles.notice}>
+                <span>Some songs couldn&apos;t be checked for lyrics.</span>
+                <button className={styles.smallButton} onClick={retry}>
+                  Retry
+                </button>
+              </div>
+            )}
+
+            {tracks && tracks.length === 0 && (
+              <div className={styles.hint}>{EMPTY[source] ?? "This playlist has no songs."}</div>
+            )}
+
+            {found && tracks!.length > 0 && found.length === 0 && (
+              <div className={styles.hint}>No songs match “{search.trim()}”.</div>
+            )}
+
+            {found && found.length > 0 && shown!.length === 0 && (
+              <NoFilterMatch onClear={() => setFilters(DEFAULT_FILTERS)} />
+            )}
+
+            {shown && shown.length > 0 && (
+              <TrackList tracks={shown} statusOf={statusOf} from={source} />
+            )}
+          </section>
+          {sidebar}
+        </div>
       </div>
-
-      {tracks && tracks.length > 0 && (
-        <>
-          <SearchBox value={search} onChange={setSearch} placeholder="Search this list" />
-          <Filters value={filters} onChange={setFilters} />
-        </>
-      )}
-
-      {state === "loading" && <div className={styles.hint}>Loading your songs…</div>}
-
-      {state === "error" && (
-        <div className={styles.errorPanel}>
-          <h2>{spotifyTrouble(result?.rateLimited, result?.retryAt).title}</h2>
-          <p>
-            We couldn&apos;t load this list.{" "}
-            {spotifyTrouble(result?.rateLimited, result?.retryAt).body}
-          </p>
-          <button className="btn btn--secondary" onClick={() => setReloadKey((k) => k + 1)}>
-            Retry
-          </button>
-        </div>
-      )}
-
-      {blockedUntil && (
-        <p className={styles.hint}>
-          Spotify is limiting this app until {moment(blockedUntil)}, so this is an older saved
-          copy of the list.
-        </p>
-      )}
-
-      {someUnchecked && (
-        <div className={styles.notice}>
-          <span>Some songs couldn&apos;t be checked for lyrics.</span>
-          <button className="btn btn--secondary btn--sm" onClick={retry}>
-            Retry
-          </button>
-        </div>
-      )}
-
-      {tracks && tracks.length === 0 && (
-        <div className={styles.hint}>{EMPTY[source] ?? "This playlist has no songs."}</div>
-      )}
-
-      {found && tracks!.length > 0 && found.length === 0 && (
-        <div className={styles.hint}>No songs match “{search.trim()}”.</div>
-      )}
-
-      {found && found.length > 0 && shown!.length === 0 && (
-        <NoFilterMatch onClear={() => setFilters(DEFAULT_FILTERS)} />
-      )}
-
-      {shown && shown.length > 0 && <TrackList tracks={shown} statusOf={statusOf} from={source} />}
     </main>
   );
 }

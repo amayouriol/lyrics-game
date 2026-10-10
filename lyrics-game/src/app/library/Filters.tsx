@@ -57,7 +57,7 @@ function Choice<T extends string>({
         <button
           key={v}
           type="button"
-          className="chip chip--tertiary chip--sm"
+          className={styles.filterChip}
           aria-pressed={v === value}
           onClick={() => onChange(v)}
         >
@@ -80,7 +80,7 @@ export function Filters({
     <div className={styles.filters}>
       <button
         type="button"
-        className="chip chip--tertiary chip--sm"
+        className={styles.filterChip}
         aria-pressed={value.onlyPlayable}
         onClick={() => onChange({ ...value, onlyPlayable: !value.onlyPlayable })}
       >
@@ -111,7 +111,7 @@ export function NoFilterMatch({ onClear }: { onClear: () => void }) {
   return (
     <div className={styles.hint}>
       No songs match these filters.{" "}
-      <button type="button" className="btn btn--ghost btn--sm" onClick={onClear}>
+      <button type="button" className={styles.linkButton} onClick={onClear}>
         Clear filters
       </button>
     </div>

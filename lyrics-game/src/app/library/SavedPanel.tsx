@@ -46,10 +46,10 @@ function useHidden(): boolean {
 
 const SECTIONS: { list: SavedListName; title: string; empty: string }[] = [
   { list: "favorites", title: "Favorites", empty: "Use the heart on any song to keep it here." },
-  { list: "later", title: "Play later", empty: "Use the bookmark on any song to keep it here." },
+  { list: "later", title: "Play later", empty: "Bookmark songs to build your queue." },
 ];
 
-/** Favorites and Play later, beside the library: the app's own lists, not Spotify's. */
+/** Favorites and Play later, beside a list's songs: the app's own lists, not Spotify's. */
 export function SavedPanel() {
   const hidden = useHidden();
   const { lists, failed, reload } = useSaved();
@@ -67,12 +67,15 @@ export function SavedPanel() {
     <aside className={styles.panel} aria-label="Saved in Lyric Drop">
       <div className={styles.panelHead}>
         <div>
-          <h2>Saved in Lyric Drop</h2>
-          <p>Not on Spotify</p>
+          <p>Saved in Lyric Drop</p>
+          <h2>Your game library</h2>
         </div>
-        <button className="btn btn--ghost btn--sm" onClick={() => setHidden(true)}>
-          Hide
-        </button>
+        <div className={styles.panelHeadRight}>
+          {lists && <span>{lists.favorites.length + lists.later.length}</span>}
+          <button className={styles.panelHide} onClick={() => setHidden(true)}>
+            Hide
+          </button>
+        </div>
       </div>
 
       {!lists && !failed && <p className={styles.panelHint}>Loading…</p>}
@@ -80,7 +83,7 @@ export function SavedPanel() {
       {failed && (
         <div className={styles.panelHint}>
           <p>Your saved songs didn&apos;t load.</p>
-          <button className="btn btn--secondary btn--sm" onClick={reload}>
+          <button className={styles.smallButton} onClick={reload}>
             Retry
           </button>
         </div>
@@ -92,7 +95,7 @@ export function SavedPanel() {
             <Link href={playlistHref(list)} className={styles.panelTitle}>
               {list === "favorites" ? <HeartIcon filled /> : <BookmarkIcon filled />}
               <span>{title}</span>
-              <span className={styles.count}>{lists[list].length}</span>
+              <b>{lists[list].length}</b>
             </Link>
             {lists[list].length === 0 ? (
               <p className={styles.panelHint}>{empty}</p>
@@ -112,14 +115,14 @@ export function SavedPanel() {
 function PanelSong({ song, from }: { song: SavedSong; from: SavedListName }) {
   return (
     <Link href={`/library/song/${song.id}?from=${from}`} className={styles.panelSong}>
-      <div
-        className={styles.panelCover}
+      <span
+        className={styles.cover}
         style={song.cover ? { backgroundImage: `url(${song.cover})` } : undefined}
       />
-      <div className={styles.trackInfo}>
-        <span className={styles.panelSongTitle}>{song.title}</span>
-        <span className={styles.trackArtist}>{song.artist}</span>
-      </div>
+      <span className={styles.songText}>
+        <strong>{song.title}</strong>
+        <small>{song.artist}</small>
+      </span>
     </Link>
   );
 }

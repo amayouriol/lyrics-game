@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { matchesSearch, moment, spotifyTrouble } from "./libraryData";
 import { DEFAULT_FILTERS, Filters, isDefault, NoFilterMatch, passesFilters } from "./Filters";
-import { SearchBox } from "./SearchBox";
 import { TrackList } from "./TrackList";
 import { useLyricsCheck } from "./useLyricsCheck";
 import { useWholeLibrary } from "./useWholeLibrary";
@@ -13,11 +12,10 @@ import styles from "./library.module.css";
 const SEARCH_DELAY_MS = 250;
 
 /**
- * Search and filters across your whole library, in the main page's right
- * column. Results show once you type or change a filter.
+ * Songs found across your whole library, with filters, shown in place of the
+ * tabs while you type in the library's search box.
  */
-export function LibrarySearch() {
-  const [search, setSearch] = useState("");
+export function LibrarySearch({ search }: { search: string }) {
   const [query, setQuery] = useState(search);
   useEffect(() => {
     const t = setTimeout(() => setQuery(search), SEARCH_DELAY_MS);
@@ -39,13 +37,10 @@ export function LibrarySearch() {
   const shown = matches?.filter((t) => passesFilters(t, filters, statusOf, languageOf)) ?? null;
 
   return (
-    <section className={styles.searchColumn} aria-label="Search your whole library">
-      <SearchBox value={search} onChange={setSearch} placeholder="Search your whole library" />
-      <Filters value={filters} onChange={setFilters} />
-
-      {!active && (
-        <p className={styles.hint}>Search, or pick a filter, to browse your whole library.</p>
-      )}
+    <section className={styles.section} aria-label="Songs found in your whole library">
+      <div className={styles.tools}>
+        <Filters value={filters} onChange={setFilters} />
+      </div>
 
       {active && state === "loading" && (
         <div className={styles.hint}>Loading your whole library…</div>
@@ -57,7 +52,7 @@ export function LibrarySearch() {
             {spotifyTrouble(rateLimited, retryAt).title} Your library couldn&apos;t be loaded to
             search it. {spotifyTrouble(rateLimited, retryAt).body}
           </span>
-          <button className="btn btn--secondary btn--sm" onClick={reload}>
+          <button className={styles.smallButton} onClick={reload}>
             Retry
           </button>
         </div>
@@ -73,7 +68,7 @@ export function LibrarySearch() {
               ? ` Try again after ${moment(library.blockedUntil)}.`
               : ""}
           </span>
-          <button className="btn btn--secondary btn--sm" onClick={reload}>
+          <button className={styles.smallButton} onClick={reload}>
             Retry
           </button>
         </div>
@@ -82,7 +77,7 @@ export function LibrarySearch() {
       {someUnchecked && (
         <div className={styles.notice}>
           <span>Some songs couldn&apos;t be checked for lyrics.</span>
-          <button className="btn btn--secondary btn--sm" onClick={retry}>
+          <button className={styles.smallButton} onClick={retry}>
             Retry
           </button>
         </div>
@@ -107,7 +102,7 @@ export function LibrarySearch() {
           {shown!.length === 0 ? (
             <NoFilterMatch onClear={() => setFilters(DEFAULT_FILTERS)} />
           ) : (
-            <TrackList tracks={shown!} statusOf={statusOf} from={null} compact />
+            <TrackList tracks={shown!} statusOf={statusOf} from={null} />
           )}
         </>
       )}
