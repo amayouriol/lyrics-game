@@ -939,8 +939,8 @@
   stroke-width: 1.7;
 }
 
-/* Heart and bookmark: also on the song screen (size "lg"), which keeps the
-   older light look until its Figma design is ready. */
+/* Heart and bookmark: small in song rows, large and round on the song screen
+   (size "lg", from the Figma .game-save). */
 .saveButtons {
   position: relative;
   display: flex;
@@ -995,15 +995,30 @@
   padding-right: 0;
 }
 
-.saveButtonsLg .saveButton {
-  width: 48px;
-  height: 48px;
-  background: var(--grey-100);
+.saveButtonsLg {
+  gap: 10px;
+}
+
+.saveButtonsLg .saveButton,
+.saveButtonsLg .saveButton:hover:not(:disabled) {
+  width: 58px;
+  height: 58px;
+  border: 1px solid #c3bdc5;
+  background: transparent;
+  color: #6f6872;
+}
+
+.saveButtonsLg .saveButton:hover:not(:disabled),
+.saveButtonsLg .saveOn_favorites,
+.saveButtonsLg .saveOn_later {
+  border-color: var(--violet) !important;
+  background: #ded5f4 !important;
+  color: var(--violet-dark) !important;
 }
 
 .saveButtonsLg .saveButton svg {
-  width: 24px;
-  height: 24px;
+  width: 21px;
+  height: 21px;
 }
 
 .saveFailed {

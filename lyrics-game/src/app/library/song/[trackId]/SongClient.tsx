@@ -3,6 +3,7 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ArrowIcon, MicIcon } from "@/components/icons";
 import { DIFFICULTIES, DIFFICULTY_ORDER, type Difficulty } from "@/lib/game";
 import { LANGUAGES, type Language } from "@/lib/language";
 import { SING_DESCRIPTIONS, singLines } from "@/lib/sing";
@@ -14,6 +15,7 @@ import styles from "./song.module.css";
 
 const noSubscribe = () => () => {};
 
+/** "Set up your game": the song, Type or Sing, the level, and the start button. */
 export function SongClient({ trackId, from }: { trackId: string; from: string | null }) {
   const router = useRouter();
   const [reloadKey, setReloadKey] = useState(0);
@@ -52,65 +54,95 @@ export function SongClient({ trackId, from }: { trackId: string; from: string | 
   const mic = useMic(mode === "sing");
   const canPlay =
     mode === "sing" ? singCount > 0 && mic.ready && language !== null : blankCount > 0;
-  const playLabel = mode === "sing" ? "Sing the song" : "Play the song";
+  const playLabel = mode === "sing" ? "Sing the song" : "Type the lyrics";
+  const playIcon = mode === "sing" ? <MicIcon /> : <ArrowIcon />;
 
   return (
     <main className={styles.main}>
-      <div>
-        <Link href={backHref} className="btn btn--ghost btn--sm">
-          Back to library
-        </Link>
-      </div>
+      <Link href={backHref} className={styles.back}>
+        <ArrowIcon />
+        Back to library
+      </Link>
 
       <div className={styles.layout}>
-        <div
-          className={styles.cover}
-          style={track?.cover ? { backgroundImage: `url(${track.cover})` } : undefined}
-        >
-          {track && !track.cover && <span className={styles.coverTitle}>{track.title}</span>}
-        </div>
-
-        <section className={styles.info}>
-          {track && (
-            <div className={styles.titles}>
-              <h1>{track.title}</h1>
-              <span className={styles.artist}>{track.artist}</span>
+        <div className={styles.coverWrap}>
+          {/* Spotify's rules: the cover as given, nothing on it. The made-up cover is only for songs without one. */}
+          {track?.cover ? (
+            <div
+              className={styles.cover}
+              style={{ backgroundImage: `url(${track.cover})` }}
+              role="img"
+              aria-label={`Cover of ${track.title}`}
+            />
+          ) : (
+            <div className={`${styles.cover} ${styles.coverMade}`} aria-hidden="true">
+              <span className={styles.orbit} />
+              {track && (
+                <>
+                  <span className={styles.initial}>{track.title.slice(0, 1)}</span>
+                  <span className={styles.coverLabel}>
+                    <small>Lyric Drop presents</small>
+                    <strong>{track.title}</strong>
+                    <b>{track.artist}</b>
+                  </span>
+                </>
+              )}
             </div>
           )}
+          <p>Selected from your library</p>
+        </div>
 
-          {!song && <div className={styles.hint}>Fetching synced lyrics…</div>}
+        <section className={styles.options}>
+          <p className={styles.kicker}>Set up your game</p>
+          {track && (
+            <>
+              <h1>{track.title}</h1>
+              <h2>{track.artist}</h2>
+            </>
+          )}
+
+          {!song && <p className={styles.hint}>Fetching synced lyrics…</p>}
 
           {song?.kind === "ready" && song.status === "available" && (
             <>
-              <div className={styles.setup}>
-                <div className={styles.setupLabel}>How you play</div>
-                <div className={styles.levels}>
+              <div className={styles.control}>
+                <div className={styles.controlTitle}>
+                  <span>How you play</span>
+                  <small>Choose one</small>
+                </div>
+                <div className={styles.segmented}>
                   {(["type", "sing"] as const).map((m) => (
                     <button
                       key={m}
                       type="button"
-                      className="chip chip--tertiary"
+                      className={m === mode ? styles.on : ""}
                       aria-pressed={m === mode}
                       disabled={m === "sing" && !canSing}
                       onClick={() => setMode(m)}
                     >
+                      {m === "sing" && <MicIcon />}
                       {m === "type" ? "Type" : "Sing"}
                     </button>
                   ))}
                 </div>
                 {!canSing && (
-                  <p className={styles.note}>
+                  <p className={styles.small}>
                     Sing mode doesn&apos;t work in this browser. Try Chrome or Edge.
                   </p>
                 )}
+              </div>
 
-                <div className={styles.setupLabel}>Difficulty</div>
-                <div className={styles.levels}>
+              <div className={styles.control}>
+                <div className={styles.controlTitle}>
+                  <span>Difficulty</span>
+                  <small>{DIFFICULTIES[level].points} points per word</small>
+                </div>
+                <div className={`${styles.segmented} ${styles.three}`}>
                   {DIFFICULTY_ORDER.map((d) => (
                     <button
                       key={d}
                       type="button"
-                      className="chip chip--tertiary"
+                      className={d === level ? styles.on : ""}
                       aria-pressed={d === level}
                       onClick={() => setLevel(d)}
                     >
@@ -118,72 +150,78 @@ export function SongClient({ trackId, from }: { trackId: string; from: string | 
                     </button>
                   ))}
                 </div>
-                <p className={styles.levelDescription}>
-                  {mode === "sing" ? SING_DESCRIPTIONS[level] : DIFFICULTIES[level].description}
-                </p>
-                <div className={styles.meta}>
-                  {mode === "sing"
-                    ? `${singCount} lines to sing · ${song.track.duration}`
-                    : `${blankCount} blanks · ${song.lineCount} lines · ${song.track.duration}`}
-                </div>
-                {mode === "sing" && (
-                  <LanguageNote
-                    language={language}
-                    fromLyrics={song.language}
-                    onChange={setLanguage}
-                  />
-                )}
               </div>
+
+              <div className={styles.explanation}>
+                <strong>
+                  {mode === "sing" ? SING_DESCRIPTIONS[level] : DIFFICULTIES[level].description}
+                </strong>
+                <span>
+                  {mode === "sing"
+                    ? `${singCount} ${singCount === 1 ? "line" : "lines"} to sing · ${song.track.duration}`
+                    : `${blankCount} ${blankCount === 1 ? "word" : "words"} to type · ${song.track.duration}`}
+                </span>
+              </div>
+
+              {mode === "sing" && (
+                <LanguageNote
+                  language={language}
+                  fromLyrics={song.language}
+                  onChange={setLanguage}
+                />
+              )}
 
               {mode === "sing" && !mic.ready && <MicPanel mic={mic} />}
 
               <div className={styles.actions}>
                 {canPlay ? (
-                  <Link href={playHref(trackId, from, level, mode)} className="btn btn--lg">
+                  <Link href={playHref(trackId, from, level, mode)} className={styles.start}>
                     {playLabel}
+                    <i>{playIcon}</i>
                   </Link>
                 ) : (
-                  <button className="btn btn--lg" disabled>
+                  <button className={styles.start} disabled>
                     {playLabel}
+                    <i>{playIcon}</i>
                   </button>
                 )}
                 <SaveButtons song={{ id: trackId, ...song.track }} size="lg" />
               </div>
               {mode === "type" && blankCount === 0 && (
-                <div className={styles.hint}>No words to guess at this level.</div>
+                <p className={styles.hint}>No words to guess at this level.</p>
               )}
               {mode === "sing" && singCount === 0 && (
-                <div className={styles.hint}>No lines to sing in this song.</div>
+                <p className={styles.hint}>No lines to sing in this song.</p>
               )}
             </>
           )}
 
           {song?.kind === "ready" && song.status === "unavailable" && (
-            <div className={styles.hint}>Lyrics not available</div>
+            <p className={styles.hint}>Lyrics not available</p>
           )}
 
           {song?.kind === "lyrics_error" && (
-            <div className={styles.errorPanel}>
-              <h2>The lyrics service is having a moment.</h2>
+            <div className={styles.panel}>
+              <h3>The lyrics service is having a moment.</h3>
               <p>We couldn&apos;t fetch synced lyrics for this song. Your library is fine.</p>
-              <button className="btn btn--secondary" onClick={retry}>
+              <button className={styles.panelButton} onClick={retry}>
                 Retry
               </button>
             </div>
           )}
 
           {song?.kind === "error" && (
-            <div className={styles.errorPanel}>
-              <h2>Spotify didn&apos;t answer.</h2>
+            <div className={styles.panel}>
+              <h3>Spotify didn&apos;t answer.</h3>
               <p>We couldn&apos;t load this song. It&apos;s probably a blip.</p>
-              <button className="btn btn--secondary" onClick={retry}>
+              <button className={styles.panelButton} onClick={retry}>
                 Retry
               </button>
             </div>
           )}
 
           {song?.kind === "not_found" && (
-            <div className={styles.hint}>This song couldn&apos;t be found.</div>
+            <p className={styles.hint}>This song couldn&apos;t be found.</p>
           )}
         </section>
       </div>
@@ -231,13 +269,13 @@ function MicPanel({ mic }: { mic: ReturnType<typeof useMic> }) {
   if (mic.state === "checking") return null;
   if (mic.state === "denied") {
     return (
-      <div className={styles.errorPanel}>
-        <h2>Sing mode needs your microphone.</h2>
+      <div className={styles.panel}>
+        <h3>Sing mode needs your microphone.</h3>
         <p>
           It&apos;s blocked for this site. Click the icon at the left of the address bar, set
           Microphone to Allow, then try again. Typing works as usual.
         </p>
-        <button className="btn btn--secondary" onClick={mic.recheck}>
+        <button className={styles.panelButton} onClick={mic.recheck}>
           Try again
         </button>
       </div>
@@ -245,18 +283,18 @@ function MicPanel({ mic }: { mic: ReturnType<typeof useMic> }) {
   }
   if (mic.state === "no_mic") {
     return (
-      <div className={styles.errorPanel}>
-        <h2>No microphone found.</h2>
+      <div className={styles.panel}>
+        <h3>No microphone found.</h3>
         <p>Plug one in (a headset works), then try again. Typing works as usual.</p>
-        <button className="btn btn--secondary" onClick={mic.allow}>
+        <button className={styles.panelButton} onClick={mic.allow}>
           Try again
         </button>
       </div>
     );
   }
   return (
-    <div className={styles.errorPanel}>
-      <h2>Put on headphones.</h2>
+    <div className={styles.panel}>
+      <h3>Put on headphones.</h3>
       <p>
         Sing mode listens through your microphone. With headphones it hears you, not the singer.
       </p>
@@ -264,7 +302,7 @@ function MicPanel({ mic }: { mic: ReturnType<typeof useMic> }) {
         Your voice is turned into words by your browser&apos;s speech service (online; Google runs
         it in Chrome). The app only keeps which words were heard, never a recording.
       </p>
-      <button className="btn" onClick={mic.allow}>
+      <button className={styles.panelButton} onClick={mic.allow}>
         Allow the microphone
       </button>
     </div>
@@ -284,49 +322,53 @@ function LanguageNote({
   const [open, setOpen] = useState(false);
   if (!language) {
     return (
-      <div className={styles.note}>
-        <p>Will you sing in English or Spanish?</p>
-        <div className={styles.levels}>
-          {(["en", "es"] as const).map((l) => (
-            <button
-              key={l}
-              type="button"
-              className="chip chip--sm chip--grey"
-              onClick={() => onChange(l)}
-            >
-              {LANGUAGES[l]}
-            </button>
-          ))}
+      <div className={styles.language}>
+        <div className={styles.languageText}>
+          <MicIcon />
+          <span>Will you sing in English or Spanish?</span>
         </div>
+        {(["en", "es"] as const).map((l) => (
+          <button key={l} type="button" className={styles.languagePick} onClick={() => onChange(l)}>
+            {LANGUAGES[l]}
+          </button>
+        ))}
       </div>
     );
   }
   const other: Language = language === "en" ? "es" : "en";
   return (
-    <div className={styles.note}>
-      <p>
-        Listens for {LANGUAGES[language]} words ·{" "}
-        <button type="button" className={styles.textButton} onClick={() => onChange(other)}>
+    <>
+      <div className={styles.language}>
+        <div className={styles.languageText}>
+          <MicIcon />
+          <span>
+            Listens for <strong>{LANGUAGES[language]}</strong> words
+          </span>
+        </div>
+        <button type="button" className={styles.change} onClick={() => onChange(other)}>
           Change
-        </button>{" "}
+        </button>
         <button
           type="button"
-          className={styles.help}
+          className={`${styles.help} ${open ? styles.helpOpen : ""}`}
           aria-expanded={open}
-          aria-label="What does this mean?"
+          aria-label="Why choose a language?"
           onClick={() => setOpen((o) => !o)}
         >
           ?
         </button>
-      </p>
+      </div>
       {open && (
-        <p className={styles.helpText}>
-          Sing mode turns your voice into words in one language at a time. It&apos;s set to{" "}
-          {LANGUAGES[language]}
-          {language === fromLyrics ? ", picked from this song's lyrics" : ""}. If you&apos;ll sing
-          it in {LANGUAGES[other]}, change it. The song itself doesn&apos;t change.
-        </p>
+        <div className={styles.helpText}>
+          <strong>Why choose a language?</strong>
+          <p>
+            Sing mode turns your voice into words in one language at a time. It&apos;s set to{" "}
+            {LANGUAGES[language]}
+            {language === fromLyrics ? ", picked from this song's lyrics" : ""}. If you&apos;ll
+            sing it in {LANGUAGES[other]}, change it. The song itself doesn&apos;t change.
+          </p>
+        </div>
       )}
-    </div>
+    </>
   );
 }

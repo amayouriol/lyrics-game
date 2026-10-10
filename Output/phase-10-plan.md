@@ -8,8 +8,9 @@ Derived from: Output/phase-10-spec.md. Review before building.
 - **The cover** is the real Spotify cover with nothing on it; the design's generated cover only for songs without one.
 
 ## 1. The song screen in the new look
-- [ ] Cover, titles, How you play, Difficulty with points, level text with real counts, language note with "Why choose a language?", start button, heart and bookmark.
-- [ ] Microphone, loading, no lyrics and error states restyled, same behavior.
+- [x] Cover, titles, How you play, Difficulty with points, level text with real counts, language note with "Why choose a language?", start button, heart and bookmark.
+- [x] Microphone, loading, no lyrics and error states restyled, same behavior.
+- Done 2026-10-10: `SongClient.tsx` and `song.module.css` rebuilt from the Figma "Set up your game" screen; your six texts replace the level descriptions in `game.ts` and `sing.ts` (the results screens' short hint now reads e.g. "One word every other line is hidden"); the real cover with nothing on it (the made-up "Lyric Drop presents" cover only without one); round heart and bookmark on this screen (`library.module.css`, size "lg"). Text 13–19 px. Approved by you. Lint, tests and build pass.
 
 ## 2. Checks and play-test
 - [ ] `npm run lint`, `npm test`, `npm run build` pass; GitHub check passes.

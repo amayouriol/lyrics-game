@@ -9,12 +9,11 @@ import {
   type TimedLine,
 } from "./game.ts";
 
-/** What each level means in Sing mode, for the song screen. */
+/** What each level means in Sing mode, for the song screen (your texts, Phase 10). */
 export const SING_DESCRIPTIONS: Record<Difficulty, string> = {
-  easy: "One line in three is hidden. Sing it; the song waits up to 10 seconds for you to finish. 100 points a word.",
-  medium:
-    "Every other line is hidden. Sing it; the song waits up to 10 seconds for you to finish. 150 points a word.",
-  hard: "Every line is hidden, and the song doesn't wait. 200 points a word.",
+  easy: "One line in three is hidden. Sing it; the song waits up to 10 seconds.",
+  medium: "Every other line is hidden. Sing it; the song waits up to 10 seconds.",
+  hard: "Every line is hidden. Keep singing—the song doesn’t wait.",
 };
 
 /** Easy and Medium: how long the song waits at the end of a sung line for its missing words. */

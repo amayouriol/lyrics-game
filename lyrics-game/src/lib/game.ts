@@ -8,12 +8,20 @@ export const DIFFICULTIES: Record<
   Difficulty,
   { label: string; points: number; description: string }
 > = {
-  easy: { label: "Easy", points: 100, description: "One word every other line. 100 points each." },
-  medium: { label: "Medium", points: 150, description: "One word on every line. 150 points each." },
+  easy: {
+    label: "Easy",
+    points: 100,
+    description: "One word every other line is hidden. Type it as it’s sung.",
+  },
+  medium: {
+    label: "Medium",
+    points: 150,
+    description: "One word on every line is hidden. Type it as it’s sung.",
+  },
   hard: {
     label: "Hard",
     points: 200,
-    description: "Two words on every line. 200 points each. Good luck.",
+    description: "Two words on every line are hidden. Spelling matters.",
   },
 };
 
