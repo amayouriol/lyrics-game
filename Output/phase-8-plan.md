@@ -23,10 +23,11 @@ Order: the rules first (which lines are hidden, how heard words match, scoring),
 - Done 2026-10-09: `src/lib/sing.ts` (`singLines`, `matchSung`, `singStats`, `isLineOver`) and 14 checks in `sing.test.ts` (34 in all with the game's). Near-miss is one letter more or less at the end, for words of 3+ letters; two words heard within 1.5 s can join. Lint, tests and build pass.
 
 ## 2. Listening (`useListening`)
-- [ ] Starts and stops with the song; pauses with Pause.
-- [ ] Restarts by itself when the browser stops (step 0: every ~8 s of silence, and mid-song). If it can't restart, a red light with "Not listening — tap to retry", and the time it was off is remembered for the results.
-- [ ] Reports each word with when in the song it was heard, and whether sound is coming in (for the pulsing light).
-- [ ] Says clearly when the browser can't do speech, or when the microphone is missing or refused.
+- [x] Starts and stops with the song; pauses with Pause.
+- [x] Restarts by itself when the browser stops (step 0: every ~8 s of silence, and mid-song). If it can't restart, a red light with "Not listening — tap to retry", and the time it was off is remembered for the results.
+- [x] Reports each word with when in the song it was heard, and whether sound is coming in (for the pulsing light).
+- [x] Says clearly when the browser can't do speech, or when the microphone is missing or refused.
+- Done 2026-10-09: `play/speech.ts` (the browser's recognition, microphone checks, which language setting per song language) and `play/useListening.ts` (listens while the song plays, restarts by itself, gives up after 5 quick failures in a row, adds up time not listening). Tried on the step 0 test page with your voice: Shakira on Medium, with a pause and 20 s of silence, 0.0 s not listening; microphone blocked reported as "denied" with the music still playing. Lint, tests and build pass.
 
 ## 3. Song screen: Type or Sing
 - [ ] **Type / Sing** choice above the levels; Type by default, last choice remembered.
