@@ -87,6 +87,9 @@ The results are written into this spec under "Dependencies and risks".
 ## Dependencies and risks
 - **The browser's speech recognition** (the only voice service this phase relies on). Risk: built for speaking, not singing over music; may be worse in Spanish; may stop after pauses; may send audio to an outside service. Checked in step 0 before the plan.
 
+- **Spotify:** no new requests. Sing mode uses the same playback and lyrics as Type.
+- **LRCLIB lyrics timing:** each line's start time decides when a hidden line begins and ends. Lines with poor timing will feel unfair; no new risk, but more noticeable when singing whole lines.
+
 ### Step 0 results (2026-10-08, on a test page in your browser, with your voice)
 | Question | Answer | Evidence |
 |---|---|---|
@@ -100,8 +103,6 @@ What the misses were, and what changed in this spec because of them:
 - **Near-misses:** "parque" / "parqués", "amando te" / "amándote", "and dear" / "endear", "uno mismo" / "un mismo" → item 8b.
 - **Plain mishearing** ("comí una vez" for "conmigo nada es"): can't be fixed; it's why scoring is per word.
 - **Privacy:** recognition ran through the browser's online speech service (your voice is sent to Google to be turned into words). On-device recognition wasn't tried. The first-time note says so.
-- **Spotify:** no new requests. Sing mode uses the same playback and lyrics as Type.
-- **LRCLIB lyrics timing:** each line's start time decides when a hidden line begins and ends. Lines with poor timing will feel unfair; no new risk, but more noticeable when singing whole lines.
 
 ## Scope decisions made in this pass
 - **Whole lines, not single words** (your choice): closer to karaoke, harder to check, hence step 0.
