@@ -14,6 +14,7 @@ Derived from: Output/phase-10-spec.md. Review before building.
 
 ## 2. Checks and play-test
 - [x] `npm run lint`, `npm test`, `npm run build` pass; GitHub check passes.
-- [ ] Your play-test: both modes, all three levels, Change and "?", start a song, heart and bookmark.
+- [x] Your play-test: both modes, all three levels, Change and "?", start a song, heart and bookmark.
 - [x] plan.md gets a Phase 10 section; close with `Close Phase 10: …` after your play-test.
 - Checks done 2026-10-10: lint, 48 rule checks and build pass; GitHub's check passed; no new Spotify requests in the code. Waiting for your play-test.
+- Closed 2026-10-10: you play-tested on your account and said all good. Tag `phase-10`.

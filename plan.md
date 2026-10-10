@@ -61,9 +61,9 @@ Design: the Figma Make file "Design main page for game" (code in `design/figma-m
 - [x] How to play page, every number taken from the game's rules
 - [x] Your play-test on your account (2026-10-10, all good)
 
-## Phase 10: Lyric Drop look for the song screen — IN PROGRESS (Output/phase-10-spec.md, phase-10-plan.md)
+## Phase 10: Lyric Drop look for the song screen — DONE 2026-10-10 (Output/phase-10-spec.md, phase-10-plan.md)
 - [x] "Set up your game": real cover, Type / Sing, levels with points, your six level texts with real counts, "Why choose a language?", start button, round heart and bookmark
-- [ ] Your play-test on your account, then close
+- [x] Your play-test on your account (2026-10-10, all good)
 
 ## Explicitly out of scope for this plan
 Anything from spec.md's V2 list stays out unless you decide otherwise first: sharing with other people or multi-account login, an unsynced-lyrics fallback mode, score history or leaderboards.
