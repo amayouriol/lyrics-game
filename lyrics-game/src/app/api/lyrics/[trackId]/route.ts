@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getDictionary } from "@/lib/dictionary";
+import { getDictionary, getLanguage } from "@/lib/dictionary";
 import { DIFFICULTY_ORDER, pickBlanks } from "@/lib/game";
 import { getLyrics } from "@/lib/lyrics";
 import { getSession, getValidAccessToken } from "@/lib/session";
@@ -49,9 +49,13 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tra
       DIFFICULTY_ORDER.map((level) => [level, pickBlanks(lyrics.lines, level, isWord)])
     );
 
+    // Sing mode listens for this language.
+    const language = lyrics.lines.length ? await getLanguage(trackId, lyrics.lines) : null;
+
     return NextResponse.json({
       track: summary,
       status: lyrics.status,
+      language,
       lineCount: lyrics.lines.length,
       lines: lyrics.lines,
       blanks,

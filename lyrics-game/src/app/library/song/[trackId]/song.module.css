@@ -124,3 +124,47 @@
   gap: 16px;
   flex-wrap: wrap;
 }
+
+/* Sing mode: the quiet language note and its "?". */
+.note {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font: 400 14px/1.5 var(--font-sans);
+  color: var(--grey-500);
+}
+
+.note p {
+  margin: 0;
+}
+
+.textButton {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: var(--link);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.help {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--grey-300);
+  background: var(--white);
+  color: var(--grey-500);
+  font: 600 12px/1 var(--font-sans);
+  cursor: pointer;
+}
+
+.help[aria-expanded="true"] {
+  background: var(--grey-100);
+  color: var(--black);
+}
+
+.helpText {
+  max-width: 440px;
+  color: var(--text-body);
+}

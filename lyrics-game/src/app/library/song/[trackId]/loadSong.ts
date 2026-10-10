@@ -1,4 +1,6 @@
 import type { Blank, Difficulty, TimedLine } from "@/lib/game";
+import type { Language } from "@/lib/language";
+import type { PlayMode } from "./singPrefs";
 
 export interface TrackSummary {
   title: string;
@@ -15,6 +17,8 @@ export type SongResult =
       kind: "ready";
       track: TrackSummary;
       status: "available" | "unavailable";
+      /** From the lyrics; null if unclear. Sing mode listens for it. */
+      language: Language | null;
       lineCount: number;
       lines: TimedLine[];
       /** The hidden words per level, picked on the server against the dictionaries. */
@@ -37,6 +41,7 @@ export async function loadSong(trackId: string): Promise<SongResult | "expired">
       kind: "ready",
       track: body.track,
       status: body.status,
+      language: body.language ?? null,
       lineCount: body.lineCount,
       lines: body.lines,
       blanks: body.blanks,
@@ -50,8 +55,14 @@ export function songHref(trackId: string, from: string | null): string {
   return `/library/song/${trackId}${from ? `?from=${encodeURIComponent(from)}` : ""}`;
 }
 
-export function playHref(trackId: string, from: string | null, level: Difficulty): string {
+export function playHref(
+  trackId: string,
+  from: string | null,
+  level: Difficulty,
+  mode: PlayMode = "type"
+): string {
   const params = new URLSearchParams({ level });
+  if (mode === "sing") params.set("mode", "sing");
   if (from) params.set("from", from);
   return `/library/song/${trackId}/play?${params}`;
 }

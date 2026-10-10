@@ -95,7 +95,7 @@ test("near-misses: two words heard in a row can make one", () => {
   // Step 0: "amando te" for "amándote".
   const [r] = run(
     lines("Seguir amándote es inevitable"),
-    sing(100, "seguir amando te es inevitable"),
+    sing(100, "seguir amando te es inevitable")
   );
   assert.equal(got(r), 4);
 });

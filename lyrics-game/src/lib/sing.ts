@@ -2,6 +2,13 @@
 
 import { DIFFICULTIES, normalize, tokenize, type Difficulty, type TimedLine } from "./game.ts";
 
+/** What each level means in Sing mode, for the song screen. */
+export const SING_DESCRIPTIONS: Record<Difficulty, string> = {
+  easy: "Every other line is hidden. Sing it. 100 points a word.",
+  medium: "Every line is hidden. Sing it. 150 points a word.",
+  hard: "Every line is hidden, and you won't see how many words it has. 200 points a word.",
+};
+
 /** A word heard this long before its line starts, or after it ends, still counts for it. */
 export const SING_GRACE_MS = 1000;
 
@@ -65,7 +72,7 @@ export function matchSung(
   lines: TimedLine[],
   sung: number[],
   heard: HeardWord[],
-  songEndMs: number,
+  songEndMs: number
 ): SungLine[] {
   const result: SungLine[] = sung.map((i) => {
     const words = lineWords(lines[i].text);

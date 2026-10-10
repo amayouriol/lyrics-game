@@ -87,7 +87,7 @@ export function useListening({
           // A revised word keeps the time it was first heard.
           byResult.current.set(
             key,
-            words.map((text, j) => ({ text, atMs: before[j]?.atMs ?? now })),
+            words.map((text, j) => ({ text, atMs: before[j]?.atMs ?? now }))
           );
         }
         setHeard([...byResult.current.values()].flat());

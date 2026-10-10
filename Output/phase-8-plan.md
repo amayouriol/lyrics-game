@@ -30,11 +30,12 @@ Order: the rules first (which lines are hidden, how heard words match, scoring),
 - Done 2026-10-09: `play/speech.ts` (the browser's recognition, microphone checks, which language setting per song language) and `play/useListening.ts` (listens while the song plays, restarts by itself, gives up after 5 quick failures in a row, adds up time not listening). Tried on the step 0 test page with your voice: Shakira on Medium, with a pause and 20 s of silence, 0.0 s not listening; microphone blocked reported as "denied" with the music still playing. Lint, tests and build pass.
 
 ## 3. Song screen: Type or Sing
-- [ ] **Type / Sing** choice above the levels; Type by default, last choice remembered.
-- [ ] With Sing: the level descriptions change to the Sing ones; the count reads "12 lines to sing" instead of blanks.
-- [ ] The quiet language note (spec 3b): "Listens for Spanish words · Change" with a "?" that explains it; "Will you sing in English or Spanish?" when the language is unknown; a correction remembered for that song.
-- [ ] First time: the headphones note (including that your voice is turned into words by an online service), then the browser's microphone prompt. Not shown again once allowed.
-- [ ] Microphone refused → "Sing mode needs your microphone." with how to allow it. Browser without speech → Sing greyed out with "Sing mode doesn't work in this browser." Type untouched in both.
+- [x] **Type / Sing** choice above the levels; Type by default, last choice remembered.
+- [x] With Sing: the level descriptions change to the Sing ones; the count reads "12 lines to sing" instead of blanks.
+- [x] The quiet language note (spec 3b): "Listens for Spanish words · Change" with a "?" that explains it; "Will you sing in English or Spanish?" when the language is unknown; a correction remembered for that song.
+- [x] First time: the headphones note (including that your voice is turned into words by an online service), then the browser's microphone prompt. Not shown again once allowed.
+- [x] Microphone refused → "Sing mode needs your microphone." with how to allow it. Browser without speech → Sing greyed out with "Sing mode doesn't work in this browser." Type untouched in both.
+- Done 2026-10-10: "How you play: Type | Sing" on the song screen (`SongClient.tsx`), choices kept in the browser (`singPrefs.ts`: mode, headphones note seen, language per song). The lyrics service now sends each song's language. Checked by you in your browser: Sing texts, the language note with Change and ?, the headphones panel, choices remembered after reload. Lint, tests and build pass.
 
 ## 4. Play screen in Sing mode
 - [ ] Same screen as Type: lyrics scroll and glide, current line lit. Lines that aren't hidden show as normal.
