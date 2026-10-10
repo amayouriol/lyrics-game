@@ -21,29 +21,174 @@ export default async function HomePage({
   const { expired } = await searchParams;
 
   return (
-    <main className={styles.main}>
-      <div className={styles.logo}>Lyrics Game</div>
+    <main className={styles.main} id="top">
+      <section className={styles.hero} aria-labelledby="welcome-title">
+        <div className={styles.grain} aria-hidden="true" />
 
-      {expired && (
-        <div className={styles.banner}>
-          Your session expired. Reconnect and you&apos;ll land right back on your home page.
+        <header className={styles.topbar}>
+          <a className={styles.brand} href="#top" aria-label="Lyric Drop home">
+            <span className={styles.logoWordmark} aria-hidden="true">
+              <span className={styles.logoTopLine}>LYRIC</span>
+              <span className={styles.logoBottomLine}>
+                DR<span className={styles.logoUnderscore}>_</span>P
+                <i className={styles.droppedLetter}>O</i>
+              </span>
+            </span>
+          </a>
+        </header>
+
+        <div className={styles.heroCopy}>
+          {expired && (
+            <div className={styles.banner} role="status">
+              Your session expired. Reconnect and you&apos;ll land right back on your home page.
+            </div>
+          )}
+
+          <h1 id="welcome-title">
+            Turn your playlist into
+            <br />
+            <em>karaoke.</em>
+          </h1>
+          <p className={styles.heroIntro}>
+            The song starts. The lyrics fade. Can you sing the missing words?
+          </p>
+
+          {/* Plain link: this starts Spotify auth and should not be prefetched. */}
+          <a className={styles.primaryCta} href="/api/auth/login" aria-describedby="spotify-note">
+            <SpotifyIcon />
+            <span>
+              Connect with Spotify<sup aria-hidden="true">*</sup>
+            </span>
+            <i aria-hidden="true">
+              <ArrowIcon />
+            </i>
+          </a>
+
+          <p className={styles.disclaimer} id="spotify-note">
+            <span aria-hidden="true">*</span> Spotify Premium is required for playback. We use
+            playlists you own and your Liked Songs, not playlists you follow.
+          </p>
         </div>
-      )}
 
-      <h1 className={styles.headline}>Finish the line. Your songs this time.</h1>
-      <p className={styles.description}>
-        Connect your Spotify Premium account, pick anything from your playlists or liked songs,
-        and type the missing words as the song plays.
-      </p>
+        <div className={styles.musicNotes} aria-hidden="true">
+          <svg className={`${styles.note} ${styles.noteOne}`} viewBox="0 0 80 110">
+            <path d="M26 82V27l39-9v54" />
+            <ellipse cx="17" cy="85" rx="14" ry="10" />
+            <ellipse cx="56" cy="75" rx="14" ry="10" />
+          </svg>
+          <svg className={`${styles.note} ${styles.noteTwo}`} viewBox="0 0 55 75">
+            <path d="M18 55V13l28-7v38" />
+            <ellipse cx="11" cy="58" rx="10" ry="7" />
+            <ellipse cx="39" cy="47" rx="10" ry="7" />
+          </svg>
+          <svg className={`${styles.note} ${styles.noteThree}`} viewBox="0 0 44 66">
+            <path d="M14 50V8l23 7" />
+            <ellipse cx="8" cy="53" rx="8" ry="6" />
+          </svg>
+          <span className={`${styles.soundWave} ${styles.waveOne}`} />
+          <span className={`${styles.soundWave} ${styles.waveTwo}`} />
+          <span className={`${styles.soundWave} ${styles.waveThree}`} />
+        </div>
 
-      {/* Plain link: a server route, not a page Next.js should prefetch. */}
-      <a href="/api/auth/login" className="btn btn--lg">
-        Connect with Spotify
-      </a>
+        <div className={styles.recordStage} aria-hidden="true">
+          <div className={styles.record}>
+            <div className={styles.recordShine} />
+            <div className={styles.recordLabel}>
+              <span className={`${styles.logoWordmark} ${styles.recordLogo}`}>
+                <span className={styles.logoTopLine}>LYRIC</span>
+                <span className={styles.logoBottomLine}>
+                  DR<span className={styles.logoUnderscore}>_</span>P
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
 
-      <p className={styles.note}>
-        Premium is required for full-song playback. Only your account can sign in to this build.
-      </p>
+        <a className={styles.scrollCue} href="#how-it-works">
+          <span>See how the game works</span>
+        </a>
+      </section>
+
+      <section className={styles.howSection} id="how-it-works" aria-labelledby="how-title">
+        <div className={styles.gameNoise} aria-hidden="true" />
+        <div className={styles.gameKicker}>
+          <span>How it plays</span>
+          <span>Your library · your lyrics</span>
+        </div>
+
+        <div className={styles.gameGrid}>
+          <div className={styles.gameMessage}>
+            <h2 id="how-title">
+              Don&apos;t just
+              <br />
+              know it.
+              <br />
+              <em>Sing it.</em>
+            </h2>
+          </div>
+
+          <div className={styles.stepsCard}>
+            <p className={styles.stepsIntro}>Your music takes center stage.</p>
+            <ol className={styles.steps}>
+              <li>
+                <span className={styles.stepNumber}>01</span>
+                <span>
+                  <b>Connect Spotify</b>
+                  <small>Sign in with a Premium account.</small>
+                </span>
+              </li>
+              <li>
+                <span className={styles.stepNumber}>02</span>
+                <span>
+                  <b>Pick one of your songs</b>
+                  <small>Choose a playlist you own or a liked song.</small>
+                </span>
+              </li>
+              <li>
+                <span className={styles.stepNumber}>03</span>
+                <span>
+                  <b>Finish the line</b>
+                  <small>Sing along and guess the missing words.</small>
+                </span>
+              </li>
+            </ol>
+            <a className={styles.cardCta} href="/api/auth/login">
+              <span>Get started</span>
+              <ArrowIcon />
+            </a>
+          </div>
+        </div>
+
+        <footer className={styles.footer}>
+          <a href="#top">
+            Back to the top
+            <ArrowIcon />
+          </a>
+        </footer>
+      </section>
     </main>
+  );
+}
+
+function ArrowIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M5 12h13M13 6l6 6-6 6" />
+    </svg>
+  );
+}
+
+function SpotifyIcon() {
+  return (
+    <svg className={styles.spotifyIcon} viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="11" fill="#101010" />
+      <path
+        d="M6.3 9.1c3.8-1.2 8.7-.7 11.7 1.1M7.1 12.1c3.2-1 7.2-.5 9.9 1M7.8 15c2.5-.7 5.7-.4 7.9.8"
+        fill="none"
+        stroke="#1ed760"
+        strokeLinecap="round"
+        strokeWidth="1.6"
+      />
+    </svg>
   );
 }
