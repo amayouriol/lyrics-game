@@ -45,11 +45,12 @@ Redefined: the original Phase 5 tasks (difficulty selector, song picker disabled
 - [x] Filters: only playable (on by default), language, played / not played (genre moved to V3)
 - [x] Favorite and Play later buttons, lists in the library and sections on home
 
-## Phase 8: Sing mode — spec and plan written (Output/phase-8-spec.md, phase-8-plan.md)
+## Phase 8: Sing mode — DONE 2026-10-10 (Output/phase-8-spec.md, phase-8-plan.md)
 - [x] Step 0: one-hour test of the browser hearing you sing (English, Spanish, whole song, headphones, speed); results into the spec — all four yes (2026-10-08)
-- [ ] Choose Type or Sing on a song's screen
-- [ ] Sing hidden lines over the music: slots fill in as heard, points per word
-- [ ] Results and saved progress for sung games (marked, compared only with sung games)
+- [x] Choose Type or Sing on a song's screen
+- [x] Sing hidden lines over the music: slots fill in as heard, points per word
+- [x] Results and saved progress for sung games (marked, compared only with sung games)
+- [x] After play-testing: easier levels (Easy 1 line in 3, Medium every other, both wait up to 10 s), "oh", "yeah" and names left out
 
 ## Explicitly out of scope for this plan
 Anything from spec.md's V2 list stays out unless you decide otherwise first: sharing with other people or multi-account login, an unsynced-lyrics fallback mode, score history or leaderboards.

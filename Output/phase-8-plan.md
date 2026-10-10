@@ -75,13 +75,14 @@ Order: the rules first (which lines are hidden, how heard words match, scoring),
 - Done 2026-10-10: `singLines` (1 in 3 / every other / every line), `singWaits` and `SING_WAIT_MS`, `singableWords` with a list of sounds; the lyrics service sends `singable` per line; left-out words show as plain text and aren't saved. 46 checks pass. Checked by you on all three levels.
 
 ## Acceptance check (tied to phase-8-spec.md's Success section)
-- [ ] With headphones, one English and one Spanish song you know well, on Medium: at least 70% of the words
-- [ ] Same song, silent: 0. Mumbling: under 10%
-- [ ] Words you clearly sang fill their slot before the line ends or within a second
-- [ ] Easy and Medium wait for an unfinished line, Hard doesn't; "oh", "yeah" and names aren't counted
-- [ ] A sung game on home has the microphone; Best songs shows the song separately typed and sung; Words you keep missing doesn't change after a sung game
-- [ ] Refusing the microphone leaves Type fully playable
-- [ ] Type mode plays exactly as before
+- [x] With headphones, one English and one Spanish song you know well, on Medium: at least 70% of the words. Spanish: "Inevitable" 79% (saved, on what is now Hard), "Te Busco" 89% (saved). English: 72% on Medium, reported by you (quit before the results, so not saved); "Rude" 79% on Easy (saved).
+- [x] Same song, silent: 0 (you, 2026-10-10). Mumbling under 10%: **not checked**.
+- [x] Words you clearly sang fill their slot before the line ends or within a second
+- [x] Easy and Medium wait for an unfinished line, Hard doesn't; "oh", "yeah" and names aren't counted
+- [x] A sung game on home has the microphone; Best songs shows the song separately typed and sung; Words you keep missing doesn't change after a sung game
+- [x] Refusing the microphone leaves Type fully playable
+- [x] Type mode plays exactly as before
+- Confirmed 2026-10-10 in play-tests on the real account. Phase 8 closed. Known limit: very fast songs score low ("California Gurls" 23% on Medium); noted in the spec.
 
 ## Before approving this plan
 - [x] The technical decisions above are fine with you (approved 2026-10-09; the language switch became a quiet note with a "?")

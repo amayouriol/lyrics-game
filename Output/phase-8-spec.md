@@ -91,6 +91,7 @@ The results are written into this spec under "Dependencies and risks".
 ## Dependencies and risks
 - **The browser's speech recognition** (the only voice service this phase relies on). Risk: built for speaking, not singing over music; may be worse in Spanish; may stop after pauses; may send audio to an outside service. Checked in step 0 before the plan.
 - **Spotify:** no new requests. Sing mode uses the same playback and lyrics as Type.
+- **Very fast songs** (found 2026-10-10): "California Gurls" scored 23% on Medium even with the song waiting, against 72–89% on songs at a normal pace. The speech service can't keep up with fast, dense lyrics. Accepted for this phase; ideas for later in V2.
 - **LRCLIB lyrics timing:** each line's start time decides when a hidden line begins and ends. Lines with poor timing will feel unfair; no new risk, but more noticeable when singing whole lines.
 
 ### Step 0 results (2026-10-08, on a test page in your browser, with your voice)
@@ -117,6 +118,7 @@ What the misses were, and what changed in this spec because of them:
 - **Success:** two songs you know (English and Spanish), 70% on Medium.
 
 ## V2 (optional)
+- Fast songs: a longer wait, slower playback, or fewer words per line counted on fast songs.
 - Singing just the hidden word in a typed-style game, or a sing-along mode with no blanks where each word lights up as you sing it.
 - Only the chorus hidden.
 - Lowering the singer's voice instead of requiring headphones. *(Waiting for you moved into this phase on 2026-10-10, for Easy and Medium.)*
