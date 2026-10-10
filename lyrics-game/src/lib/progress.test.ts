@@ -1,7 +1,14 @@
 /** Rule checks for saved games and progress: run with `npm test`. */
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { summarizeGame, type WordResult } from "./progress.ts";
+import {
+  bestSongs,
+  missedWords,
+  overallByMode,
+  summarizeGame,
+  type Game,
+  type WordResult,
+} from "./progress.ts";
 
 const typed = (result: WordResult["result"], wrongTries = 0): WordResult => ({
   answer: "love",
@@ -56,4 +63,70 @@ test("sung games: lines count in song order, however the words were sent", () =>
 test("an empty game is 0%, not a crash", () => {
   assert.equal(summarizeGame([], "easy", "sing").accuracy, 0);
   assert.equal(summarizeGame([], "easy").accuracy, 0);
+});
+
+// --- Typed and sung games side by side (Phase 8) ---
+
+let nextId = 0;
+const game = (
+  trackId: string,
+  accuracy: number,
+  mode?: "sing",
+  words: WordResult[] = [typed("revealed")]
+): Game => ({
+  id: `g${nextId++}`,
+  playedAt: nextId,
+  song: { trackId, title: trackId, artist: "a", cover: null, durationMs: 1 },
+  level: "medium",
+  ...(mode ? { mode } : {}),
+  words,
+  score: accuracy,
+  accuracy,
+  correct: accuracy,
+  total: 100,
+  bestStreak: 0,
+});
+
+test("best songs keep typed and sung games apart", () => {
+  const games = [game("a", 90), game("a", 60, "sing"), game("a", 70, "sing"), game("b", 80)];
+  const best = bestSongs(games, 5);
+  assert.deepEqual(
+    best.map((g) => [g.song.trackId, g.mode ?? "type", g.accuracy]),
+    [
+      ["a", "type", 90],
+      ["b", "type", 80],
+      ["a", "sing", 70],
+    ]
+  );
+});
+
+test("words you keep missing count typed games only", () => {
+  const miss = (answer: string): WordResult => ({ ...typed("revealed"), answer });
+  const games = [
+    game("a", 0, undefined, [miss("noche")]),
+    game("b", 0, "sing", [miss("noche"), miss("noche")]),
+  ];
+  assert.deepEqual(missedWords(games, 10), []);
+  games.push(game("c", 0, undefined, [miss("noche")]));
+  assert.deepEqual(
+    missedWords(games, 10).map((w) => [w.word, w.misses]),
+    [["noche", 2]]
+  );
+});
+
+test("overall stats: typed games, and sung ones only once there are any", () => {
+  const typedOnly = overallByMode([game("a", 80), game("b", 60)]);
+  assert.equal(typedOnly.typed.songsPlayed, 2);
+  assert.equal(typedOnly.typed.accuracy, 70);
+  assert.equal(typedOnly.sung, null);
+  const both = overallByMode([game("a", 80), game("b", 40, "sing")]);
+  assert.equal(both.typed.songsPlayed, 1);
+  assert.equal(both.sung?.songsPlayed, 1);
+  assert.equal(both.sung?.accuracy, 40);
+});
+
+test("games saved before Sing mode count as typed", () => {
+  const old = game("a", 75);
+  delete (old as { mode?: string }).mode;
+  assert.equal(overallByMode([old]).typed.songsPlayed, 1);
 });

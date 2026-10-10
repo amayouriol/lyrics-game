@@ -1,13 +1,7 @@
 import { NextResponse } from "next/server";
 import { getGames } from "@/lib/games";
 import { getCacheEntries } from "@/lib/lyrics-cache";
-import {
-  bestSongs,
-  missedWords,
-  overallStats,
-  recentGames,
-  type Game,
-} from "@/lib/progress";
+import { bestSongs, missedWords, overallByMode, recentGames, type Game } from "@/lib/progress";
 import { getSaved, type SavedLists, type SavedSong } from "@/lib/saved";
 import { getSession, getUserId } from "@/lib/session";
 import { SpotifySessionExpiredError } from "@/lib/spotify";
@@ -21,8 +15,8 @@ const SAVED_COUNT = 5;
 
 /** A game as the home page shows it: without the word-by-word results. */
 function brief(game: Game): Omit<Game, "words"> {
-  const { id, playedAt, song, level, score, accuracy, correct, total, bestStreak } = game;
-  return { id, playedAt, song, level, score, accuracy, correct, total, bestStreak };
+  const { id, playedAt, song, level, mode, score, accuracy, correct, total, bestStreak } = game;
+  return { id, playedAt, song, level, mode, score, accuracy, correct, total, bestStreak };
 }
 
 /** Your progress for the home page, worked out from your saved games. */
@@ -63,7 +57,7 @@ export async function GET() {
     });
 
     return NextResponse.json({
-      overall: overallStats(games),
+      overall: overallByMode(games),
       recent: recent.map(brief),
       best: best.map(brief),
       missed: missedWords(games, MISSED_COUNT),

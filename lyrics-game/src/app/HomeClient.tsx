@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { StatBlock } from "@/components/StatBlock";
-import { BookmarkIcon, HeartIcon } from "@/components/icons";
+import { BookmarkIcon, HeartIcon, KeyboardIcon, MicIcon } from "@/components/icons";
 import { DIFFICULTIES, type Difficulty } from "@/lib/game";
 import type { Game, MissedWord, OverallStats } from "@/lib/progress";
 import { playHref, songHref } from "./library/song/[trackId]/loadSong";
@@ -18,7 +18,8 @@ interface SavedSection {
 }
 
 interface Progress {
-  overall: OverallStats;
+  /** Typed games, and sung ones once there are any (Phase 8). */
+  overall: { typed: OverallStats; sung: OverallStats | null };
   recent: BriefGame[];
   best: BriefGame[];
   missed: MissedWord[];
@@ -86,7 +87,9 @@ export function HomeClient() {
 
   const state = loaded && loaded.key === reloadKey ? loaded.value : null;
   const progress = state?.status === "ready" ? state.progress : null;
-  const firstTime = progress?.overall.songsPlayed === 0;
+  const firstTime =
+    progress !== null &&
+    progress.overall.typed.songsPlayed + (progress.overall.sung?.songsPlayed ?? 0) === 0;
 
   return (
     <main className={styles.main}>
@@ -124,14 +127,17 @@ export function HomeClient() {
 }
 
 function Sections({ progress, now }: { progress: Progress; now: number }) {
-  const { overall, recent, best, missed, unavailable } = progress;
+  const { recent, best, missed, unavailable } = progress;
+  const { typed: overall, sung } = progress.overall;
   const gone = new Set(unavailable);
+  // Marks in Best songs only matter once both typed and sung games are listed.
+  const hasBoth = best.some((g) => g.mode === "sing") && best.some((g) => g.mode !== "sing");
 
   return (
     <>
       <section className={styles.stats}>
         <StatBlock
-          label="Songs played"
+          label={sung ? "Songs typed" : "Songs played"}
           value={overall.songsPlayed}
           tone="primary"
           hint="Finished songs"
@@ -146,7 +152,7 @@ function Sections({ progress, now }: { progress: Progress; now: number }) {
           label="Accuracy"
           value={`${overall.accuracy}%`}
           tone="tertiary"
-          hint="Across every game"
+          hint={sung ? "Across every typed game" : "Across every game"}
         />
         <StatBlock
           label="Best streak"
@@ -154,6 +160,14 @@ function Sections({ progress, now }: { progress: Progress; now: number }) {
           tone="quaternary"
           hint="In a row, no misses"
         />
+        {sung && (
+          <StatBlock
+            label="Songs sung"
+            value={sung.songsPlayed}
+            tone="secondary"
+            hint={`${sung.accuracy}% of words heard`}
+          />
+        )}
       </section>
 
       <SavedSections saved={progress.saved} />
@@ -165,6 +179,7 @@ function Sections({ progress, now }: { progress: Progress; now: number }) {
             {recent.map((game) => (
               <div key={game.id} className={styles.row}>
                 <SongLink game={game}>
+                  {game.mode === "sing" && <ModeMark mode="sing" />}
                   {DIFFICULTIES[game.level].label} · {game.score} pts · {game.accuracy}% ·{" "}
                   {timeAgo(game.playedAt, now)}
                 </SongLink>
@@ -172,7 +187,7 @@ function Sections({ progress, now }: { progress: Progress; now: number }) {
                   <span className={styles.gone}>No longer available.</span>
                 ) : (
                   <Link
-                    href={playHref(game.song.trackId, null, game.level)}
+                    href={playHref(game.song.trackId, null, game.level, game.mode ?? "type")}
                     className="btn btn--secondary btn--sm"
                   >
                     Play again
@@ -188,7 +203,10 @@ function Sections({ progress, now }: { progress: Progress; now: number }) {
           <div className={styles.rows}>
             {best.map((game) => (
               <div key={game.id} className={styles.row}>
-                <SongLink game={game}>Set on {DIFFICULTIES[game.level].label}</SongLink>
+                <SongLink game={game}>
+                  {hasBoth && <ModeMark mode={game.mode ?? "type"} />}
+                  {game.mode === "sing" ? "Sung" : "Set"} on {DIFFICULTIES[game.level].label}
+                </SongLink>
                 <span className={styles.bigNumber}>{game.accuracy}%</span>
               </div>
             ))}
@@ -215,6 +233,15 @@ function Sections({ progress, now }: { progress: Progress; now: number }) {
         )}
       </section>
     </>
+  );
+}
+
+/** A small microphone (sung) or keyboard (typed) before a game's details. */
+function ModeMark({ mode }: { mode: "type" | "sing" }) {
+  return (
+    <span className={styles.modeMark} title={mode === "sing" ? "Sung" : "Typed"}>
+      {mode === "sing" ? <MicIcon /> : <KeyboardIcon />}
+    </span>
   );
 }
 

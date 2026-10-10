@@ -54,12 +54,13 @@ Order: the rules first (which lines are hidden, how heard words match, scoring),
 - Done 2026-10-10: `SingResults` (Sing again, Try Hard, Try typing, Pick another song; your lines with heard and missed words). Saved with `mode: "sing"` and each word's line; the server recounts score and full-line streaks (`summarizeGame`), checked in the new `progress.test.ts` (38 checks in all). Checked by you.
 
 ## 6. Progress on home
-- [ ] Recently played: a microphone mark on sung games (keyboard mark on typed ones only where both appear side by side, e.g. Best songs).
-- [ ] Best songs: a song can appear once typed and once sung.
-- [ ] Words you keep missing: typed games only.
-- [ ] Overall stats: "Typed: 24 songs, 81%" and "Sung: 3 songs, 68%" when you have sung games; unchanged otherwise.
-- [ ] "Play again" from home keeps the mode. The library's "played" filter counts sung games too.
-- [ ] `npm test` checks for the progress rules (needs `progress.ts` to import `./game.ts` with its extension, as `game.test.ts` does).
+- [x] Recently played: a microphone mark on sung games (keyboard mark on typed ones only where both appear side by side, e.g. Best songs).
+- [x] Best songs: a song can appear once typed and once sung.
+- [x] Words you keep missing: typed games only.
+- [x] Overall stats: "Typed: 24 songs, 81%" and "Sung: 3 songs, 68%" when you have sung games; unchanged otherwise.
+- [x] "Play again" from home keeps the mode. The library's "played" filter counts sung games too.
+- [x] `npm test` checks for the progress rules (needs `progress.ts` to import `./game.ts` with its extension, as `game.test.ts` does).
+- Done 2026-10-10: `overallByMode`, `bestSongs` per mode, `missedWords` typed only (`progress.ts`), microphone and keyboard marks (`icons.tsx`), a "Songs sung" box on home. The "played" filter already counted every finished game. 42 checks pass. Checked by you on the home page.
 
 ## 7. Checks and tidy-up
 - [ ] `npm run lint`, `npm test`, `npm run build` pass, and the GitHub check is green.

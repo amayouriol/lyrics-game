@@ -113,6 +113,15 @@ export function overallStats(games: Game[]): OverallStats {
   };
 }
 
+/** Overall stats for typed games, and for sung ones once there are any. */
+export function overallByMode(games: Game[]): { typed: OverallStats; sung: OverallStats | null } {
+  const sung = games.filter((g) => g.mode === "sing");
+  return {
+    typed: overallStats(games.filter((g) => g.mode !== "sing")),
+    sung: sung.length ? overallStats(sung) : null,
+  };
+}
+
 export function recentGames(games: Game[], count: number): Game[] {
   return [...games].sort((a, b) => b.playedAt - a.playedAt).slice(0, count);
 }
@@ -122,12 +131,16 @@ function better(a: Game, b: Game): number {
   return b.accuracy - a.accuracy || b.score - a.score || b.playedAt - a.playedAt;
 }
 
-/** Each song's best game, at whichever level, best first. */
+/**
+ * Each song's best game, at whichever level, best first. Typed and sung games
+ * aren't compared: a song can be listed once for each.
+ */
 export function bestSongs(games: Game[], count: number): Game[] {
   const best = new Map<string, Game>();
   for (const game of games) {
-    const current = best.get(game.song.trackId);
-    if (!current || better(game, current) < 0) best.set(game.song.trackId, game);
+    const key = `${game.mode ?? "type"}:${game.song.trackId}`;
+    const current = best.get(key);
+    if (!current || better(game, current) < 0) best.set(key, game);
   }
   return [...best.values()].sort(better).slice(0, count);
 }
@@ -147,7 +160,8 @@ export const MISSED_WORD_MIN = 2;
 
 /**
  * The words you miss most. "Corazón" and "corazon" are one word. A miss is
- * anything but right: wrong, skipped, out of tries or out of time.
+ * anything but right: wrong, skipped, out of tries or out of time. Typed
+ * games only: a sung miss is often the app mishearing, not you forgetting.
  */
 export function missedWords(games: Game[], count: number): MissedWord[] {
   const byWord = new Map<
@@ -155,6 +169,7 @@ export function missedWords(games: Game[], count: number): MissedWord[] {
     { spellings: Map<string, number>; misses: number; seen: number; songs: Set<string> }
   >();
   for (const game of games) {
+    if (game.mode === "sing") continue;
     for (const word of game.words) {
       const key = normalize(word.answer);
       let entry = byWord.get(key);
