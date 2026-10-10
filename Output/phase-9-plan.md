@@ -14,9 +14,10 @@ Order: the two new pieces behind the screens first (current streak, your name), 
 - **Spotify's logo:** the official file from Spotify's brand page, saved in `public/`. I'll ask before downloading it.
 
 ## 1. Current streak (`progress.ts`) and its checks
-- [ ] `currentStreak(games)`: songs in a row at 80% or more, counting back from the latest; typed and sung both count; 80% exactly counts.
-- [ ] Sent to the home page with the other totals (`/api/progress`).
-- [ ] `npm test` checks: no games → 0; latest under 80% → 0; three at 80%+ then one under → 3; 80% exactly counts; sung and typed mixed in play order.
+- [x] `currentStreak(games)`: songs in a row at 80% or more, counting back from the latest; typed and sung both count; 80% exactly counts.
+- [x] Sent to the home page with the other totals (`/api/progress`).
+- [x] `npm test` checks: no games → 0; latest under 80% → 0; three at 80%+ then one under → 3; 80% exactly counts; sung and typed mixed in play order.
+- Done 2026-10-10: `currentStreak` and `STREAK_ACCURACY = 80` in `progress.ts`, 2 new checks (48 in all), `currentStreak` in the `/api/progress` answer (not shown on screen until step 4). On your real games it's 1: Te Busco 89%, then Rude 79% ends it. Lint, tests and build pass.
 
 ## 2. Your name and picture from the login
 - [ ] At login, keep your Spotify display name and picture with your login (same request as now).

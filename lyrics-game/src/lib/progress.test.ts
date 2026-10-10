@@ -3,6 +3,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   bestSongs,
+  currentStreak,
   missedWords,
   overallByMode,
   summarizeGame,
@@ -129,4 +130,20 @@ test("games saved before Sing mode count as typed", () => {
   const old = game("a", 75);
   delete (old as { mode?: string }).mode;
   assert.equal(overallByMode([old]).typed.songsPlayed, 1);
+});
+
+test("current streak: songs in a row at 80% or more, counting back from the latest", () => {
+  assert.equal(currentStreak([]), 0);
+  // Played in this order; the oldest one under 80% doesn't matter.
+  const games = [game("a", 50), game("b", 90), game("c", 80), game("d", 100)];
+  assert.equal(currentStreak(games), 3); // 80% exactly counts
+  assert.equal(currentStreak([...games].reverse()), 3); // play order, not list order
+  assert.equal(currentStreak([...games, game("e", 79)]), 0); // latest under 80%
+  assert.equal(currentStreak([game("f", 85), game("g", 95)]), 2); // all count
+});
+
+test("current streak: typed and sung songs both count", () => {
+  const games = [game("a", 60, "sing"), game("b", 88), game("c", 82, "sing"), game("d", 90)];
+  assert.equal(currentStreak(games), 3);
+  assert.equal(currentStreak([...games, game("e", 70, "sing")]), 0);
 });

@@ -1,7 +1,14 @@
 import { NextResponse } from "next/server";
 import { getGames } from "@/lib/games";
 import { getCacheEntries } from "@/lib/lyrics-cache";
-import { bestSongs, missedWords, overallByMode, recentGames, type Game } from "@/lib/progress";
+import {
+  bestSongs,
+  currentStreak,
+  missedWords,
+  overallByMode,
+  recentGames,
+  type Game,
+} from "@/lib/progress";
 import { getSaved, type SavedLists, type SavedSong } from "@/lib/saved";
 import { getSession, getUserId } from "@/lib/session";
 import { SpotifySessionExpiredError } from "@/lib/spotify";
@@ -58,6 +65,7 @@ export async function GET() {
 
     return NextResponse.json({
       overall: overallByMode(games),
+      currentStreak: currentStreak(games),
       recent: recent.map(brief),
       best: best.map(brief),
       missed: missedWords(games, MISSED_COUNT),

@@ -126,6 +126,19 @@ export function recentGames(games: Game[], count: number): Game[] {
   return [...games].sort((a, b) => b.playedAt - a.playedAt).slice(0, count);
 }
 
+/** A finished song at this accuracy or more keeps the current streak going. */
+export const STREAK_ACCURACY = 80;
+
+/**
+ * Songs in a row at STREAK_ACCURACY or more, counting back from the latest.
+ * Typed and sung games both count, in the order they were played.
+ */
+export function currentStreak(games: Game[]): number {
+  const latestFirst = [...games].sort((a, b) => b.playedAt - a.playedAt);
+  const broken = latestFirst.findIndex((g) => g.accuracy < STREAK_ACCURACY);
+  return broken === -1 ? latestFirst.length : broken;
+}
+
 /** Higher accuracy first, then higher score, then the more recent. */
 function better(a: Game, b: Game): number {
   return b.accuracy - a.accuracy || b.score - a.score || b.playedAt - a.playedAt;
