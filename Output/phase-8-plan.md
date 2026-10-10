@@ -63,8 +63,9 @@ Order: the rules first (which lines are hidden, how heard words match, scoring),
 - Done 2026-10-10: `overallByMode`, `bestSongs` per mode, `missedWords` typed only (`progress.ts`), microphone and keyboard marks (`icons.tsx`), a "Songs sung" box on home. The "played" filter already counted every finished game. 42 checks pass. Checked by you on the home page.
 
 ## 7. Checks and tidy-up
-- [ ] `npm run lint`, `npm test`, `npm run build` pass, and the GitHub check is green.
-- [ ] Delete the step 0 test page (`src/app/lab/`, `src/app/api/lab/`) and `.data/sing-tests.json`.
+- [x] `npm run lint`, `npm test`, `npm run build` pass, and the GitHub check is green.
+- [x] Delete the step 0 test page (`src/app/lab/`, `src/app/api/lab/`) and `.data/sing-tests.json`.
+- Done 2026-10-10: test page, its save route and `.data/sing-tests.json` deleted (results are in the spec). Lint, 42 checks and build pass; GitHub check green on step 6.
 
 ## Acceptance check (tied to phase-8-spec.md's Success section)
 - [ ] With headphones, one English and one Spanish song you know well, on Medium: at least 70% of the words
