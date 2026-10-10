@@ -3,28 +3,23 @@
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { StatBlock } from "@/components/StatBlock";
-import { BookmarkIcon, HeartIcon, KeyboardIcon, MicIcon } from "@/components/icons";
-import { DIFFICULTIES, type Difficulty } from "@/lib/game";
+import { ArrowIcon, KeyboardIcon, MicIcon, PlayIcon } from "@/components/icons";
+import { DIFFICULTIES } from "@/lib/game";
 import type { Game, MissedWord, OverallStats } from "@/lib/progress";
 import { playHref, songHref } from "./library/song/[trackId]/loadSong";
 import styles from "./home.module.css";
 
 type BriefGame = Omit<Game, "words">;
 
-interface SavedSection {
-  count: number;
-  songs: { id: string; title: string; artist: string; cover: string | null; level: Difficulty }[];
-}
-
 interface Progress {
   /** Typed games, and sung ones once there are any (Phase 8). */
   overall: { typed: OverallStats; sung: OverallStats | null };
+  /** Songs in a row at 80% or more (Phase 9). */
+  currentStreak: number;
   recent: BriefGame[];
   best: BriefGame[];
   missed: MissedWord[];
   unavailable: string[];
-  saved: { favorites: SavedSection; later: SavedSection };
 }
 
 type Loaded = { status: "ready"; progress: Progress; loadedAt: number } | { status: "error" };
@@ -59,7 +54,7 @@ function timeAgo(then: number, now: number): string {
   return "just now";
 }
 
-export function HomeClient() {
+export function HomeClient({ name }: { name: string | null }) {
   const router = useRouter();
   const [reloadKey, setReloadKey] = useState(0);
   const [loaded, setLoaded] = useState<{ key: number; value: Loaded } | null>(null);
@@ -90,19 +85,39 @@ export function HomeClient() {
   const firstTime =
     progress !== null &&
     progress.overall.typed.songsPlayed + (progress.overall.sung?.songsPlayed ?? 0) === 0;
+  // "Jane Doe" → "Jane".
+  const firstName = name?.split(/\s+/)[0];
 
   return (
     <main className={styles.main}>
       <section className={styles.hero}>
-        <h1>{firstTime ? "Welcome." : "Ready for another song?"}</h1>
-        <p>
-          {firstTime
-            ? "Play your first song to start tracking your progress."
-            : "Pick anything from your library and finish the lines."}
-        </p>
-        <Link href="/library" className="btn btn--lg">
-          Pick a song
-        </Link>
+        <div className={styles.heroContent}>
+          <p className={styles.eyebrow}>
+            {firstTime ? "Welcome to Lyric Drop" : `Welcome back${firstName ? `, ${firstName}` : ""}`}
+          </p>
+          {firstTime ? (
+            <>
+              <h1>
+                <em>Welcome.</em>
+              </h1>
+              <p className={styles.intro}>Play your first song to start tracking your progress.</p>
+            </>
+          ) : (
+            <h1>
+              Ready for
+              <br />
+              <em>another song?</em>
+            </h1>
+          )}
+          <Link href="/library" className={styles.primaryAction}>
+            <span>Pick a song</span>
+            <i>
+              <ArrowIcon />
+            </i>
+          </Link>
+        </div>
+
+        {state?.status === "ready" && !firstTime && <ProgressBoard progress={state.progress} />}
       </section>
 
       {!state && <p className={styles.hint}>Loading your progress…</p>}
@@ -111,128 +126,200 @@ export function HomeClient() {
         <div className={styles.errorPanel}>
           <h2>Your progress didn&apos;t load.</h2>
           <p>Your games are still saved. It&apos;s probably a blip.</p>
-          <button className="btn btn--secondary" onClick={() => setReloadKey((k) => k + 1)}>
+          <button className={styles.retry} onClick={() => setReloadKey((k) => k + 1)}>
             Retry
           </button>
         </div>
       )}
 
-      {state?.status === "ready" && firstTime && <SavedSections saved={state.progress.saved} />}
-
       {state?.status === "ready" && !firstTime && (
-        <Sections progress={state.progress} now={state.loadedAt} />
+        <History progress={state.progress} now={state.loadedAt} />
       )}
     </main>
   );
 }
 
-function Sections({ progress, now }: { progress: Progress; now: number }) {
+/** The record with your current streak, and your totals beside it. Nothing to click. */
+function ProgressBoard({ progress }: { progress: Progress }) {
+  const { typed, sung } = progress.overall;
+  const streak = progress.currentStreak;
+  const stats = [
+    { value: typed.songsPlayed, label: sung ? "Songs typed" : "Songs played" },
+    { value: typed.wordsGuessed, label: "Words guessed" },
+    { value: `${typed.accuracy}%`, label: "Accuracy" },
+    { value: typed.bestStreak, label: "Best streak" },
+    ...(sung ? [{ value: sung.songsPlayed, label: "Songs sung" }] : []),
+  ];
+
+  return (
+    <div className={styles.board}>
+      <div className={styles.boardHeading}>
+        <span>Your progress</span>
+        <small>All-time totals</small>
+      </div>
+      <div className={styles.boardContent}>
+        <div className={styles.recordWrap}>
+          <div
+            className={styles.record}
+            role="img"
+            aria-label={`Current streak: ${streak} ${streak === 1 ? "song" : "songs"} in a row at 80% or more`}
+            title="Songs in a row at 80% or more"
+          >
+            <span className={styles.grooves} aria-hidden="true" />
+            <span className={styles.recordCenter} aria-hidden="true">
+              <small>Current streak</small>
+              <strong>{String(streak).padStart(2, "0")}</strong>
+              <b>{streak === 1 ? "song" : "songs"}</b>
+            </span>
+          </div>
+          <Notes />
+        </div>
+        <div className={styles.metrics}>
+          {stats.map((stat) => (
+            <div className={styles.stat} key={stat.label}>
+              <strong>{stat.value}</strong>
+              <span>{stat.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Four music notes floating around the record. */
+function Notes() {
+  const big = (
+    <>
+      <path d="M14 43V9l22-5v32" />
+      <ellipse cx="8" cy="46" rx="7" ry="5" />
+      <ellipse cx="30" cy="39" rx="7" ry="5" />
+    </>
+  );
+  const small = (
+    <>
+      <path d="M11 34V6l16 5" />
+      <ellipse cx="6" cy="37" rx="6" ry="4" />
+    </>
+  );
+  return (
+    <div className={styles.notes} aria-hidden="true">
+      <svg className={`${styles.note} ${styles.noteA}`} viewBox="0 0 42 58">
+        {big}
+      </svg>
+      <svg className={`${styles.note} ${styles.noteB}`} viewBox="0 0 32 46">
+        {small}
+      </svg>
+      <svg className={`${styles.note} ${styles.noteC}`} viewBox="0 0 42 58">
+        {big}
+      </svg>
+      <svg className={`${styles.note} ${styles.noteD}`} viewBox="0 0 32 46">
+        {small}
+      </svg>
+    </div>
+  );
+}
+
+function History({ progress, now }: { progress: Progress; now: number }) {
   const { recent, best, missed, unavailable } = progress;
-  const { typed: overall, sung } = progress.overall;
   const gone = new Set(unavailable);
-  // Marks in Best songs only matter once both typed and sung games are listed.
+  // Marks in Top performances only matter once both typed and sung games are listed.
   const hasBoth = best.some((g) => g.mode === "sing") && best.some((g) => g.mode !== "sing");
 
   return (
-    <>
-      <section className={styles.stats}>
-        <StatBlock
-          label={sung ? "Songs typed" : "Songs played"}
-          value={overall.songsPlayed}
-          tone="primary"
-          hint="Finished songs"
-        />
-        <StatBlock
-          label="Words guessed"
-          value={overall.wordsGuessed}
-          tone="secondary"
-          hint="Right answers in total"
-        />
-        <StatBlock
-          label="Accuracy"
-          value={`${overall.accuracy}%`}
-          tone="tertiary"
-          hint={sung ? "Across every typed game" : "Across every game"}
-        />
-        <StatBlock
-          label="Best streak"
-          value={overall.bestStreak}
-          tone="quaternary"
-          hint="In a row, no misses"
-        />
-        {sung && (
-          <StatBlock
-            label="Songs sung"
-            value={sung.songsPlayed}
-            tone="secondary"
-            hint={`${sung.accuracy}% of words heard`}
-          />
-        )}
-      </section>
-
-      <SavedSections saved={progress.saved} />
-
-      <div className={styles.columns}>
-        <section className={styles.section}>
-          <h2>Recently played</h2>
-          <div className={styles.rows}>
-            {recent.map((game) => (
-              <div key={game.id} className={styles.row}>
-                <SongLink game={game}>
-                  {game.mode === "sing" && <ModeMark mode="sing" />}
-                  {DIFFICULTIES[game.level].label} · {game.score} pts · {game.accuracy}% ·{" "}
-                  {timeAgo(game.playedAt, now)}
-                </SongLink>
-                {gone.has(game.song.trackId) ? (
-                  <span className={styles.gone}>No longer available.</span>
-                ) : (
-                  <Link
-                    href={playHref(game.song.trackId, null, game.level, game.mode ?? "type")}
-                    className="btn btn--secondary btn--sm"
-                  >
-                    Play again
-                  </Link>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className={styles.section}>
-          <h2>Best songs</h2>
-          <div className={styles.rows}>
-            {best.map((game) => (
-              <div key={game.id} className={styles.row}>
-                <SongLink game={game}>
-                  {hasBoth && <ModeMark mode={game.mode ?? "type"} />}
-                  {game.mode === "sing" ? "Sung" : "Set"} on {DIFFICULTIES[game.level].label}
-                </SongLink>
-                <span className={styles.bigNumber}>{game.accuracy}%</span>
-              </div>
-            ))}
-          </div>
-        </section>
+    <section className={styles.history}>
+      <div className={styles.column}>
+        <h2>Recently played</h2>
+        <div className={styles.rows}>
+          {recent.map((game) => (
+            <div key={game.id} className={styles.row}>
+              <SongLink game={game}>
+                {game.mode === "sing" && <ModeMark mode="sing" />}
+                {DIFFICULTIES[game.level].label} · {game.score.toLocaleString("en")} pts ·{" "}
+                {timeAgo(game.playedAt, now)}
+              </SongLink>
+              {gone.has(game.song.trackId) ? (
+                <span className={styles.gone}>No longer available</span>
+              ) : (
+                <Link
+                  href={playHref(game.song.trackId, null, game.level, game.mode ?? "type")}
+                  className={styles.playAgain}
+                  aria-label={`Play again ${game.song.title}`}
+                  title={`Play again on ${DIFFICULTIES[game.level].label}`}
+                >
+                  <PlayIcon />
+                </Link>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
 
-      <section className={styles.section}>
-        <h2>Words you keep missing</h2>
-        {missed.length === 0 ? (
-          <p className={styles.hint}>No repeat misses yet. Nice.</p>
+      <div className={`${styles.column} ${styles.bestColumn}`}>
+        <h2>Top performances</h2>
+        <div className={styles.rows}>
+          {best.map((game) => (
+            <div key={game.id} className={styles.row}>
+              <SongLink game={game}>
+                {hasBoth && <ModeMark mode={game.mode ?? "type"} />}
+                {game.mode === "sing" ? "Sung" : "Typed"} on {DIFFICULTIES[game.level].label}
+              </SongLink>
+              <span className={styles.score}>{game.accuracy}%</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <MissedCard missed={missed} />
+    </section>
+  );
+}
+
+/** Your most-missed word as a stack of cards. The practice queue is V2: shown, not clickable. */
+function MissedCard({ missed }: { missed: MissedWord[] }) {
+  const top = missed[0];
+  const more = top ? top.songs.length - 1 : 0;
+  return (
+    <div
+      className={styles.flashcard}
+      tabIndex={0}
+      aria-label={
+        top
+          ? `Words that keep dropping: ${top.word}, missed ${top.misses} of ${top.seen} times. Start practice queue: coming soon.`
+          : "Words that keep dropping: no repeat misses yet."
+      }
+    >
+      <span className={`${styles.layer} ${styles.cardWhite}`} aria-hidden="true" />
+      <span className={`${styles.layer} ${styles.cardLight}`} aria-hidden="true" />
+      <span className={`${styles.layer} ${styles.cardLavender}`} aria-hidden="true" />
+      <span className={styles.front} aria-hidden="true" />
+      <span className={styles.cardDefault} aria-hidden="true">
+        <strong className={styles.cardTitle}>Words that keep dropping</strong>
+        {top ? (
+          <>
+            <span className={styles.word}>{top.word}</span>
+            <span className={styles.cardMeta}>
+              <b>
+                {missed.length} {missed.length === 1 ? "word" : "words"} to practice
+              </b>
+              <small>
+                Missed {top.misses} of {top.seen} times
+              </small>
+              <small>
+                in {top.songs[0]}
+                {more > 0 && ` and ${more} more`}
+              </small>
+            </span>
+          </>
         ) : (
-          <div className={styles.missed}>
-            {missed.map((w) => (
-              <div key={w.word} className={styles.missedWord}>
-                <span className={styles.word}>{w.word}</span>
-                <span className={styles.missedCount}>
-                  missed {w.misses} of {w.seen} times
-                </span>
-                <span className={styles.missedSongs}>{w.songs.join(", ")}</span>
-              </div>
-            ))}
-          </div>
+          <span className={styles.noMisses}>No repeat misses yet. Nice.</span>
         )}
-      </section>
-    </>
+      </span>
+      <span className={styles.cardBack} aria-hidden="true">
+        Start practice queue
+        <em>Coming soon</em>
+      </span>
+    </div>
   );
 }
 
@@ -249,66 +336,17 @@ function ModeMark({ mode }: { mode: "type" | "sing" }) {
 function SongLink({ game, children }: { game: BriefGame; children: ReactNode }) {
   return (
     <Link href={songHref(game.song.trackId, null)} className={styles.song}>
-      <div
+      <span
         className={styles.cover}
         style={game.song.cover ? { backgroundImage: `url(${game.song.cover})` } : undefined}
-      />
-      <div className={styles.songInfo}>
-        <span className={styles.title}>{game.song.title}</span>
-        <span className={styles.artist}>{game.song.artist}</span>
-        <span className={styles.meta}>{children}</span>
-      </div>
+      >
+        {!game.song.cover && <b>{game.song.title.slice(0, 1)}</b>}
+      </span>
+      <span className={styles.songInfo}>
+        <strong>{game.song.title}</strong>
+        <span>{game.song.artist}</span>
+        <small className={styles.meta}>{children}</small>
+      </span>
     </Link>
-  );
-}
-
-const SAVED: { list: "later" | "favorites"; title: string }[] = [
-  { list: "later", title: "Play later" },
-  { list: "favorites", title: "Favorites" },
-];
-
-/** Play later and Favorites, each hidden when empty. Play starts at the level you last played. */
-function SavedSections({ saved }: { saved: Progress["saved"] }) {
-  const shown = SAVED.filter(({ list }) => saved[list].count > 0);
-  if (shown.length === 0) return null;
-  return (
-    <div className={styles.columns}>
-      {shown.map(({ list, title }) => (
-        <section key={list} className={styles.section}>
-          <div className={styles.savedHead}>
-            <h2>
-              {list === "favorites" ? <HeartIcon filled /> : <BookmarkIcon filled />}
-              {title}
-            </h2>
-            <Link href={`/library?source=${list}`} className={styles.seeAll}>
-              See all {saved[list].count}
-            </Link>
-          </div>
-          <div className={styles.rows}>
-            {saved[list].songs.map((song) => (
-              <div key={song.id} className={styles.row}>
-                <Link href={songHref(song.id, list)} className={styles.song}>
-                  <div
-                    className={styles.cover}
-                    style={song.cover ? { backgroundImage: `url(${song.cover})` } : undefined}
-                  />
-                  <div className={styles.songInfo}>
-                    <span className={styles.title}>{song.title}</span>
-                    <span className={styles.artist}>{song.artist}</span>
-                  </div>
-                </Link>
-                <Link
-                  href={playHref(song.id, list, song.level)}
-                  className="btn btn--secondary btn--sm"
-                  title={`Play on ${DIFFICULTIES[song.level].label}`}
-                >
-                  Play
-                </Link>
-              </div>
-            ))}
-          </div>
-        </section>
-      ))}
-    </div>
   );
 }

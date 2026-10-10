@@ -9,7 +9,6 @@ import {
   recentGames,
   type Game,
 } from "@/lib/progress";
-import { getSaved, type SavedLists, type SavedSong } from "@/lib/saved";
 import { getSession, getUserId } from "@/lib/session";
 import { SpotifySessionExpiredError } from "@/lib/spotify";
 
@@ -17,8 +16,6 @@ import { SpotifySessionExpiredError } from "@/lib/spotify";
 const RECENT_COUNT = 5;
 const BEST_COUNT = 5;
 const MISSED_COUNT = 10;
-/** Saved songs shown per section (Phase 7 spec). */
-const SAVED_COUNT = 5;
 
 /** A game as the home page shows it: without the word-by-word results. */
 function brief(game: Game): Omit<Game, "words"> {
@@ -41,28 +38,6 @@ export async function GET() {
     const cached = await getCacheEntries(ids);
     const unavailable = ids.filter((id) => cached.get(id)?.status === "unavailable");
 
-    // Favorites and Play later, each with the level you last finished the
-    // song at (Play starts there; Medium if never played). A problem reading
-    // them only hides those sections.
-    const lists = await getSaved(userId).catch((error): SavedLists => {
-      console.error("[/api/progress] couldn't read saved songs", error);
-      return { favorites: [], later: [] };
-    });
-    const lastLevel = new Map<string, Game["level"]>();
-    for (const g of [...games].sort((a, b) => a.playedAt - b.playedAt)) {
-      lastLevel.set(g.song.trackId, g.level);
-    }
-    const section = (songs: SavedSong[]) => ({
-      count: songs.length,
-      songs: songs.slice(0, SAVED_COUNT).map((s) => ({
-        id: s.id,
-        title: s.title,
-        artist: s.artist,
-        cover: s.cover,
-        level: lastLevel.get(s.id) ?? "medium",
-      })),
-    });
-
     return NextResponse.json({
       overall: overallByMode(games),
       currentStreak: currentStreak(games),
@@ -70,7 +45,6 @@ export async function GET() {
       best: best.map(brief),
       missed: missedWords(games, MISSED_COUNT),
       unavailable,
-      saved: { favorites: section(lists.favorites), later: section(lists.later) },
     });
   } catch (error) {
     if (error instanceof SpotifySessionExpiredError) {

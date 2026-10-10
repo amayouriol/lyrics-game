@@ -32,11 +32,12 @@ Order: the two new pieces behind the screens first (current streak, your name), 
 - Done 2026-10-10: `Header.tsx` rebuilt from the Figma top bar (`Header.module.css`), the wordmark as `LyricDropLogo` (still when the computer asks for less motion), the design's colors added to `globals.css` (old top bar styles removed), and each page passes your name and picture to the top bar. Also renamed: the Spotify device the app plays on ("Lyric Drop" in Spotify's device list). The How to play link moves to step 6 with its page, so no link leads nowhere. Checked by you on your account: tab title, logo, Home underlined, your picture, menu with your name, Spotify Premium, Log out. Lint, tests and build pass.
 
 ## 4. Home
-- [ ] Greeting, title and Pick a song; first-time version kept.
-- [ ] Your progress panel: the record with the current streak, the five totals beside it.
-- [ ] Recently played with Play again; Top performances; Words that keep dropping with the greyed "Start practice queue · Coming soon".
-- [ ] Favorites and Play later removed from home (they're in the Library, step 5).
-- [ ] Error and loading states as now, restyled.
+- [x] Greeting, title and Pick a song; first-time version kept.
+- [x] Your progress panel: the record with the current streak, the five totals beside it.
+- [x] Recently played with Play again; Top performances; Words that keep dropping with the greyed "Start practice queue · Coming soon".
+- [x] Favorites and Play later removed from home (they're in the Library, step 5).
+- [x] Error and loading states as now, restyled.
+- Done 2026-10-10: `HomeClient.tsx` and `home.module.css` rebuilt from the Figma home (dark page, record spinning with the streak, floating notes; both still when the computer asks for less motion). The greeting uses your first name. `/api/progress` no longer sends Favorites and Play later. Words that keep dropping shows your most-missed word, how many words in all, "Missed X of Y times" and its song; turning it over shows "Start practice queue · Coming soon", greyed, nothing to click. Your changes after looking at it: 5 songs per list (not the design's 3); bigger greeting, "Your progress", "All-time totals", card text and song rows (picture 48 px, name 16, artist 14, details 12); no line under Top performances. Lint, tests and build pass.
 
 ## 5. Library
 - [ ] Top: "Your music", "Find your next song.", search box.

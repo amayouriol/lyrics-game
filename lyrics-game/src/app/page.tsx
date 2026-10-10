@@ -13,7 +13,7 @@ export default async function HomePage({
     return (
       <>
         <Header profile={getProfile(session)} />
-        <HomeClient />
+        <HomeClient name={getProfile(session).name} />
       </>
     );
   }
