@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { exchangeCodeForTokens, getCurrentUserId } from "@/lib/spotify";
+import { exchangeCodeForTokens, getCurrentUser } from "@/lib/spotify";
 import { getSession } from "@/lib/session";
 
 export async function GET(request: NextRequest) {
@@ -29,7 +29,12 @@ export async function GET(request: NextRequest) {
     session.expiresAt = Date.now() + tokens.expires_in * 1000;
     session.scope = tokens.scope;
     try {
-      session.userId = await getCurrentUserId(tokens.access_token);
+      // The one profile request: your id for your games, and your name and
+      // picture for the greeting and top bar.
+      const me = await getCurrentUser(tokens.access_token);
+      session.userId = me.id;
+      session.name = me.name ?? undefined;
+      session.picture = me.picture ?? undefined;
     } catch {
       // Not worth failing the login over: getUserId fetches it when needed.
     }

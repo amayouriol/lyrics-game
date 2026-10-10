@@ -1,6 +1,6 @@
 import { getIronSession, type IronSession, type SessionOptions } from "iron-session";
 import { cookies } from "next/headers";
-import { getCurrentUserId, refreshAccessToken, SpotifySessionExpiredError } from "./spotify";
+import { getCurrentUser, refreshAccessToken, SpotifySessionExpiredError } from "./spotify";
 
 export interface SessionData {
   accessToken?: string;
@@ -11,6 +11,20 @@ export interface SessionData {
   scope?: string;
   /** Your Spotify user id (absent on sessions from before Phase 6; see getUserId). */
   userId?: string;
+  /** Your Spotify display name and picture, from login (absent on sessions from before Phase 9). */
+  name?: string;
+  picture?: string;
+}
+
+/** What the greeting and top bar show about you. */
+export interface Profile {
+  name: string | null;
+  picture: string | null;
+}
+
+/** Your name and picture as kept at login. No Spotify request: until you log in again, both are null. */
+export function getProfile(session: SessionData): Profile {
+  return { name: session.name ?? null, picture: session.picture ?? null };
 }
 
 const sessionOptions: SessionOptions = {
@@ -58,7 +72,11 @@ export async function getUserId(): Promise<string> {
   // Same session object as the token refresh, so saving the id can't
   // overwrite freshly refreshed tokens with old ones.
   const accessToken = await validAccessToken(session);
-  session.userId = await getCurrentUserId(accessToken);
+  // Same request as at login, so keep your name and picture too.
+  const me = await getCurrentUser(accessToken);
+  session.userId = me.id;
+  session.name = me.name ?? undefined;
+  session.picture = me.picture ?? undefined;
   await session.save();
   return session.userId;
 }

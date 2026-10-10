@@ -20,9 +20,10 @@ Order: the two new pieces behind the screens first (current streak, your name), 
 - Done 2026-10-10: `currentStreak` and `STREAK_ACCURACY = 80` in `progress.ts`, 2 new checks (48 in all), `currentStreak` in the `/api/progress` answer (not shown on screen until step 4). On your real games it's 1: Te Busco 89%, then Rude 79% ends it. Lint, tests and build pass.
 
 ## 2. Your name and picture from the login
-- [ ] At login, keep your Spotify display name and picture with your login (same request as now).
-- [ ] The home page and top bar can read them; missing → no name, initials or a person icon.
-- [ ] Check: watch the requests while logging in, still one profile request.
+- [x] At login, keep your Spotify display name and picture with your login (same request as now).
+- [x] The home page and top bar can read them; missing → no name, initials or a person icon.
+- [x] Check: watch the requests while logging in, still one profile request.
+- Done 2026-10-10: `getCurrentUserId` became `getCurrentUser` in `spotify.ts` (id, name, and the smallest picture at least 64 px wide), saved with your login in the callback and in `getUserId`'s fallback; `getProfile(session)` in `session.ts` reads them with no request. Checked in the code: logging in still makes exactly one profile request, the same as before. Seeing your name needs steps 3–4 and one log out and in. Lint, tests and build pass.
 
 ## 3. Name and top bar
 - [ ] "Lyric Drop" in the browser tab, the denied page and "Saved in Lyric Drop".

@@ -241,12 +241,28 @@ interface SpotifyPlaylist {
 
 interface SpotifyUser {
   id: string;
+  display_name?: string | null;
+  images?: SpotifyImage[] | null;
 }
 
-/** Your Spotify user id, which your saved games are kept under. */
-export async function getCurrentUserId(accessToken: string): Promise<string> {
+export interface CurrentUser {
+  /** Your Spotify user id, which your saved games are kept under. */
+  id: string;
+  /** Your Spotify display name, if you set one. */
+  name: string | null;
+  /** Your profile picture, if you have one. */
+  picture: string | null;
+}
+
+/** The smallest picture still sharp in the top bar's round button. */
+const PICTURE_MIN_PX = 64;
+
+/** Who you are on Spotify: one request, made at login. */
+export async function getCurrentUser(accessToken: string): Promise<CurrentUser> {
   const me: SpotifyUser = await spotifyGet("/me", accessToken);
-  return me.id;
+  const images = [...(me.images ?? [])].sort((a, b) => (a.width ?? 0) - (b.width ?? 0));
+  const picture = images.find((i) => (i.width ?? PICTURE_MIN_PX) >= PICTURE_MIN_PX) ?? images.at(-1);
+  return { id: me.id, name: me.display_name?.trim() || null, picture: picture?.url ?? null };
 }
 
 interface SpotifyPage<T> {
