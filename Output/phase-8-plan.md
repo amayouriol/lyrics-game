@@ -6,7 +6,7 @@ Order: the rules first (which lines are hidden, how heard words match, scoring),
 
 ## Technical decisions (for you to approve)
 - **No new packages.** Listening uses the browser's own speech recognition (Chrome and Edge have it), as in step 0. Your voice goes to the browser's online speech service; the app only ever sees the words.
-- **The song's language picks what the app listens for:** the language the library already works out from the lyrics (English or Spanish). Spanish listens with the Latin America setting (it did best in step 0). If the language is unknown, English. *A small "Singing in: English / Spanish" switch appears on the song screen next to Sing, so you can correct it.* (Not in the spec: added because a wrong language would make a song unplayable. Remove it if you'd rather not have it.)
+- **The song's language picks what the app listens for:** the language the library already works out from the lyrics (English or Spanish). Spanish listens with the Latin America setting (it did best in step 0). Shown as a quiet note, not a switch (approved 2026-10-09, see spec item 3b). Your correction is remembered per song in the browser.
 - **Sing rules go in a new file next to the game rules** (`src/lib/sing.ts`), pure like `game.ts`, so they're checked by `npm test`: which lines are hidden per level, matching what was heard to the lines (with the ±1 second rule and near-misses), and the score.
 - **"Near-miss" means:** after the usual forgiving comparison (case, accents, apostrophes), a heard word matches if it differs by one letter at the end ("parque" / "parques"), or two heard words joined make the lyric word ("amando" + "te" = "amandote"). Nothing looser: "and dear" for "endear" stays a miss, so mumbling can't score.
 - **Sung games are saved in the same file as typed ones** (`.data/games.json`) with a new `mode: "sing"`. Older games have no mode and count as typed, so nothing needs converting. Each sung line is saved as its words, each word "right" or "revealed", so "words heard" and "accuracy" work the same as typing.
@@ -29,7 +29,8 @@ Order: the rules first (which lines are hidden, how heard words match, scoring),
 
 ## 3. Song screen: Type or Sing
 - [ ] **Type / Sing** choice above the levels; Type by default, last choice remembered.
-- [ ] With Sing: the level descriptions change to the Sing ones; the count reads "12 lines to sing" instead of blanks; "Singing in: English / Spanish".
+- [ ] With Sing: the level descriptions change to the Sing ones; the count reads "12 lines to sing" instead of blanks.
+- [ ] The quiet language note (spec 3b): "Listens for Spanish words · Change" with a "?" that explains it; "Will you sing in English or Spanish?" when the language is unknown; a correction remembered for that song.
 - [ ] First time: the headphones note (including that your voice is turned into words by an online service), then the browser's microphone prompt. Not shown again once allowed.
 - [ ] Microphone refused → "Sing mode needs your microphone." with how to allow it. Browser without speech → Sing greyed out with "Sing mode doesn't work in this browser." Type untouched in both.
 
@@ -69,5 +70,5 @@ Order: the rules first (which lines are hidden, how heard words match, scoring),
 - [ ] Type mode plays exactly as before
 
 ## Before approving this plan
-- [ ] The technical decisions above are fine with you (especially the "Singing in" switch, which isn't in the spec)
-- [ ] Nothing from the spec is missing, and nothing from V2 crept in
+- [x] The technical decisions above are fine with you (approved 2026-10-09; the language switch became a quiet note with a "?")
+- [x] Nothing from the spec is missing, and nothing from V2 crept in

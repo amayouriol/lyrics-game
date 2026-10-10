@@ -42,6 +42,7 @@ The results are written into this spec under "Dependencies and risks".
    - **Easy:** every other line is hidden. 100 points per word.
    - **Medium:** every line is hidden. 150 points per word.
    - **Hard:** every line is hidden, and the slots don't show how many words the line has; words appear only as they're heard. 200 points per word.
+3b. Under the levels, a small grey note says which language the app will listen for: **"Listens for Spanish words · Change"**, picked from the song's lyrics. "Change" swaps it (remembered for that song). A small **?** next to it explains: "Sing mode turns your voice into words in one language at a time. We picked Spanish from this song's lyrics. If you'll sing it in English, change it. The song itself doesn't change." If the app can't tell the song's language, the note asks instead: **"Will you sing in English or Spanish?"** with two small buttons. *(Added 2026-10-09 while approving the plan: a wrong language would score a perfectly sung song near 0. A note rather than a switch, so normal songs need no click and it can't be mistaken for a translation.)*
 4. The app remembers your last choice (Type or Sing) for the next song.
 
 ### Playing
