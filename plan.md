@@ -52,6 +52,15 @@ Redefined: the original Phase 5 tasks (difficulty selector, song picker disabled
 - [x] Results and saved progress for sung games (marked, compared only with sung games)
 - [x] After play-testing: easier levels (Easy 1 line in 3, Medium every other, both wait up to 10 s), "oh", "yeah" and names left out
 
+## Phase 9: Lyric Drop — new look for Home, Library and How to play — IN PROGRESS (Output/phase-9-spec.md, phase-9-plan.md)
+Design: the Figma Make file "Design main page for game" (code in `design/figma-make/`, not on GitHub). Song and game screens wait for their Figma designs.
+- [x] Current streak (songs in a row at 80% or more) and your Spotify name and picture from the login, no new Spotify requests
+- [x] New name and top bar with your profile menu
+- [x] Home: record with your streak, totals, Recently played, Top performances, Words that keep dropping (practice queue "Coming soon")
+- [x] Library: search, Saved in Lyric Drop / From Spotify tabs, Spotify's logo and credit, restyled playlist pages
+- [x] How to play page, every number taken from the game's rules
+- [ ] Your play-test on your account, then close
+
 ## Explicitly out of scope for this plan
 Anything from spec.md's V2 list stays out unless you decide otherwise first: sharing with other people or multi-account login, an unsynced-lyrics fallback mode, score history or leaderboards.
 

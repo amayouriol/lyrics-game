@@ -51,7 +51,8 @@ Order: the two new pieces behind the screens first (current streak, your name), 
 - Done 2026-10-10: `app/how-to-play/` (`page.tsx`, `HowToPlay.tsx`, `how.module.css`) from the Figma How to play screen, and "How to play" in the top bar. Every number is read from the game's rules (`DIFFICULTIES`, `MAX_TRIES`, `SPACING_LINES`, `SING_WAIT_MS`, `SING_GRACE_MS`, `STREAK_ACCURACY`, `MISSED_WORD_MIN`); Type mode's wait (`WAIT_LIMIT_MS`, `WAIT_WARNING_SEC`) moved from the game screen into `game.ts` for this, no change in play. The score section follows the switch (Best streak: first-try words / full lines). Draft text corrected as the spec says. Approved by you. Lint, tests and build pass.
 
 ## 7. Checks and play-test
-- [ ] `npm run lint`, `npm test`, `npm run build` pass; GitHub check passes.
-- [ ] Compared side by side with the published Figma page at desktop size.
+- [x] `npm run lint`, `npm test`, `npm run build` pass; GitHub check passes.
+- [x] Compared side by side with the published Figma page at desktop size.
+- Done 2026-10-10: all checks pass (48 rule checks), GitHub's check passed on every step. Each screen was compared with the Figma page by you while building (sizes changed on request, see steps 4–5). No new Spotify requests: the code diff for Phase 9 adds no Spotify call; the library now asks for your playlists only when the From Spotify tab opens.
 - [ ] Play-test on your account: log out and in, see your name; play a song, check the streak and Play again; open both library tabs; read How to play in both modes; the song and game screens unchanged.
 - [ ] plan.md gets a Phase 9 section; close with `Close Phase 9: …` after your play-test.
