@@ -26,9 +26,10 @@ Order: the two new pieces behind the screens first (current streak, your name), 
 - Done 2026-10-10: `getCurrentUserId` became `getCurrentUser` in `spotify.ts` (id, name, and the smallest picture at least 64 px wide), saved with your login in the callback and in `getUserId`'s fallback; `getProfile(session)` in `session.ts` reads them with no request. Checked in the code: logging in still makes exactly one profile request, the same as before. Seeing your name needs steps 3–4 and one log out and in. Lint, tests and build pass.
 
 ## 3. Name and top bar
-- [ ] "Lyric Drop" in the browser tab, the denied page and "Saved in Lyric Drop".
-- [ ] New top bar: logo, Home · Library · How to play (purple underline on the current page), profile button with menu (name, Spotify Premium, Log out).
-- [ ] The song and game screens get the new top bar and nothing else.
+- [x] "Lyric Drop" in the browser tab, the denied page and "Saved in Lyric Drop".
+- [x] New top bar: logo, Home · Library · How to play (purple underline on the current page), profile button with menu (name, Spotify Premium, Log out).
+- [x] The song and game screens get the new top bar and nothing else.
+- Done 2026-10-10: `Header.tsx` rebuilt from the Figma top bar (`Header.module.css`), the wordmark as `LyricDropLogo` (still when the computer asks for less motion), the design's colors added to `globals.css` (old top bar styles removed), and each page passes your name and picture to the top bar. Also renamed: the Spotify device the app plays on ("Lyric Drop" in Spotify's device list). The How to play link moves to step 6 with its page, so no link leads nowhere. Checked by you on your account: tab title, logo, Home underlined, your picture, menu with your name, Spotify Premium, Log out. Lint, tests and build pass.
 
 ## 4. Home
 - [ ] Greeting, title and Pick a song; first-time version kept.

@@ -39,3 +39,29 @@ export function KeyboardIcon() {
     </svg>
   );
 }
+
+export function ArrowIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none">
+      <path d="M5 12h13M13 6l6 6-6 6" />
+    </svg>
+  );
+}
+
+export function ChevronIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none">
+      <path d="m9 6 6 6-6 6" />
+    </svg>
+  );
+}
+
+/** Stands in for your picture when the app doesn't know your name yet. */
+export function PersonIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none">
+      <circle cx="12" cy="8.5" r="3.5" />
+      <path d="M5 19.5c1.2-3.3 3.8-5 7-5s5.8 1.7 7 5" />
+    </svg>
+  );
+}

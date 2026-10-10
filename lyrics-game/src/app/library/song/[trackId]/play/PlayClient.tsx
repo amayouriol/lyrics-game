@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
+import type { Profile } from "@/lib/session";
 import { LyricBlank } from "@/components/LyricBlank";
 import { PlayerBar } from "@/components/PlayerBar";
 import { StatBlock } from "@/components/StatBlock";
@@ -78,11 +79,14 @@ export function PlayClient({
   from,
   initialLevel,
   initialMode,
+  profile,
 }: {
   trackId: string;
   from: string | null;
   initialLevel: Difficulty;
   initialMode: PlayMode;
+  /** For the top bar on the results screen. */
+  profile: Profile;
 }) {
   const router = useRouter();
   const [reloadKey, setReloadKey] = useState(0);
@@ -132,6 +136,7 @@ export function PlayClient({
           lines={song.lines}
           result={gameResult}
           libraryHref={libraryHref}
+          profile={profile}
           onPlayAgain={() => startRound(gameResult.level)}
           onTryNext={(next) => startRound(next)}
           onTryTyping={() => startRound(gameResult.level, "type")}
@@ -145,6 +150,7 @@ export function PlayClient({
           track={song.track}
           result={gameResult}
           libraryHref={libraryHref}
+          profile={profile}
           onPlayAgain={() => startRound(gameResult.level)}
           onTryNext={(next) => startRound(next)}
         />
@@ -663,6 +669,7 @@ function Results({
   track,
   result,
   libraryHref,
+  profile,
   onPlayAgain,
   onTryNext,
 }: {
@@ -670,6 +677,7 @@ function Results({
   track: TrackSummary;
   result: GameResult;
   libraryHref: string;
+  profile: Profile;
   onPlayAgain: () => void;
   onTryNext: (level: Difficulty) => void;
 }) {
@@ -697,7 +705,7 @@ function Results({
 
   return (
     <>
-      <Header />
+      <Header profile={profile} />
       <main className={styles.results}>
         <section className={styles.resultsTop}>
           <span className="chip chip--primary chip--sm">

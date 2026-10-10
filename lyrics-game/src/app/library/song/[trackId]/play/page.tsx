@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { isDifficulty } from "@/lib/game";
-import { getSession, hasActiveSession } from "@/lib/session";
+import { getProfile, getSession, hasActiveSession } from "@/lib/session";
 import { PlayClient } from "./PlayClient";
 
 // No header on the play screen, per the design.
@@ -25,6 +25,7 @@ export default async function PlayPage({
       from={from ?? null}
       initialLevel={isDifficulty(level) ? level : "medium"}
       initialMode={mode === "sing" ? "sing" : "type"}
+      profile={getProfile(session)}
     />
   );
 }

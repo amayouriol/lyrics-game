@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getSession, hasActiveSession } from "@/lib/session";
+import { getProfile, getSession, hasActiveSession } from "@/lib/session";
 import { Header } from "@/components/Header";
 import { CardsClient } from "./CardsClient";
 import { PlaylistClient } from "./PlaylistClient";
@@ -26,7 +26,7 @@ export default async function LibraryPage({
 
   return (
     <>
-      <Header />
+      <Header profile={getProfile(session)} />
       <SavedProvider>
         {source ? (
           <div className={styles.layout}>

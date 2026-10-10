@@ -1,0 +1,76 @@
+/* From the Figma design (design/figma-make, .brand-wordmark). */
+.wordmark {
+  display: flex;
+  min-width: 85px;
+  flex-direction: column;
+  color: var(--paper);
+  font-family: "Archivo Black", sans-serif;
+  font-size: 19px;
+  font-weight: 400;
+  line-height: 0.82;
+  letter-spacing: -0.055em;
+  text-transform: uppercase;
+}
+
+.drop {
+  position: relative;
+  color: var(--violet);
+}
+
+.drop i {
+  position: absolute;
+  top: -22px;
+  left: 23px;
+  color: var(--violet-light);
+  font-size: 13px;
+  font-style: normal;
+  transform-origin: center bottom;
+  animation: letterDrop 4.2s cubic-bezier(0.2, 0.8, 0.25, 1) infinite;
+}
+
+.drop b {
+  display: inline-block;
+  width: 11px;
+  margin-right: 1px;
+  color: var(--violet-light);
+  font: inherit;
+  text-align: center;
+}
+
+@keyframes letterDrop {
+  0%,
+  10% {
+    opacity: 0;
+    transform: translateY(-14px) rotate(-18deg) scale(0.8, 1.2);
+  }
+  16% {
+    opacity: 1;
+  }
+  27% {
+    transform: translateY(23px) rotate(8deg) scale(1.15, 0.75);
+  }
+  34% {
+    transform: translateY(16px) rotate(-4deg) scale(0.92, 1.08);
+  }
+  40%,
+  72% {
+    opacity: 1;
+    transform: translateY(20px) rotate(0) scale(1);
+  }
+  78% {
+    opacity: 1;
+    transform: translateY(24px) rotate(5deg) scale(0.9, 1.1);
+  }
+  88%,
+  100% {
+    opacity: 0;
+    transform: translateY(42px) rotate(18deg) scale(0.72);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drop i {
+    animation: none;
+    opacity: 0;
+  }
+}

@@ -49,6 +49,16 @@
   --link: var(--primary-400);
   --link-hover: var(--primary-600);
 
+  /* Lyric Drop colors, from the Figma design (design/figma-make, Phase 9). */
+  --ink: #0c0c0f;
+  --ink-soft: #141318;
+  --paper: #f2f0eb;
+  --muted: #9c999f;
+  --line: #37343b;
+  --violet: #9573ff;
+  --violet-light: #b7a1ff;
+  --violet-dark: #6d4fd1;
+
   --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
     Arial, sans-serif;
   --font-display: "Iosevka Charon", ui-monospace, "SFMono-Regular", Menlo, monospace;
@@ -206,52 +216,4 @@ button.chip--tertiary:hover {
 button.chip--tertiary[aria-pressed="true"] {
   background: var(--tertiary-600);
   color: var(--white);
-}
-
-/* App header, shown on every screen once logged in */
-.app-header {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  height: 72px;
-  padding: 0 clamp(20px, 5vw, 72px);
-  border-bottom: 1px solid var(--grey-100);
-  position: sticky;
-  top: 0;
-  background: var(--white);
-  z-index: 5;
-}
-
-.app-header__logo {
-  font: 500 22px var(--font-display);
-  letter-spacing: -0.5px;
-  color: var(--black);
-  white-space: nowrap;
-}
-
-.app-header__spacer {
-  flex: 1;
-}
-
-.app-header__nav {
-  display: flex;
-  gap: 4px;
-}
-
-.app-header__link {
-  padding: 8px 12px;
-  border-radius: 8px;
-  font: 500 15px var(--font-sans);
-  color: var(--grey-500);
-  text-decoration: none;
-}
-
-.app-header__link:hover {
-  color: var(--black);
-  background: var(--grey-100);
-}
-
-.app-header__link--active {
-  color: var(--black);
-  background: var(--grey-100);
 }

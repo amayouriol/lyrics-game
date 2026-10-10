@@ -58,7 +58,7 @@ export async function getSharedPlayer(): Promise<SharedPlayer> {
   if (shared) return shared;
 
   const player = new window.Spotify.Player({
-    name: "Lyrics Game",
+    name: "Lyric Drop",
     volume: 0.8,
     getOAuthToken: (cb) => {
       fetchToken().then((t) => {

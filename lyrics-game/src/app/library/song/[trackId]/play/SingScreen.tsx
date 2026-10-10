@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
+import type { Profile } from "@/lib/session";
 import { LyricBlank } from "@/components/LyricBlank";
 import { PlayerBar } from "@/components/PlayerBar";
 import { StatBlock } from "@/components/StatBlock";
@@ -457,6 +458,7 @@ export function SingResults({
   lines,
   result,
   libraryHref,
+  profile,
   onPlayAgain,
   onTryNext,
   onTryTyping,
@@ -466,6 +468,7 @@ export function SingResults({
   lines: TimedLine[];
   result: SingGameResult;
   libraryHref: string;
+  profile: Profile;
   onPlayAgain: () => void;
   onTryNext: (level: Difficulty) => void;
   onTryTyping: () => void;
@@ -494,7 +497,7 @@ export function SingResults({
 
   return (
     <>
-      <Header />
+      <Header profile={profile} />
       <main className={styles.results}>
         <section className={styles.resultsTop}>
           <span className="chip chip--primary chip--sm">

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Lyrics Game",
+  title: "Lyric Drop",
   description: "Sing along and fill in the missing words in songs from your Spotify library.",
 };
 

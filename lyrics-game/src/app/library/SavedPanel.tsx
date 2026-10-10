@@ -64,10 +64,10 @@ export function SavedPanel() {
   }
 
   return (
-    <aside className={styles.panel} aria-label="Saved in Lyrics Game">
+    <aside className={styles.panel} aria-label="Saved in Lyric Drop">
       <div className={styles.panelHead}>
         <div>
-          <h2>Saved in Lyrics Game</h2>
+          <h2>Saved in Lyric Drop</h2>
           <p>Not on Spotify</p>
         </div>
         <button className="btn btn--ghost btn--sm" onClick={() => setHidden(true)}>

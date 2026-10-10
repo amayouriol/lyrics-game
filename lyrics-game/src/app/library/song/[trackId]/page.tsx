@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getSession, hasActiveSession } from "@/lib/session";
+import { getProfile, getSession, hasActiveSession } from "@/lib/session";
 import { Header } from "@/components/Header";
 import { SavedProvider } from "../../SavedProvider";
 import { SongClient } from "./SongClient";
@@ -21,7 +21,7 @@ export default async function SongPage({
 
   return (
     <>
-      <Header />
+      <Header profile={getProfile(session)} />
       <SavedProvider>
         <SongClient trackId={trackId} from={from ?? null} />
       </SavedProvider>

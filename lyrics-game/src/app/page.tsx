@@ -1,5 +1,5 @@
 import { Header } from "@/components/Header";
-import { getSession, hasActiveSession } from "@/lib/session";
+import { getProfile, getSession, hasActiveSession } from "@/lib/session";
 import { HomeClient } from "./HomeClient";
 import styles from "./page.module.css";
 
@@ -12,7 +12,7 @@ export default async function HomePage({
   if (hasActiveSession(session)) {
     return (
       <>
-        <Header />
+        <Header profile={getProfile(session)} />
         <HomeClient />
       </>
     );
