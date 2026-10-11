@@ -25,7 +25,11 @@ Lyrics come from [LRCLIB](https://lrclib.net), a free lyrics service. Songs with
 git clone https://github.com/andrea2220896-max/lyrics-game.git
 ```
 
-The app lives in the `lyrics-game` folder inside it. Every command below runs from there.
+This creates a `lyrics-game` folder, and the app lives in another `lyrics-game` folder inside it. Every command below runs from there:
+
+```bash
+cd lyrics-game/lyrics-game
+```
 
 ### 2. Create your own Spotify app
 
@@ -42,7 +46,7 @@ Each person needs their own Spotify keys. They're free.
 
 ### 3. Add your keys
 
-Copy `.env.local.example` to a new file named `.env.local` in the same folder, then fill it in:
+In the `lyrics-game` folder, copy `.env.local.example` to a new file named `.env.local`, then fill it in:
 
 ```
 SPOTIFY_CLIENT_ID=your Client ID
@@ -79,7 +83,7 @@ Leave the terminal open while you play. To stop, press `Ctrl + C` in it. Next ti
 
 - **Who can log in.** Your Spotify app starts in test mode: only you can log in. To let someone else use *your* copy, add their name and Spotify email in the dashboard under **User Management** (up to 5 people).
 - **Spotify limits requests.** If the app asks too often, Spotify blocks it for a few hours. The app keeps a copy of your library for 6 hours and remembers a block, so it won't keep asking. If you see "Spotify is limiting this app until…", wait until that time.
-- **Your data stays on your computer.** Games, saved songs and caches are kept in the `.data/` folder, which is created on first use and never uploaded. Delete it to start fresh.
+- **Your data stays on your computer.** Games, saved songs and caches are kept in `lyrics-game/.data/`, which is created on first use and never uploaded. Delete it to start fresh.
 - **If Spotify plays on another device** (your phone, for example), the game pauses. Press play in the app to bring it back.
 
 ## For developers
@@ -89,10 +93,10 @@ Built with Next.js 16, React and TypeScript, with no database: everything is sto
 | Command | What it does |
 | --- | --- |
 | `npm run dev` | Runs the app on port 3000 |
-| `npm test` | Checks the game rules (`src/lib/*.test.ts`) |
+| `npm test` | Checks the game rules (`lyrics-game/src/lib/*.test.ts`) |
 | `npm run lint` | Checks the code style |
 | `npm run build` | Builds the app the way it would run for real |
 
-- `src/lib/`: the logic (Spotify, library, lyrics, game rules, saved data).
-- `src/app/`: the pages and the `api/` routes.
-- `../spec.md`, `../plan.md` and `../Output/`: how the project was planned and built, phase by phase.
+- `lyrics-game/src/lib/`: the logic (Spotify, library, lyrics, game rules, saved data).
+- `lyrics-game/src/app/`: the pages and the `api/` routes.
+- [`spec.md`](spec.md), [`plan.md`](plan.md) and [`Output/`](Output/): how the project was planned and built, phase by phase.
