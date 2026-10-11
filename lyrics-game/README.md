@@ -1,27 +1,98 @@
-# Lyrics Game
+# Lyric Drop
 
-Phase 1: Spotify connection. See `../Output/phase-1-spec.md` and `../Output/phase-1-plan.md` for what this phase does and doesn't cover.
+A personal lyrics-training game. Pick a song from your own Spotify library, listen to it in the browser, and fill in the words that drop out of the lyrics as they're sung.
 
-## Setup
+- **Type mode**: type the hidden words before the line moves on.
+- **Sing mode**: sing the hidden lines out loud; the game listens through your microphone.
+- Three levels (Easy, Medium, Hard), a score at the end of each song, and a list of the words you keep missing.
 
-1. Create an app at the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard).
-2. In that app's settings, add this exact Redirect URI:
+Lyrics come from [LRCLIB](https://lrclib.net), a free lyrics service. Songs without timed lyrics show up in your library but can't be played.
+
+> **Personal project.** This runs on your own computer with your own Spotify account. It isn't a public website, and Spotify's rules don't allow publishing games built on Spotify. Please keep your copy personal too.
+
+## What you need
+
+- **Spotify Premium.** Songs only play in the browser with Premium.
+- **Node.js 24** ([nodejs.org](https://nodejs.org)) and **Git** ([git-scm.com](https://git-scm.com)).
+- **A desktop browser**: Chrome, Edge or Firefox. Sing mode needs Chrome or Edge, because it uses the browser's speech recognition.
+- About 20 minutes for the first setup.
+
+## Setup (once)
+
+### 1. Get the code
+
+```bash
+git clone https://github.com/andrea2220896-max/lyrics-game.git
+```
+
+The app lives in the `lyrics-game` folder inside it. Every command below runs from there.
+
+### 2. Create your own Spotify app
+
+Each person needs their own Spotify keys. They're free.
+
+1. Go to the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard), log in with your Spotify account and click **Create app**.
+2. Give it any name and description.
+3. Under **Redirect URIs**, add exactly:
    ```
    http://127.0.0.1:3000/api/auth/callback
    ```
-3. Copy `.env.local.example` to `.env.local` and fill in `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET` from the dashboard. `SESSION_SECRET` and `SPOTIFY_REDIRECT_URI` are already filled in — leave them as is for local dev.
-4. Install dependencies and run the dev server:
-   ```bash
-   npm install
-   npm run dev
-   ```
-5. Open **http://127.0.0.1:3000** (not `localhost` — it must match the redirect URI exactly) and click "Connect with Spotify". You'll need Spotify Premium; while the app is in development mode on the dashboard, only accounts you've added under the app's "Users" tab can log in (your own account is added automatically).
+4. Under **Which API/SDKs are you planning to use?**, tick **Web API** and **Web Playback SDK**.
+5. Save. In the app's **Settings**, copy the **Client ID** and the **Client secret**.
 
-## What's implemented
+### 3. Add your keys
 
-- Login screen, Spotify OAuth (Authorization Code flow), and an encrypted session cookie that keeps you logged in across visits.
-- The "denied" screen when you cancel Spotify's consent prompt.
-- The library screen: a sidebar of Liked Songs + your playlists with track counts, and the track list for whichever one is selected.
-- Retry flows for a failed library/track load, and a session-expired redirect back to login.
+Copy `.env.local.example` to a new file named `.env.local` in the same folder, then fill it in:
 
-Tracks aren't clickable yet, and there's no playable/disabled distinction — both are intentionally out of scope for this phase (see `../Output/phase-1-spec.md`).
+```
+SPOTIFY_CLIENT_ID=your Client ID
+SPOTIFY_CLIENT_SECRET=your Client secret
+SPOTIFY_REDIRECT_URI=http://127.0.0.1:3000/api/auth/callback
+SESSION_SECRET=a long random text
+```
+
+For `SESSION_SECRET`, this command prints a random one you can paste:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+`.env.local` holds your private keys. Never share it or upload it anywhere (git already ignores it).
+
+### 4. Install
+
+```bash
+npm install
+```
+
+## Play
+
+```bash
+npm run dev
+```
+
+Then open **http://127.0.0.1:3000** in your browser and click **Connect with Spotify**. Use `127.0.0.1`, not `localhost`, or the Spotify login won't come back to the app.
+
+Leave the terminal open while you play. To stop, press `Ctrl + C` in it. Next time, just run `npm run dev` again.
+
+## Good to know
+
+- **Who can log in.** Your Spotify app starts in test mode: only you can log in. To let someone else use *your* copy, add their name and Spotify email in the dashboard under **User Management** (up to 5 people).
+- **Spotify limits requests.** If the app asks too often, Spotify blocks it for a few hours. The app keeps a copy of your library for 6 hours and remembers a block, so it won't keep asking. If you see "Spotify is limiting this app until…", wait until that time.
+- **Your data stays on your computer.** Games, saved songs and caches are kept in the `.data/` folder, which is created on first use and never uploaded. Delete it to start fresh.
+- **If Spotify plays on another device** (your phone, for example), the game pauses. Press play in the app to bring it back.
+
+## For developers
+
+Built with Next.js 16, React and TypeScript, with no database: everything is stored as files in `.data/`.
+
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Runs the app on port 3000 |
+| `npm test` | Checks the game rules (`src/lib/*.test.ts`) |
+| `npm run lint` | Checks the code style |
+| `npm run build` | Builds the app the way it would run for real |
+
+- `src/lib/`: the logic (Spotify, library, lyrics, game rules, saved data).
+- `src/app/`: the pages and the `api/` routes.
+- `../spec.md`, `../plan.md` and `../Output/`: how the project was planned and built, phase by phase.
