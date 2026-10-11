@@ -65,11 +65,11 @@ Design: the Figma Make file "Design main page for game" (code in `design/figma-m
 - [x] "Set up your game": real cover, Type / Sing, levels with points, your six level texts with real counts, "Why choose a language?", start button, round heart and bookmark
 - [x] Your play-test on your account (2026-10-10, all good)
 
-## Phase 11: Lyric Drop look for the game and results screens — IN PROGRESS (Output/phase-11-spec.md, phase-11-plan.md)
+## Phase 11: Lyric Drop look for the game and results screens — DONE 2026-10-11 (Output/phase-11-spec.md, phase-11-plan.md)
 Design by Claude (mockup approved 2026-10-10), with your requests: bigger player bar, only points and streak at the top, line count under the instructions.
 - [x] Game screen, Type and Sing: dark stage, points and streak tiles, line count under the instructions, bigger player bar
 - [x] Results, Type and Sing: verdict, four tiles, Play again / Try next, your guesses or lines
-- [ ] Your play-test on your account, then close
+- [x] Your play-test on your account (2026-10-11, all good)
 
 ## Explicitly out of scope for this plan
 Anything from spec.md's V2 list stays out unless you decide otherwise first: sharing with other people or multi-account login, an unsynced-lyrics fallback mode, score history or leaderboards.

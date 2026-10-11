@@ -22,6 +22,7 @@ Derived from: Output/phase-11-spec.md. Review before building.
 
 ## 4. Checks and play-test
 - [x] `npm run lint`, `npm test`, `npm run build` pass; GitHub check passes.
-- [ ] Your play-test: a Type song and a Sing song to the end, pause, Play again, Try next.
+- [x] Your play-test: a Type song and a Sing song to the end, pause, Play again, Try next.
 - [x] plan.md gets a Phase 11 section; close with `Close Phase 11: …` after your play-test.
 - Checks done 2026-10-10: lint, 48 rule checks and build pass; GitHub's check passed; no new Spotify requests in the code. Waiting for your play-test.
+- Closed 2026-10-11: you play-tested on your account and said all good. Tag `phase-11`. Every screen of the app now has the Lyric Drop look.
