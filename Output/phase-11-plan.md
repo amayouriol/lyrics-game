@@ -21,6 +21,7 @@ Derived from: Output/phase-11-spec.md. Review before building.
 - Done 2026-10-10: shared `ResultParts.tsx` (verdict with its last sentence in violet, result tile, Play again button); `PlayClient.tsx` and `SingScreen.tsx` results use them; `play.module.css` results section (dark top, light guesses below); each sung line shows its count; the "couldn't load this song" screen matches; the unused `StatBlock` removed. Approved by you. Lint, tests and build pass.
 
 ## 4. Checks and play-test
-- [ ] `npm run lint`, `npm test`, `npm run build` pass; GitHub check passes.
+- [x] `npm run lint`, `npm test`, `npm run build` pass; GitHub check passes.
 - [ ] Your play-test: a Type song and a Sing song to the end, pause, Play again, Try next.
-- [ ] plan.md gets a Phase 11 section; close with `Close Phase 11: …` after your play-test.
+- [x] plan.md gets a Phase 11 section; close with `Close Phase 11: …` after your play-test.
+- Checks done 2026-10-10: lint, 48 rule checks and build pass; GitHub's check passed; no new Spotify requests in the code. Waiting for your play-test.
