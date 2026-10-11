@@ -226,10 +226,15 @@
   line-height: 0.86;
 }
 
+/* The notes float just around the record (Phase 12), not out at the panel's edges. */
 .notes {
   position: absolute;
   z-index: 11;
-  inset: -15% -12%;
+  top: 50%;
+  left: 50%;
+  width: 205px;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
   pointer-events: none;
 }
 
@@ -294,17 +299,17 @@
 }
 
 .stat strong {
-  min-width: 47px;
+  min-width: 56px;
   color: var(--violet-light);
   font-family: "Archivo Black", sans-serif;
-  font-size: clamp(20px, 1.9vw, 27px);
+  font-size: clamp(23px, 2.2vw, 31px);
   font-weight: 400;
   line-height: 1;
   letter-spacing: -0.06em;
 }
 
 .stat span {
-  font-size: 9px;
+  font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -555,6 +560,9 @@
 }
 
 .cardMeta small {
+  max-width: 230px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   margin-top: 6px;
   color: #9a95a0;
   font-size: 13px;

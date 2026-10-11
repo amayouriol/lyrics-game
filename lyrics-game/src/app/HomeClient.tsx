@@ -278,7 +278,6 @@ function History({ progress, now }: { progress: Progress; now: number }) {
 /** Your most-missed word as a stack of cards. The practice queue is V2: shown, not clickable. */
 function MissedCard({ missed }: { missed: MissedWord[] }) {
   const top = missed[0];
-  const more = top ? top.songs.length - 1 : 0;
   return (
     <div
       className={styles.flashcard}
@@ -306,8 +305,7 @@ function MissedCard({ missed }: { missed: MissedWord[] }) {
                 Missed {top.misses} of {top.seen} times
               </small>
               <small>
-                in {top.songs[0]}
-                {more > 0 && ` and ${more} more`}
+                {top.songs.length === 1 ? `in ${top.songs[0]}` : `in ${top.songs.length} songs`}
               </small>
             </span>
           </>

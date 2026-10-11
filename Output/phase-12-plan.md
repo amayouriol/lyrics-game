@@ -15,9 +15,10 @@ Derived from: Output/phase-12-spec.md. Review before building.
 - Done 2026-10-11: `blanksPerLine` and a new `pickBlanks` in `game.ts` (fresh words first; a word comes back only on a line with nothing new, after 8 lines, least-asked first); level texts in `game.ts` and How to play; 6 new or updated checks (52 in all). Measured on "My Heart Goes": Easy 17 → 20 blanks, Medium 25 → 34, Hard 34 → 35 (a song that is nearly all chorus; see the spec note). Approved by you. Lint, tests and build pass.
 
 ## 2. Home tweaks
-- [ ] Notes closer to the record.
-- [ ] "in 1 song: <name>" / "in N songs" on the Words that keep dropping card.
-- [ ] Bigger labels (and numbers) next to the totals.
+- [x] Notes closer to the record.
+- [x] "in 1 song: <name>" / "in N songs" on the Words that keep dropping card.
+- [x] Bigger labels (and numbers) next to the totals.
+- Done 2026-10-11: `home.module.css` notes in a 205 px square centered on the record; totals' labels 9 → 13 px, numbers up to 31 px; `HomeClient.tsx` card says "in <song>" for one song, "in N songs" for more (long names end with "…"). Approved by you. Lint and build pass.
 
 ## 3. Checks and play-test
 - [ ] `npm run lint`, `npm test`, `npm run build` pass; GitHub check passes.
