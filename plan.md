@@ -71,10 +71,10 @@ Design by Claude (mockup approved 2026-10-10), with your requests: bigger player
 - [x] Results, Type and Sing: verdict, four tiles, Play again / Try next, your guesses or lines
 - [x] Your play-test on your account (2026-10-11, all good)
 
-## Phase 12: Fixes after play-testing — IN PROGRESS (Output/phase-12-spec.md, phase-12-plan.md)
+## Phase 12: Fixes after play-testing — DONE 2026-10-11 (Output/phase-12-spec.md, phase-12-plan.md)
 - [x] Harder Type levels (Easy 2 lines in 3, Medium 2 per line, Hard 3–4) and fewer repeated words (Sing unchanged)
 - [x] Home: notes closer to the record, bigger totals, "in N songs" on Words that keep dropping
-- [ ] Your play-test on your account, then close
+- [x] Your play-test on your account (2026-10-11, all good)
 
 ## Explicitly out of scope for this plan
 Anything from spec.md's V2 list stays out unless you decide otherwise first: sharing with other people or multi-account login, an unsynced-lyrics fallback mode, score history or leaderboards.

@@ -22,6 +22,7 @@ Derived from: Output/phase-12-spec.md. Review before building.
 
 ## 3. Checks and play-test
 - [x] `npm run lint`, `npm test`, `npm run build` pass; GitHub check passes.
-- [ ] Your play-test: a Type song on each level; the home page.
+- [x] Your play-test: a Type song on each level; the home page.
 - [x] plan.md gets a Phase 12 section; close with `Close Phase 12: …` after your play-test.
 - Checks done 2026-10-11: lint, 52 rule checks and build pass; GitHub's check passed; no new Spotify requests. Waiting for your play-test.
+- Closed 2026-10-11: you play-tested on your account and said all good. Tag `phase-12`.
