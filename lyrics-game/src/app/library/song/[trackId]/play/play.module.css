@@ -394,21 +394,29 @@
 
 /* Sing mode */
 
-
 /* "5 of 7" after a sung line is over. */
 .lineCount {
   align-self: center;
-  font: 600 13px var(--font-sans);
-  color: var(--grey-500);
-  background: var(--grey-100);
-  border-radius: 8px;
-  padding: 2px 8px;
+  padding: 3px 9px;
+  background: #1b191f;
+  color: var(--violet-light);
+  font-size: 14px;
+  font-weight: 800;
 }
 
-/* The microphone light. */
+/* The microphone light, under the lyrics with the instructions. */
 .mic {
-  border: none;
-  gap: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .mic:disabled {
@@ -423,18 +431,14 @@
 }
 
 .micIdle {
-  background: var(--grey-100);
-  color: var(--grey-500);
+  background: #1b191f;
+  color: #a6a1aa;
 }
 
-.micOn {
-  background: var(--secondary-100);
-  color: var(--secondary-700);
-}
-
+.micOn,
 .micHearing {
-  background: var(--secondary-100);
-  color: var(--secondary-700);
+  background: rgb(149 115 255 / 16%);
+  color: var(--violet-light);
 }
 
 .micHearing .micDot {
@@ -442,8 +446,8 @@
 }
 
 .micOff {
-  background: var(--tertiary-100);
-  color: var(--tertiary-600);
+  background: rgb(255 92 108 / 16%);
+  color: #ff8a95;
   cursor: pointer;
 }
 

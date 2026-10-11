@@ -13,7 +13,8 @@ Derived from: Output/phase-11-spec.md. Review before building.
 - Done 2026-10-10: `play.module.css` game section rewritten (dark stage, tiles, lyrics in DM Sans bold, help and line count under the lyrics, dark panels, violet countdown turning red); `PlayClient.tsx` top row with only points and streak; `LyricBlank.module.css` colors that work on dark and light; `PlayerBar` 88 px with a 52 px violet button and drawn play / pause icons. Approved by you. Lint, tests and build pass.
 
 ## 2. Game screen, Sing
-- [ ] Same layout; slots, line counts, microphone light with the instructions.
+- [x] Same layout; slots, line counts, microphone light with the instructions.
+- Done 2026-10-10: `SingScreen.tsx` top row with only points and "line streak" (full lines in a row); the microphone light moved under the lyrics with the instructions and "Line N of M"; dark panels; `play.module.css` Sing section (line count tile, violet / red microphone light). Approved by you. Lint, tests and build pass.
 
 ## 3. Results, Type and Sing
 - [ ] Verdict, four tiles, buttons, save error; Your guesses (Type) and your lines (Sing).
