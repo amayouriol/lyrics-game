@@ -21,6 +21,7 @@ Derived from: Output/phase-12-spec.md. Review before building.
 - Done 2026-10-11: `home.module.css` notes in a 205 px square centered on the record; totals' labels 9 → 13 px, numbers up to 31 px; `HomeClient.tsx` card says "in <song>" for one song, "in N songs" for more (long names end with "…"). Approved by you. Lint and build pass.
 
 ## 3. Checks and play-test
-- [ ] `npm run lint`, `npm test`, `npm run build` pass; GitHub check passes.
+- [x] `npm run lint`, `npm test`, `npm run build` pass; GitHub check passes.
 - [ ] Your play-test: a Type song on each level; the home page.
-- [ ] plan.md gets a Phase 12 section; close with `Close Phase 12: …` after your play-test.
+- [x] plan.md gets a Phase 12 section; close with `Close Phase 12: …` after your play-test.
+- Checks done 2026-10-11: lint, 52 rule checks and build pass; GitHub's check passed; no new Spotify requests. Waiting for your play-test.
