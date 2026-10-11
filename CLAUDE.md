@@ -20,7 +20,7 @@ A personal Next.js web app: connects to my Spotify Premium account, plays a song
 - A phase closes only after I play-test it on my real account: `Close Phase N: …`. Then push.
 - Spec changes go into the spec (dated), not just the code. Ideas that don't fit go to V2/V3 in the spec, not into this phase. "V2"/"V3" are future features, not git tags.
 - Ask before adding a dependency.
-- Branch `main`, private remote on GitHub. `git push` after commits. GitHub runs lint, tests and build on every push (`.github/workflows/check.yml`); if it fails, fix it before moving on.
+- Branch `main`, remote on GitHub. `git push` after commits. GitHub runs lint, tests and build on every push (`.github/workflows/check.yml`); if it fails, fix it before moving on.
 
 ## Spotify and outside services
 - Keep Spotify requests low: it rate-limits hard (multi-hour blocks). Reuse the on-disk library copy (6 h) and respect the remembered block; never add loops that re-fetch the whole library.
