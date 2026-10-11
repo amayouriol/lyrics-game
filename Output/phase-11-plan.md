@@ -17,7 +17,8 @@ Derived from: Output/phase-11-spec.md. Review before building.
 - Done 2026-10-10: `SingScreen.tsx` top row with only points and "line streak" (full lines in a row); the microphone light moved under the lyrics with the instructions and "Line N of M"; dark panels; `play.module.css` Sing section (line count tile, violet / red microphone light). Approved by you. Lint, tests and build pass.
 
 ## 3. Results, Type and Sing
-- [ ] Verdict, four tiles, buttons, save error; Your guesses (Type) and your lines (Sing).
+- [x] Verdict, four tiles, buttons, save error; Your guesses (Type) and your lines (Sing).
+- Done 2026-10-10: shared `ResultParts.tsx` (verdict with its last sentence in violet, result tile, Play again button); `PlayClient.tsx` and `SingScreen.tsx` results use them; `play.module.css` results section (dark top, light guesses below); each sung line shows its count; the "couldn't load this song" screen matches; the unused `StatBlock` removed. Approved by you. Lint, tests and build pass.
 
 ## 4. Checks and play-test
 - [ ] `npm run lint`, `npm test`, `npm run build` pass; GitHub check passes.

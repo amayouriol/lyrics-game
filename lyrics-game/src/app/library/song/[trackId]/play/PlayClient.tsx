@@ -8,7 +8,6 @@ import { ArrowIcon } from "@/components/icons";
 import type { Profile } from "@/lib/session";
 import { LyricBlank } from "@/components/LyricBlank";
 import { PlayerBar } from "@/components/PlayerBar";
-import { StatBlock } from "@/components/StatBlock";
 import {
   activeBlankId,
   blankState,
@@ -33,6 +32,7 @@ import type { WordResult } from "@/lib/progress";
 import { loadSong, playHref, songHref, type SongResult, type TrackSummary } from "../loadSong";
 import { useSingLanguage, type PlayMode } from "../singPrefs";
 import { useLineGlide, useSweep } from "./lyricsMotion";
+import { PlayAgain, ResultTile, Verdict } from "./ResultParts";
 import { SingResults, SingScreen, type SingGameResult } from "./SingScreen";
 import { LISTEN_LANG } from "./speech";
 import { usePlayer, type PlayerError } from "./usePlayer";
@@ -191,7 +191,8 @@ export function PlayClient({
     <main className={styles.main}>
       <div className={styles.body}>
         <div className={styles.topBar}>
-          <Link href={backHref} className="btn btn--ghost btn--sm">
+          <Link href={backHref} className={styles.quit}>
+            <ArrowIcon />
             Back to song
           </Link>
         </div>
@@ -209,7 +210,7 @@ export function PlayClient({
                   : "Spotify didn't answer."}
               </h2>
               <p>We couldn&apos;t load this song. It&apos;s probably a blip.</p>
-              <button className="btn btn--secondary" onClick={() => setReloadKey((k) => k + 1)}>
+              <button className={styles.panelButton} onClick={() => setReloadKey((k) => k + 1)}>
                 Retry
               </button>
             </div>
@@ -716,60 +717,43 @@ function Results({
       <Header profile={profile} />
       <main className={styles.results}>
         <section className={styles.resultsTop}>
-          <span className="chip chip--primary chip--sm">
-            {track.title} — {track.artist}
-          </span>
-          <h1 className={styles.verdict}>{verdict(stats.accuracy)}</h1>
+          <p className={styles.eyebrow}>
+            Song complete · {track.title} — {track.artist}
+          </p>
+          <Verdict text={verdict(stats.accuracy)} />
           <p className={styles.summary}>
             You got {stats.correct} of {stats.total} words in {track.title}.
           </p>
           {saveFailed && (
             <div className={styles.saveError}>
               <span>Couldn&apos;t save this game to your progress.</span>
-              <button
-                className="btn btn--ghost btn--sm"
-                onClick={() => setSaveAttempt((n) => n + 1)}
-              >
+              <button className={styles.saveRetry} onClick={() => setSaveAttempt((n) => n + 1)}>
                 Retry
               </button>
             </div>
           )}
           <div className={styles.stats}>
-            <StatBlock
-              label="Score"
-              value={stats.score}
-              tone="primary"
-              hint={`Up to ${info.points} per word`}
-            />
-            <StatBlock
+            <ResultTile label="Score" value={stats.score} hint={`Up to ${info.points} per word`} />
+            <ResultTile
               label="Accuracy"
               value={`${stats.accuracy}%`}
-              tone="secondary"
               hint={`${stats.correct} of ${stats.total} words`}
             />
-            <StatBlock
-              label="Best streak"
-              value={stats.bestStreak}
-              tone="quaternary"
-              hint="In a row, no misses"
-            />
-            <StatBlock
-              label="Difficulty"
+            <ResultTile label="Best streak" value={stats.bestStreak} hint="First-try words in a row" />
+            <ResultTile
+              label="Level"
               value={info.label}
-              tone="tertiary"
               hint={info.description.split(".")[0]}
             />
           </div>
-          <div className={styles.actions}>
-            <button className="btn btn--lg" onClick={onPlayAgain}>
-              Play again
-            </button>
+          <div className={styles.resultActions}>
+            <PlayAgain label="Play again" onClick={onPlayAgain} />
             {next && (
-              <button className="btn btn--lg btn--secondary" onClick={() => onTryNext(next)}>
+              <button className={styles.outline} onClick={() => onTryNext(next)}>
                 Try {DIFFICULTIES[next].label}
               </button>
             )}
-            <Link href={libraryHref} className="btn btn--lg btn--ghost">
+            <Link href={libraryHref} className={styles.quietLink}>
               Pick another song
             </Link>
           </div>

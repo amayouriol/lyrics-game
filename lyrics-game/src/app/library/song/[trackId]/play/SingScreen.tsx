@@ -8,7 +8,6 @@ import { ArrowIcon } from "@/components/icons";
 import type { Profile } from "@/lib/session";
 import { LyricBlank } from "@/components/LyricBlank";
 import { PlayerBar } from "@/components/PlayerBar";
-import { StatBlock } from "@/components/StatBlock";
 import {
   DIFFICULTIES,
   nextDifficulty,
@@ -35,6 +34,7 @@ import { useLineGlide, useSweep } from "./lyricsMotion";
 import type { ListeningProblem } from "./useListening";
 import { useListening } from "./useListening";
 import { usePlayer, type PlayerError } from "./usePlayer";
+import { PlayAgain, ResultTile, Verdict } from "./ResultParts";
 import styles from "./play.module.css";
 
 /** On the last line, the song waits this close to its end (as in Type mode). */
@@ -510,10 +510,10 @@ export function SingResults({
       <Header profile={profile} />
       <main className={styles.results}>
         <section className={styles.resultsTop}>
-          <span className="chip chip--primary chip--sm">
-            {track.title} — {track.artist}
-          </span>
-          <h1 className={styles.verdict}>{verdict(stats.accuracy)}</h1>
+          <p className={styles.eyebrow}>
+            Song sung · {track.title} — {track.artist}
+          </p>
+          <Verdict text={verdict(stats.accuracy)} />
           <p className={styles.summary}>
             You sang {stats.correct} of {stats.total} words in {track.title}.
           </p>
@@ -525,53 +525,36 @@ export function SingResults({
           {saveFailed && (
             <div className={styles.saveError}>
               <span>Couldn&apos;t save this game to your progress.</span>
-              <button
-                className="btn btn--ghost btn--sm"
-                onClick={() => setSaveAttempt((n) => n + 1)}
-              >
+              <button className={styles.saveRetry} onClick={() => setSaveAttempt((n) => n + 1)}>
                 Retry
               </button>
             </div>
           )}
           <div className={styles.stats}>
-            <StatBlock
-              label="Score"
-              value={stats.score}
-              tone="primary"
-              hint={`${info.points} per word`}
-            />
-            <StatBlock
+            <ResultTile label="Score" value={stats.score} hint={`${info.points} per word`} />
+            <ResultTile
               label="Accuracy"
               value={`${stats.accuracy}%`}
-              tone="secondary"
               hint={`${stats.correct} of ${stats.total} words heard`}
             />
-            <StatBlock
-              label="Best streak"
-              value={stats.bestStreak}
-              tone="quaternary"
-              hint="Full lines in a row"
-            />
-            <StatBlock
+            <ResultTile label="Best streak" value={stats.bestStreak} hint="Full lines in a row" />
+            <ResultTile
               label="Sing"
               value={info.label}
-              tone="tertiary"
               hint={SING_DESCRIPTIONS[level].split(".")[0]}
             />
           </div>
-          <div className={styles.actions}>
-            <button className="btn btn--lg" onClick={onPlayAgain}>
-              Sing again
-            </button>
+          <div className={styles.resultActions}>
+            <PlayAgain label="Sing again" onClick={onPlayAgain} />
             {next && (
-              <button className="btn btn--lg btn--secondary" onClick={() => onTryNext(next)}>
+              <button className={styles.outline} onClick={() => onTryNext(next)}>
                 Try {DIFFICULTIES[next].label}
               </button>
             )}
-            <button className="btn btn--lg btn--secondary" onClick={onTryTyping}>
+            <button className={styles.outline} onClick={onTryTyping}>
               Try typing
             </button>
-            <Link href={libraryHref} className="btn btn--lg btn--ghost">
+            <Link href={libraryHref} className={styles.quietLink}>
               Pick another song
             </Link>
           </div>
@@ -599,6 +582,9 @@ export function SingResults({
                       </span>
                     );
                   })}
+                  <span className={styles.lineCount}>
+                    {lineCounts(s).heard} of {lineCounts(s).total}
+                  </span>
                 </li>
               );
             })}
