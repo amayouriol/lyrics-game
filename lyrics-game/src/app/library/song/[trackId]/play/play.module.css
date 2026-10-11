@@ -1,21 +1,26 @@
+/* The game screen, a dark stage (Phase 11, Lyric Drop look). */
 .main {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: "DM Sans", sans-serif;
 }
 
 .body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 40px;
-  padding: 24px clamp(20px, 5vw, 72px) 48px;
+  gap: 32px;
+  padding: 22px clamp(20px, 5vw, 72px) 40px;
   max-width: 1260px;
   margin: 0 auto;
   width: 100%;
 }
 
+/* Top row: Quit on the left, points and streak on the right. */
 .topBar {
   display: flex;
   justify-content: space-between;
@@ -24,10 +29,62 @@
   flex-wrap: wrap;
 }
 
+.quit {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #a6a1aa;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.quit:hover {
+  color: var(--paper);
+}
+
+.quit svg {
+  width: 16px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+  transform: rotate(180deg);
+}
+
 .chips {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
+}
+
+.tile {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  padding: 9px 16px;
+  background: #1b191f;
+}
+
+.tile b {
+  color: var(--violet-light);
+  font-family: "Archivo Black", sans-serif;
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.tile span {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .center {
@@ -47,7 +104,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
+  gap: 26px;
   width: 100%;
 }
 
@@ -73,11 +130,11 @@
 }
 
 .currentLine [data-at]:not([data-lit]) {
-  color: var(--grey-400);
+  color: #6d6872;
 }
 
 .currentLine [data-at]:not([data-lit]) > input {
-  border-bottom-color: var(--grey-300);
+  border-bottom-color: #4b4650;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -90,7 +147,6 @@
   }
 }
 
-/* Lyric lines, per the design's play screen. */
 .prevLine,
 .currentLine,
 .nextLine {
@@ -100,88 +156,164 @@
   align-items: baseline;
   column-gap: 0.32em;
   min-height: 1.45em;
-  font-family: var(--font-display);
+  font-family: "DM Sans", sans-serif;
   line-height: 1.45;
 }
 
 .prevLine {
   font-size: clamp(18px, 2vw, 24px);
-  color: var(--grey-300);
+  color: #5c5762;
 }
 
 .currentLine {
-  font-size: clamp(30px, 3.8vw, 44px);
-  color: var(--grey-700);
+  font-size: clamp(32px, 4vw, 50px);
+  font-weight: 700;
+  color: var(--paper);
+  letter-spacing: -0.01em;
   text-wrap: balance;
 }
 
 .nextLine {
   font-size: clamp(18px, 2vw, 24px);
-  color: var(--grey-300);
+  color: #5c5762;
 }
 
 .word {
   white-space: nowrap;
 }
 
+/* Under the lyrics: the instructions, then the line count. */
+.below {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
 .help {
+  min-height: 26px;
   text-align: center;
-  min-height: 24px;
-  font: 400 15px/1.5 var(--font-sans);
+  font-size: 17px;
+  line-height: 1.5;
 }
 
 .muted {
-  color: var(--grey-500);
+  color: #a6a1aa;
 }
 
 .good {
-  color: var(--secondary-700);
+  color: var(--violet-light);
 }
 
 .bad {
-  color: var(--tertiary-600);
+  color: #ff8a95;
+}
+
+.lineNumber {
+  color: #6d6872;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
 .status {
-  font: 400 18px/1.5 var(--font-sans);
-  color: var(--grey-500);
+  color: #a6a1aa;
+  font-size: 18px;
 }
 
+/* Paused, Spotify elsewhere, sound blocked, player errors. */
 .panel {
-  background: var(--grey-100);
-  border-radius: 16px;
-  padding: 32px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   align-items: flex-start;
-  text-align: left;
   max-width: 560px;
   width: 100%;
+  padding: 30px;
+  border-left: 3px solid var(--violet);
+  background: #19171d;
+  text-align: left;
 }
 
 .panel h2 {
-  margin: 0;
-  font: 500 28px / 1.19 var(--font-sans);
-  letter-spacing: -0.5px;
-  color: var(--black);
+  font-family: "Archivo Black", sans-serif;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
 }
 
 .panel p {
-  margin: 0;
-  font: 400 16px/1.6 var(--font-sans);
-  color: var(--text-body);
+  color: #b3aeb7;
+  font-size: 16px;
+  line-height: 1.6;
 }
 
 .actions {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+  align-items: center;
+}
+
+.panelButton {
+  padding: 13px 20px;
+  border: 0;
+  background: var(--paper);
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.panelButton:hover {
+  background: #ddd5f7;
+  color: var(--ink);
+}
+
+.panelLink {
+  color: #a6a1aa;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.panelLink:hover {
+  color: var(--paper);
 }
 
 .playerBar {
   position: sticky;
   bottom: 0;
+}
+
+/* Seconds left while the song waits for the active word. */
+.countdown {
+  display: inline-grid;
+  place-items: center;
+  width: 1.9em;
+  height: 1.9em;
+  margin-left: 0.4em;
+  border-radius: 50%;
+  background: var(--violet);
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  vertical-align: middle;
+}
+
+.countdownLow {
+  background: #ff5c6c;
+  color: var(--ink);
 }
 
 /* Results screen, per the design. */
@@ -245,25 +377,6 @@
   gap: 12px 16px;
   font: 400 28px/1.5 var(--font-display);
   color: var(--grey-600);
-}
-
-/* Seconds left while the song waits for the active word. */
-.countdown {
-  display: inline-block;
-  margin-left: 0.35em;
-  min-width: 2ch;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font: 600 15px/1.4 var(--font-sans);
-  font-variant-numeric: tabular-nums;
-  color: var(--grey-700);
-  background: var(--grey-100);
-  vertical-align: middle;
-}
-
-.countdownLow {
-  color: var(--tertiary-600);
-  background: var(--tertiary-100);
 }
 
 /* Results: the game couldn't be added to your progress. */

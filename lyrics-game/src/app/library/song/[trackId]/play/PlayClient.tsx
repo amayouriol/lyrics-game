@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
+import { ArrowIcon } from "@/components/icons";
 import type { Profile } from "@/lib/session";
 import { LyricBlank } from "@/components/LyricBlank";
 import { PlayerBar } from "@/components/PlayerBar";
@@ -504,16 +505,20 @@ function PlayScreen({
     <main className={styles.main}>
       <div className={styles.body}>
         <div className={styles.topBar}>
-          <button className="btn btn--ghost btn--sm" onClick={quit}>
+          <button className={styles.quit} onClick={quit}>
+            <ArrowIcon />
             Quit song
           </button>
+          {/* Only points and streak up here (your request); the line count is under the lyrics. */}
           <div className={styles.chips}>
-            <span className="chip chip--tertiary chip--sm">{DIFFICULTIES[level].label}</span>
-            <span className="chip chip--grey chip--sm">
-              Line {Math.max(0, lineIndex)} of {lines.length}
+            <span className={styles.tile}>
+              <b>{stats.score.toLocaleString("en")}</b>
+              <span>pts</span>
             </span>
-            <span className="chip chip--primary chip--sm">{stats.score} pts</span>
-            <span className="chip chip--quaternary chip--sm">Streak {stats.streak}</span>
+            <span className={styles.tile}>
+              <b>{stats.streak}</b>
+              <span>streak</span>
+            </span>
           </div>
         </div>
 
@@ -529,7 +534,7 @@ function PlayScreen({
                 The music moved to another device, or the connection to Spotify dropped. Your place
                 in the song is saved.
               </p>
-              <button className="btn btn--lg" onClick={resume}>
+              <button className={styles.panelButton} onClick={resume}>
                 Resume here
               </button>
             </div>
@@ -572,7 +577,7 @@ function PlayScreen({
             <div className={styles.panel}>
               <h2>Your browser blocked the sound.</h2>
               <p>Browsers only allow sound after you click something.</p>
-              <button className="btn btn--lg" onClick={unblock}>
+              <button className={styles.panelButton} onClick={unblock}>
                 Start the music
               </button>
             </div>
@@ -585,16 +590,16 @@ function PlayScreen({
               <div className={styles.actions}>
                 {status.error === "permissions" && (
                   // Plain link: this is a server route, not a page to prefetch.
-                  <a href="/api/auth/login" className="btn">
+                  <a href="/api/auth/login" className={styles.panelButton}>
                     Reconnect Spotify
                   </a>
                 )}
                 {status.error === "start_failed" && (
-                  <button className="btn" onClick={retry}>
+                  <button className={styles.panelButton} onClick={retry}>
                     Retry
                   </button>
                 )}
-                <Link href={backHref} className="btn btn--ghost">
+                <Link href={backHref} className={styles.panelLink}>
                   Back to song
                 </Link>
               </div>
@@ -603,7 +608,12 @@ function PlayScreen({
         </div>
 
         {status.kind === "playing" && !hidden && (
-          <div className={`${styles.help} ${styles[helpLine.tone]}`}>{helpLine.text}</div>
+          <div className={styles.below}>
+            <div className={`${styles.help} ${styles[helpLine.tone]}`}>{helpLine.text}</div>
+            <div className={styles.lineNumber}>
+              Line {Math.max(0, lineIndex)} of {lines.length}
+            </div>
+          </div>
         )}
       </div>
 

@@ -1,27 +1,29 @@
+/* The player bar, bigger in Phase 11 (your request). */
 .bar {
   display: flex;
   align-items: center;
-  gap: 24px;
-  height: 72px;
-  padding: 0 24px;
-  background: var(--white);
-  border-top: 1px solid var(--grey-100);
+  gap: 22px;
+  min-height: 88px;
+  padding: 16px clamp(20px, 5vw, 72px);
+  background: #141318;
+  border-top: 1px solid var(--line);
+  color: var(--paper);
+  font-family: "DM Sans", sans-serif;
 }
 
 .track {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   min-width: 0;
-  width: 240px;
+  width: 280px;
   flex-shrink: 0;
 }
 
 .cover {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  background: var(--primary-300) center / cover no-repeat;
+  width: 56px;
+  height: 56px;
+  background: #2a2532 center / cover no-repeat;
   flex-shrink: 0;
 }
 
@@ -31,61 +33,72 @@
 
 .title,
 .artist {
-  font: 400 14px/1.4 var(--font-sans);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .title {
-  font-weight: 600;
-  color: var(--black);
+  font-size: 17px;
+  font-weight: 700;
 }
 
 .artist {
-  color: var(--grey-500);
+  margin-top: 2px;
+  color: #a6a1aa;
+  font-size: 14px;
 }
 
 .toggle {
-  width: 40px;
-  height: 40px;
+  display: grid;
+  width: 52px;
+  height: 52px;
   flex-shrink: 0;
-  border-radius: 50%;
+  place-items: center;
   border: 0;
-  background: var(--primary-400);
-  color: var(--white);
+  border-radius: 50%;
+  background: var(--violet);
+  color: var(--ink);
   cursor: pointer;
-  font: 400 14px/1 var(--font-mono);
+}
+
+.toggle:hover:not(:disabled) {
+  background: var(--violet-light);
+}
+
+.toggle svg {
+  width: 22px;
+  fill: currentColor;
 }
 
 .toggle:disabled {
-  background: var(--grey-200);
+  background: #37343b;
+  color: #6d6872;
   cursor: default;
 }
 
 .time {
-  font: 400 13px var(--font-mono);
-  color: var(--grey-500);
+  color: #a6a1aa;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
 }
 
 .progress {
   flex: 1;
-  height: 4px;
-  background: var(--grey-100);
-  border-radius: 2px;
+  height: 6px;
+  background: var(--line);
   overflow: hidden;
 }
 
 .fill {
   height: 100%;
-  background: var(--primary-400);
+  background: var(--violet);
   transition: width 1s linear;
 }
 
 @media (max-width: 640px) {
   .bar {
     gap: 12px;
-    padding: 0 16px;
   }
 
   .track {

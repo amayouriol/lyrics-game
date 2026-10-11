@@ -1,26 +1,25 @@
+/* One hidden word. Works on the dark game screen and the light results page. */
 .blank {
   display: inline-block;
   padding: 0 0.15em;
-  border-radius: 6px;
   text-align: center;
 }
 
 .input {
   font: inherit;
-  color: var(--primary-600);
-  background: var(--quaternary-100);
+  color: var(--violet-light);
+  background: rgb(149 115 255 / 12%);
   border: 0;
-  border-bottom: 3px solid var(--primary-400);
-  border-radius: 6px 6px 0 0;
+  border-bottom: 3px solid var(--violet);
   outline: none;
   vertical-align: baseline;
 }
 
 /* After a wrong try: shakes once (it remounts on each try) and stays red. */
 .retry {
-  color: var(--tertiary-600);
-  background: var(--tertiary-100);
-  border-bottom-color: var(--tertiary-500);
+  color: #ff8a95;
+  background: rgb(255 92 108 / 14%);
+  border-bottom-color: #ff5c6c;
   animation: shake 360ms ease-in-out;
 }
 
@@ -46,26 +45,25 @@
 }
 
 .correct {
-  background: var(--secondary-100);
-  color: var(--secondary-700);
+  background: var(--violet);
+  color: var(--ink);
 }
 
 .wrong {
-  background: var(--tertiary-100);
-  color: var(--tertiary-600);
+  background: #f7c1c1;
+  color: #791f1f;
 }
 
 .guess {
-  color: var(--grey-400);
+  color: #a8585f;
   margin-right: 0.35em;
 }
 
 .revealed {
-  background: var(--grey-100);
-  color: var(--grey-600);
+  background: #ddd9dc;
+  color: #4e4656;
 }
 
 .waiting {
-  border-bottom: 3px solid var(--grey-200);
-  border-radius: 0;
+  border-bottom: 3px solid #4b4650;
 }

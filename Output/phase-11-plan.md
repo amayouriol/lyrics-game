@@ -8,8 +8,9 @@ Derived from: Output/phase-11-spec.md. Review before building.
 - **The stat tiles on results** replace the old `StatBlock` there with the home page's tile style.
 
 ## 1. Game screen, Type
-- [ ] Dark page; top row with Quit, points and streak only; lyrics; blanks and countdown; instructions with "Line N of M"; panels.
-- [ ] Bigger player bar (shared with Sing).
+- [x] Dark page; top row with Quit, points and streak only; lyrics; blanks and countdown; instructions with "Line N of M"; panels.
+- [x] Bigger player bar (shared with Sing).
+- Done 2026-10-10: `play.module.css` game section rewritten (dark stage, tiles, lyrics in DM Sans bold, help and line count under the lyrics, dark panels, violet countdown turning red); `PlayClient.tsx` top row with only points and streak; `LyricBlank.module.css` colors that work on dark and light; `PlayerBar` 88 px with a 52 px violet button and drawn play / pause icons. Approved by you. Lint, tests and build pass.
 
 ## 2. Game screen, Sing
 - [ ] Same layout; slots, line counts, microphone light with the instructions.
