@@ -8,10 +8,11 @@ Derived from: Output/phase-12-spec.md. Review before building.
 - **The card and labels** are home page changes only (`HomeClient.tsx`, `home.module.css`).
 
 ## 1. Harder levels and fewer repeats (rules and checks)
-- [ ] Easy two lines out of three, Medium two per line, Hard three (four on lines of 9+ words).
-- [ ] A word isn't hidden twice in a song while the line has another word worth hiding; a repeat only when the line would get none, and not within 8 lines.
-- [ ] Level texts on the song screen and How to play.
-- [ ] `npm test`: counts per level, a chorus that repeats "love" asks its other words, a line with only used words gets a repeat after 8 lines.
+- [x] Easy two lines out of three, Medium two per line, Hard three (four on lines of 9+ words).
+- [x] A word isn't hidden twice in a song while the line has another word worth hiding; a repeat only when the line would get none, and not within 8 lines.
+- [x] Level texts on the song screen and How to play.
+- [x] `npm test`: counts per level, a chorus that repeats "love" asks its other words, a line with only used words gets a repeat after 8 lines.
+- Done 2026-10-11: `blanksPerLine` and a new `pickBlanks` in `game.ts` (fresh words first; a word comes back only on a line with nothing new, after 8 lines, least-asked first); level texts in `game.ts` and How to play; 6 new or updated checks (52 in all). Measured on "My Heart Goes": Easy 17 → 20 blanks, Medium 25 → 34, Hard 34 → 35 (a song that is nearly all chorus; see the spec note). Approved by you. Lint, tests and build pass.
 
 ## 2. Home tweaks
 - [ ] Notes closer to the record.

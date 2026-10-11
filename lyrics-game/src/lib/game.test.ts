@@ -9,6 +9,7 @@ import {
   isMatch,
   makeIsWord,
   nextDifficulty,
+  LONG_LINE_WORDS,
   pickBlanks,
   pointsFor,
   SPACING_LINES,
@@ -96,21 +97,68 @@ test("real-word check: dictionary words, attached Spanish pronouns, dropped g", 
 
 // --- Hiding words ---
 
-test("easy hides a word every other line, medium every line, hard two per line", () => {
-  const song = lines("love music", "dreams heart", "baby forever", "morning dance");
+test("easy hides a word on two lines out of three, medium two per line, hard three", () => {
+  const song = lines(
+    "love music tonight",
+    "dreams heart falling",
+    "baby forever dance",
+    "morning bailar hacer"
+  );
   assert.deepEqual(
     pickBlanks(song, "easy", isWord).map((b) => b.line),
-    [0, 2]
+    [0, 1, 3]
   );
   assert.deepEqual(
     pickBlanks(song, "medium", isWord).map((b) => b.line),
-    [0, 1, 2, 3]
+    [0, 0, 1, 1, 2, 2, 3, 3]
   );
-  assert.equal(pickBlanks(song, "hard", isWord).length, 8);
+  assert.equal(pickBlanks(song, "hard", isWord).length, 12);
+});
+
+test("hard hides a fourth word on long lines", () => {
+  const long = "love music tonight dreams heart falling baby forever dance";
+  assert.equal(long.split(" ").length, LONG_LINE_WORDS);
+  assert.equal(pickBlanks(lines(long), "hard", isWord).length, 4);
+  assert.equal(pickBlanks(lines("love music tonight dreams heart"), "hard", isWord).length, 3);
+});
+
+test("a chorus asks for its other words instead of repeating one", () => {
+  const song = lines("love tonight", "love music", "love dreams", "love heart");
+  const blanks = pickBlanks(song, "easy", isWord);
+  // Easy: lines 0, 1 and 3. "love" only once; the other lines ask their new word.
+  assert.deepEqual(
+    blanks.map((b) => b.answer),
+    ["tonight", "music", "heart"]
+  );
+  const medium = pickBlanks(song, "medium", isWord).map((b) => b.answer);
+  assert.equal(medium.filter((a) => a === "love").length, 1);
+});
+
+test("when a word must come back, the one asked fewest times comes back first", () => {
+  // Easy hides one word on lines 0, 1, 10 and 21 here (line 20 is a rest line).
+  const song = lines(
+    "heart love",
+    "love",
+    ...Array.from({ length: 8 }, () => "with that"),
+    "heart love",
+    ...Array.from({ length: 10 }, () => "with that"),
+    "heart love"
+  );
+  assert.deepEqual(
+    pickBlanks(song, "easy", isWord).map((b) => `${b.line}:${b.answer}`),
+    ["0:heart", "1:love", "10:heart", "21:love"]
+  );
+});
+
+test("the same word twice on one line is hidden once", () => {
+  assert.deepEqual(
+    pickBlanks(lines("love love love"), "hard", isWord).map((b) => b.answer),
+    ["love"]
+  );
 });
 
 test("the longest real word on a line is hidden, with punctuation left out", () => {
-  const [blank] = pickBlanks(lines("Oh baby, tonight!"), "medium", isWord);
+  const [blank] = pickBlanks(lines("Oh baby, tonight!"), "easy", isWord);
   assert.deepEqual(blank, { id: "0-2", line: 0, word: 2, answer: "tonight" });
 });
 
@@ -120,13 +168,13 @@ test("filler, short words and made-up sounds are never hidden", () => {
   ]);
 });
 
-test("the same word isn't hidden again within 8 lines", () => {
+test("a line with only used words brings one back, but not within 8 lines", () => {
   const chorus = Array.from({ length: SPACING_LINES + 2 }, () => "tonight love");
   const blanks = pickBlanks(lines(...chorus), "medium", isWord);
   const tonight = blanks.filter((b) => b.answer === "tonight").map((b) => b.line);
   assert.deepEqual(tonight, [0, SPACING_LINES + 1]);
-  // Line 1 falls back to the next-longest word instead.
-  assert.equal(blanks.find((b) => b.line === 1)?.answer, "love");
+  // Lines 1 to 8 have nothing new to ask, so they get no blank.
+  assert.equal(blanks.filter((b) => b.line > 0 && b.line <= SPACING_LINES).length, 0);
 });
 
 test("accent and capital variants count as one word for spacing", () => {

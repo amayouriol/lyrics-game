@@ -11,17 +11,17 @@ export const DIFFICULTIES: Record<
   easy: {
     label: "Easy",
     points: 100,
-    description: "One word every other line is hidden. Type it as it’s sung.",
+    description: "One word on two lines out of three is hidden. Type it as it’s sung.",
   },
   medium: {
     label: "Medium",
     points: 150,
-    description: "One word on every line is hidden. Type it as it’s sung.",
+    description: "Two words on every line are hidden. Type them as they’re sung.",
   },
   hard: {
     label: "Hard",
     points: 200,
-    description: "Two words on every line are hidden. Spelling matters.",
+    description: "Three or four words on every line are hidden. Spelling matters.",
   },
 };
 
@@ -66,8 +66,21 @@ export const WAIT_LIMIT_MS = 10_000;
 /** The countdown turns red for its last seconds. */
 export const WAIT_WARNING_SEC = 5;
 
-/** A hidden word isn't hidden again until this many lines have passed. */
+/** A word that does come back (see pickBlanks) waits at least this many lines. */
 export const SPACING_LINES = 8;
+
+/** Hard hides a fourth word on lines this long (in words). */
+export const LONG_LINE_WORDS = 9;
+
+/**
+ * How many words to hide on a line (Phase 12): Easy one on two lines out of
+ * three, Medium two, Hard three, or four on long lines.
+ */
+export function blanksPerLine(level: Difficulty, lineIndex: number, wordCount: number): number {
+  if (level === "easy") return lineIndex % 3 === 2 ? 0 : 1;
+  if (level === "medium") return 2;
+  return wordCount >= LONG_LINE_WORDS ? 4 : 3;
+}
 
 /**
  * A guess that's already wrong without pressing Enter: as long as the word
@@ -181,32 +194,50 @@ export interface Blank {
 /**
  * The hidden words for a song at a level. Deterministic, so replaying a
  * song at the same level hides the same words and scores compare fairly.
- * A word hidden on one line isn't hidden again within the next
- * SPACING_LINES lines (choruses would otherwise repeat the same blank);
- * the next-longest word on the line is hidden instead, or none.
+ * Longest words first. A word already hidden in the song isn't hidden again
+ * while the line has other words worth hiding (a chorus asks for its other
+ * words, not "love" every time). Only a line that would otherwise get no
+ * blank may bring a word back, and not within SPACING_LINES of its last time.
  */
 export function pickBlanks(lines: TimedLine[], level: Difficulty, isWord: IsWord): Blank[] {
   const blanks: Blank[] = [];
   /** Normalized word → the last line it was hidden on. */
   const lastHidden = new Map<string, number>();
+  /** Normalized word → how many times it's been hidden. */
+  const timesHidden = new Map<string, number>();
   lines.forEach((line, li) => {
-    const count = level === "hard" ? 2 : level === "medium" ? 1 : li % 2 === 0 ? 1 : 0;
+    const tokens = tokenize(line.text);
+    const count = blanksPerLine(level, li, tokens.filter((t) => t.core).length);
     if (count === 0) return;
-    const picked: { core: string; wi: number }[] = [];
-    tokenize(line.text)
-      .map((token, wi) => ({ core: token.core, wi }))
+    const candidates = tokens
+      .map((token, wi) => ({ core: token.core, wi, n: normalize(token.core) }))
       .filter(({ core }) => core && isEligible(core, isWord))
-      .sort((a, b) => normalize(b.core).length - normalize(a.core).length || a.wi - b.wi)
-      .forEach((candidate) => {
-        const n = normalize(candidate.core);
-        const last = lastHidden.get(n);
-        if (picked.length >= count || (last !== undefined && li - last <= SPACING_LINES)) return;
-        picked.push(candidate);
-        lastHidden.set(n, li);
-      });
+      .sort((a, b) => b.n.length - a.n.length || a.wi - b.wi);
+    const take = (list: typeof candidates, allowed: (n: string) => boolean) => {
+      const picked: typeof candidates = [];
+      for (const c of list) {
+        if (picked.length >= count) break;
+        // The same word twice on one line counts once.
+        if (allowed(c.n) && !picked.some((p) => p.n === c.n)) picked.push(c);
+      }
+      return picked;
+    };
+    let picked = take(candidates, (n) => !lastHidden.has(n));
+    if (picked.length === 0) {
+      // Nothing new on this line: bring back the words asked the fewest times,
+      // so a chorus rotates through its words instead of repeating one.
+      const leastAsked = [...candidates].sort(
+        (a, b) => (timesHidden.get(a.n) ?? 0) - (timesHidden.get(b.n) ?? 0)
+      );
+      picked = take(leastAsked, (n) => li - lastHidden.get(n)! > SPACING_LINES);
+    }
     picked
       .sort((a, b) => a.wi - b.wi)
-      .forEach(({ core, wi }) => blanks.push({ id: `${li}-${wi}`, line: li, word: wi, answer: core }));
+      .forEach(({ core, wi, n }) => {
+        lastHidden.set(n, li);
+        timesHidden.set(n, (timesHidden.get(n) ?? 0) + 1);
+        blanks.push({ id: `${li}-${wi}`, line: li, word: wi, answer: core });
+      });
   });
   return blanks;
 }

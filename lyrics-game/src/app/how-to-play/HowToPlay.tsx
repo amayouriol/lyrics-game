@@ -22,9 +22,9 @@ const singWait = SING_WAIT_MS / 1000;
 const grace = SING_GRACE_MS / 1000;
 
 const TYPE_LEVELS: Record<Difficulty, string> = {
-  easy: "One word every other line",
-  medium: "One word on every line",
-  hard: "Two words on every line",
+  easy: "One word on two lines out of three",
+  medium: "Two words on every line",
+  hard: "Three or four words on every line",
 };
 
 const SING_LEVELS: Record<Difficulty, string> = {
