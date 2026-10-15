@@ -1,9 +1,9 @@
+import { isTrackId } from "@/lib/track-id";
 import { type NextRequest, NextResponse } from "next/server";
 import { checkTracks, getCachedInfo, type LyricsLookup } from "@/lib/lyrics";
 import { getSession, hasActiveSession } from "@/lib/session";
 
 const MAX_BATCH = 10;
-const SPOTIFY_ID = /^[A-Za-z0-9]{22}$/;
 const MAX_TEXT = 300;
 const MAX_DURATION_MS = 3 * 60 * 60 * 1000;
 
@@ -20,7 +20,7 @@ function parseBody(body: unknown): LyricsLookup[] | null {
   for (const t of tracks) {
     if (!t || typeof t !== "object") return null;
     const { id, title, primaryArtist, album, durationMs } = t as Record<string, unknown>;
-    if (typeof id !== "string" || !SPOTIFY_ID.test(id)) return null;
+    if (typeof id !== "string" || !isTrackId(id)) return null;
     if (!isText(title, false) || !isText(primaryArtist, false) || !isText(album, true)) return null;
     if (typeof durationMs !== "number" || !(durationMs > 0) || durationMs > MAX_DURATION_MS) {
       return null;

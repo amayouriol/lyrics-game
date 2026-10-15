@@ -1,0 +1,105 @@
+import { NextResponse } from "next/server";
+import { addOwnSong, addOwnSongs } from "@/lib/own-library";
+import { getSession, hasActiveSession } from "@/lib/session";
+import type { Track } from "@/lib/spotify";
+import { ownIdFor } from "@/lib/track-id";
+import { setMatch, setMatchesIfMissing } from "@/lib/video-matches";
+import {
+  failureStatus,
+  formatDuration,
+  getPlaylistSongs,
+  getVideoSongs,
+  parseYouTubeLink,
+  YouTubeError,
+  type VideoSong,
+} from "@/lib/youtube";
+
+const VIDEO_ID = /^[\w-]{11}$/;
+
+function toTrack(song: VideoSong): Track {
+  return {
+    id: ownIdFor(song.videoId),
+    title: song.title,
+    artist: song.artist,
+    primaryArtist: song.primaryArtist,
+    album: "",
+    durationMs: song.durationMs,
+    duration: formatDuration(song.durationMs),
+    cover: song.cover,
+  };
+}
+
+/**
+ * Adds songs from YouTube to the library. The body is one of:
+ * - `{ link }`: a pasted address of a video (one song) or a playlist (all its songs);
+ * - `{ videoId }`: a video you picked from a search.
+ * The song's details come from YouTube here, not from the browser.
+ */
+export async function POST(request: Request) {
+  if (!hasActiveSession(await getSession())) {
+    return NextResponse.json({ error: "session_expired" }, { status: 401 });
+  }
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "invalid_body" }, { status: 400 });
+  }
+  const regionParam = typeof body.region === "string" ? body.region : "";
+  const region = /^[A-Z]{2}$/.test(regionParam) ? regionParam : null;
+
+  let videoId: string | undefined;
+  let playlistId: string | undefined;
+  if (typeof body.videoId === "string" && VIDEO_ID.test(body.videoId)) {
+    videoId = body.videoId;
+  } else if (typeof body.link === "string" && body.link.length <= 500) {
+    const parsed = parseYouTubeLink(body.link);
+    if (!parsed) return NextResponse.json({ error: "not_a_youtube_link" }, { status: 400 });
+    videoId = parsed.videoId;
+    playlistId = parsed.videoId ? undefined : parsed.playlistId;
+  } else {
+    return NextResponse.json({ error: "invalid_body" }, { status: 400 });
+  }
+
+  try {
+    if (playlistId) {
+      const playlist = await getPlaylistSongs(playlistId, region);
+      const tracks = playlist.songs.map(toTrack);
+      const { added } = await addOwnSongs(tracks, {
+        id: `pl-${playlistId}`,
+        name: playlist.name,
+        cover: playlist.cover,
+      });
+      await setMatchesIfMissing(
+        Object.fromEntries(
+          playlist.songs.map((s) => [
+            ownIdFor(s.videoId),
+            { videoId: s.videoId, title: s.title, channel: s.artist },
+          ])
+        )
+      );
+      return NextResponse.json({
+        kind: "playlist",
+        name: playlist.name,
+        added,
+        alreadyThere: tracks.length - added,
+        skipped: playlist.skipped,
+        tooLong: playlist.tooLong,
+      });
+    }
+
+    const [song] = await getVideoSongs([videoId!], region);
+    if (!song) return NextResponse.json({ error: "video_not_found" }, { status: 404 });
+    if (!song.playable) return NextResponse.json({ error: "not_playable" }, { status: 422 });
+    const track = toTrack(song);
+    const { added } = await addOwnSong(track);
+    await setMatch(track.id, { videoId: song.videoId, title: song.title, channel: song.artist });
+    return NextResponse.json({ kind: "song", track, added });
+  } catch (error) {
+    if (error instanceof YouTubeError) {
+      return NextResponse.json({ error: error.code }, { status: failureStatus(error.code) });
+    }
+    console.error("[/api/own/add]", error);
+    return NextResponse.json({ error: "failed" }, { status: 500 });
+  }
+}

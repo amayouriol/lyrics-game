@@ -1,9 +1,9 @@
+import { isTrackId } from "@/lib/track-id";
 import { NextResponse } from "next/server";
 import { getSaved, setSaved, type SavedListName, type SavedSong } from "@/lib/saved";
 import { getSession, getUserId } from "@/lib/session";
 import { SpotifySessionExpiredError } from "@/lib/spotify";
 
-const SPOTIFY_ID = /^[A-Za-z0-9]{22}$/;
 const LISTS = new Set<SavedListName>(["favorites", "later"]);
 
 function isText(value: unknown, max: number): value is string {
@@ -14,7 +14,7 @@ function parseSong(value: unknown): Omit<SavedSong, "addedAt"> | null {
   const t = value as Record<string, unknown> | null;
   if (!t || typeof t !== "object") return null;
   const { id, title, artist, primaryArtist, album, durationMs, duration, cover } = t;
-  if (typeof id !== "string" || !SPOTIFY_ID.test(id)) return null;
+  if (typeof id !== "string" || !isTrackId(id)) return null;
   if (!isText(title, 500) || !isText(artist, 500) || !isText(primaryArtist, 500)) return null;
   if (!isText(album, 500) || !isText(duration, 20)) return null;
   if (cover !== null && !isText(cover, 2_000)) return null;

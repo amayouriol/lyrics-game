@@ -1,13 +1,13 @@
+import { isTrackId } from "@/lib/track-id";
 import { NextResponse } from "next/server";
 import { getMatch, setMatch } from "@/lib/video-matches";
 
-const SPOTIFY_ID = /^[A-Za-z0-9]{22}$/;
 const VIDEO_ID = /^[\w-]{11}$/;
 
 /** The video chosen for this song, or null. */
 export async function GET(_request: Request, { params }: { params: Promise<{ trackId: string }> }) {
   const { trackId } = await params;
-  if (!SPOTIFY_ID.test(trackId)) {
+  if (!isTrackId(trackId)) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
   try {
@@ -21,7 +21,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tra
 /** Saves your choice of video for this song, replacing the old one. */
 export async function POST(request: Request, { params }: { params: Promise<{ trackId: string }> }) {
   const { trackId } = await params;
-  if (!SPOTIFY_ID.test(trackId)) {
+  if (!isTrackId(trackId)) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
   let body: Record<string, unknown>;

@@ -84,7 +84,12 @@ export function warningFor(
   // Lyrics channels ("Amazing Lyrics") often leave the word out of the title.
   if (looksLikeLyricsVideo(`${video.title} ${video.channel ?? ""}`)) return "lyrics";
   if (looksLikeOtherVersion(video.title, song.title)) return "version";
-  if (video.durationMs > 0 && Math.abs(video.durationMs - song.durationMs) > LENGTH_WARN_MS) {
+  // A song length of 0 means it isn't known (a song being added): nothing to compare.
+  if (
+    song.durationMs > 0 &&
+    video.durationMs > 0 &&
+    Math.abs(video.durationMs - song.durationMs) > LENGTH_WARN_MS
+  ) {
     return "length";
   }
   return null;
@@ -95,9 +100,11 @@ function score(c: VideoCandidate, songDurationMs: number): number {
   if (c.warning === "lyrics") points -= 6;
   else if (c.warning === "version") points -= 4;
   else if (c.warning === "length") points -= 2;
-  const gap = Math.abs(c.durationMs - songDurationMs);
-  if (gap <= 3_000) points += 2;
-  else if (gap <= 10_000) points += 1;
+  if (songDurationMs > 0) {
+    const gap = Math.abs(c.durationMs - songDurationMs);
+    if (gap <= 3_000) points += 2;
+    else if (gap <= 10_000) points += 1;
+  }
   return points;
 }
 
@@ -133,7 +140,7 @@ export function canPlayInGame(rules: PlayRules, region: string | null): boolean 
   return true;
 }
 
-export type YouTubeFailure = "no_key" | "quota" | "failed";
+export type YouTubeFailure = "no_key" | "quota" | "not_found" | "failed";
 
 export class YouTubeError extends Error {
   code: YouTubeFailure;
@@ -237,4 +244,197 @@ export async function searchVideos(
     };
   });
   return rankCandidates(candidates, song).slice(0, 3);
+}
+
+// ---- Adding songs from YouTube links and playlists ----
+
+const VIDEO_ID = /^[\w-]{11}$/;
+const PLAYLIST_ID = /^[\w-]{10,64}$/;
+const YOUTUBE_HOSTS = new Set([
+  "youtube.com",
+  "www.youtube.com",
+  "m.youtube.com",
+  "music.youtube.com",
+  "youtu.be",
+]);
+
+/** The video and/or playlist a pasted YouTube address points to; null if it isn't one. */
+export function parseYouTubeLink(text: string): { videoId?: string; playlistId?: string } | null {
+  let url: URL;
+  try {
+    url = new URL(text.trim());
+  } catch {
+    return null;
+  }
+  if (!/^https?:$/.test(url.protocol) || !YOUTUBE_HOSTS.has(url.hostname)) return null;
+
+  const list = url.searchParams.get("list");
+  const playlistId = list && PLAYLIST_ID.test(list) ? list : undefined;
+
+  let videoId: string | undefined;
+  if (url.hostname === "youtu.be") {
+    videoId = url.pathname.split("/")[1];
+  } else if (url.pathname === "/watch") {
+    videoId = url.searchParams.get("v") ?? undefined;
+  } else {
+    const m = /^\/(?:embed|shorts|live|v)\/([\w-]{11})/.exec(url.pathname);
+    videoId = m?.[1];
+  }
+  if (videoId && !VIDEO_ID.test(videoId)) videoId = undefined;
+
+  // A /playlist address is the whole playlist; a /watch address with a list is that one video.
+  if (url.pathname === "/playlist") return playlistId ? { playlistId } : null;
+  if (videoId) return { videoId, ...(playlistId ? { playlistId } : {}) };
+  return playlistId ? { playlistId } : null;
+}
+
+/** A video title without the labels that aren't part of the song's name. */
+export function cleanVideoTitle(title: string): string {
+  return title
+    .replace(
+      /\s*[([][^)\]]*\b(official|video|audio|lyrics?|visuali[sz]er|hd|4k|hq|mv|m\/v|clip|letra)\b[^)\]]*[)\]]/gi,
+      ""
+    )
+    .replace(/\s*[|｜].*$/, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
+/**
+ * A song's title and artist from its video: a "Name - Topic" channel gives
+ * the artist outright; otherwise "Artist - Title" is split, else the channel
+ * is the artist.
+ */
+export function songFromVideo(video: { title: string; channel: string }): {
+  title: string;
+  artist: string;
+  primaryArtist: string;
+} {
+  const cleaned = cleanVideoTitle(video.title);
+  let title = cleaned;
+  let artist = video.channel.replace(/\s*-\s*Topic$/i, "").replace(/VEVO$/i, "").trim();
+  if (!/\s-\s+Topic$/i.test(video.channel)) {
+    const split = /^(.+?)\s+[-–—]\s+(.+)$/.exec(cleaned);
+    if (split) {
+      artist = split[1].trim();
+      title = split[2].trim();
+    }
+  }
+  const primaryArtist = artist.split(/\s*(?:,|&|\bfeat\.?\s|\bft\.?\s|\bx\b)\s*/i)[0].trim() || artist;
+  return { title: title || video.title, artist: artist || video.channel, primaryArtist };
+}
+
+export function formatDuration(ms: number): string {
+  const total = Math.round(ms / 1000);
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
+}
+
+/** What the library keeps for a song that comes from a video. */
+export interface VideoSong {
+  videoId: string;
+  title: string;
+  artist: string;
+  primaryArtist: string;
+  durationMs: number;
+  /** The video's picture: album art on a Topic upload. */
+  cover: string | null;
+  /** Whether YouTube says it can play in the game here (embeddable, public, not blocked in the country). */
+  playable: boolean;
+}
+
+interface VideoItem {
+  id: string;
+  snippet?: {
+    title?: string;
+    channelTitle?: string;
+    thumbnails?: { medium?: { url?: string }; high?: { url?: string }; default?: { url?: string } };
+  };
+  contentDetails?: { duration?: string; regionRestriction?: PlayRules["regionRestriction"] };
+  status?: { embeddable?: boolean; privacyStatus?: string };
+}
+
+/** Details for up to 50 videos at once (1 unit of the free quota). */
+export async function getVideoSongs(ids: string[], region: string | null = null): Promise<VideoSong[]> {
+  if (ids.length === 0) return [];
+  const got = (await call("videos", {
+    part: "snippet,contentDetails,status",
+    id: ids.slice(0, 50).join(","),
+  })) as { items?: VideoItem[] };
+  return (got.items ?? []).map((v) => {
+    const channel = decodeEntities(v.snippet?.channelTitle ?? "");
+    const parsed = songFromVideo({ title: decodeEntities(v.snippet?.title ?? ""), channel });
+    const pics = v.snippet?.thumbnails;
+    return {
+      videoId: v.id,
+      ...parsed,
+      durationMs: parseDuration(v.contentDetails?.duration ?? ""),
+      cover: pics?.medium?.url ?? pics?.high?.url ?? pics?.default?.url ?? null,
+      playable: canPlayInGame(
+        {
+          embeddable: v.status?.embeddable,
+          privacyStatus: v.status?.privacyStatus,
+          regionRestriction: v.contentDetails?.regionRestriction,
+        },
+        region
+      ),
+    };
+  });
+}
+
+/** A playlist reads at most this many songs: 4 pages of 50. */
+export const MAX_PLAYLIST_SONGS = 200;
+
+/** A public or unlisted playlist: its name, picture and songs, in order. */
+export async function getPlaylistSongs(
+  playlistId: string,
+  region: string | null = null
+): Promise<{ name: string; cover: string | null; songs: VideoSong[]; skipped: number; tooLong: boolean }> {
+  const info = (await call("playlists", { part: "snippet", id: playlistId })) as {
+    items?: { snippet?: { title?: string; thumbnails?: { medium?: { url?: string } } } }[];
+  };
+  const head = info.items?.[0];
+  if (!head) throw new YouTubeError("not_found");
+
+  const ids: string[] = [];
+  let pageToken = "";
+  let tooLong = false;
+  while (true) {
+    const page = (await call("playlistItems", {
+      part: "contentDetails",
+      maxResults: "50",
+      playlistId,
+      ...(pageToken ? { pageToken } : {}),
+    })) as { items?: { contentDetails?: { videoId?: string } }[]; nextPageToken?: string };
+    for (const item of page.items ?? []) {
+      const id = item.contentDetails?.videoId;
+      if (id && VIDEO_ID.test(id)) ids.push(id);
+    }
+    if (!page.nextPageToken) break;
+    if (ids.length >= MAX_PLAYLIST_SONGS) {
+      tooLong = true;
+      break;
+    }
+    pageToken = page.nextPageToken;
+  }
+
+  const wanted = ids.slice(0, MAX_PLAYLIST_SONGS);
+  const songs: VideoSong[] = [];
+  for (let i = 0; i < wanted.length; i += 50) {
+    songs.push(...(await getVideoSongs(wanted.slice(i, i + 50), region)));
+  }
+  // YouTube drops private and deleted videos from the details, so fewer come back than were listed.
+  const byId = new Map(songs.map((s) => [s.videoId, s]));
+  const ordered = wanted.flatMap((id) => (byId.has(id) && byId.get(id)!.playable ? [byId.get(id)!] : []));
+  return {
+    name: decodeEntities(head.snippet?.title ?? "YouTube playlist"),
+    cover: head.snippet?.thumbnails?.medium?.url ?? null,
+    songs: ordered,
+    skipped: wanted.length - ordered.length,
+    tooLong,
+  };
+}
+
+/** The HTTP status a failure is answered with. */
+export function failureStatus(code: YouTubeFailure): number {
+  return code === "no_key" ? 500 : code === "not_found" ? 404 : 502;
 }

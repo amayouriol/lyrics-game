@@ -1,7 +1,6 @@
+import { isTrackId } from "@/lib/track-id";
 import { NextResponse } from "next/server";
 import { searchVideos, YouTubeError } from "@/lib/youtube";
-
-const SPOTIFY_ID = /^[A-Za-z0-9]{22}$/;
 
 /**
  * The best three videos for a song. Each search uses part of YouTube's free
@@ -9,7 +8,7 @@ const SPOTIFY_ID = /^[A-Za-z0-9]{22}$/;
  */
 export async function GET(request: Request, { params }: { params: Promise<{ trackId: string }> }) {
   const { trackId } = await params;
-  if (!SPOTIFY_ID.test(trackId)) {
+  if (!isTrackId(trackId)) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
   const query = new URL(request.url).searchParams;

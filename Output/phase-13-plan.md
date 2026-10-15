@@ -40,10 +40,12 @@ Derived from: Output/phase-13-spec.md. Review before building.
 - Changed from the spec: "Wrong video" doesn't swap in place; it opens the song screen's picker (your game in progress isn't kept). "Play again" on the home page doesn't know your source choice, so it follows the saved video (YouTube) if the song has one.
 
 ## 4. Own library list
-- [ ] The app's own list, started from your cached Spotify library (no new Spotify requests).
+Built in three parts, each its own commit (4a behind the scenes, 4b the library, 4c the add boxes).
+- [ ] The app's own list, started from your cached Spotify library (no new Spotify requests). *Decision 2026-10-14: your Spotify lists keep coming from their saved copy in the "From Spotify" tab, unchanged; the app's own list holds what comes from YouTube. Making the library work without a Spotify login is step 5.*
 - [ ] Import a pasted YouTube playlist (public or unlisted).
 - [ ] "Add a song": a YouTube link, or a title and artist.
 - [ ] Library and playlist pages read from the own list; Spotify playlists still show as before.
+- **4a done (2026-10-14), behind the scenes:** a song added from YouTube gets the id `yt-<video id>` (`track-id.ts`); every route that checked for a Spotify id now accepts both (games, saved, lyrics, lyrics check, video). `own-library.ts` keeps added songs and playlists in `.data/own-library.json`. The lyrics route finds an added song in that file instead of asking Spotify. `youtube.ts` reads pasted links, a video's details, and a playlist (up to 200 songs, public or unlisted), and works out a title and artist from a video. Routes: `/api/own/add` (a link or a picked video), `/api/own/search` (title and artist), `/api/own/lists`. Saved choices and the own list are read from their files each time (`freshJsonFile`). Tried against the real YouTube: a video's details come back right, and a 181-song playlist reads in. Known limit: a title like "Song - Artist" is read as "Artist - Song", so those songs show as having no synced lyrics; Topic uploads are clean. 17 new checks.
 
 ## 5. Spotify optional, README, play-test
 - [ ] The app opens and plays matched songs without a Spotify login.

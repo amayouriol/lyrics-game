@@ -8,6 +8,44 @@ const DATA_DIR = path.join(process.cwd(), ".data");
  * the lyrics cache, it's never treated as empty when it can't be read
  * (writing over it would wipe it), and a failed write is reported.
  */
+/**
+ * Like `jsonFile`, but read from the file on every request. Use it for data
+ * that one route writes and a page or another route reads: while the dev
+ * server runs they can each hold their own copy of a module, so a copy kept
+ * in memory goes stale (a saved YouTube video never reached the play page,
+ * 2026-10-14). Reads are of small files; writes still go one at a time.
+ */
+export function freshJsonFile<T extends object>(name: string, empty: () => T) {
+  const file = path.join(DATA_DIR, name);
+  let queue: Promise<unknown> = Promise.resolve();
+
+  async function read(): Promise<T> {
+    try {
+      return JSON.parse(await fs.readFile(file, "utf8")) as T;
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+      return empty();
+    }
+  }
+
+  function update<R>(change: (current: T) => { next: T; result: R }): Promise<R> {
+    const run = queue.then(async () => {
+      const current = await read();
+      const { next, result } = change(current);
+      if (next !== current) {
+        await fs.mkdir(DATA_DIR, { recursive: true });
+        await fs.writeFile(`${file}.tmp`, JSON.stringify(next), "utf8");
+        await fs.rename(`${file}.tmp`, file);
+      }
+      return result;
+    });
+    queue = run.catch(() => {});
+    return run;
+  }
+
+  return { read, update };
+}
+
 export function jsonFile<T extends object>(name: string, empty: () => T) {
   const file = path.join(DATA_DIR, name);
   let data: T | null = null;

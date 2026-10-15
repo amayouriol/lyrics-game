@@ -1,3 +1,4 @@
+import { isTrackId } from "@/lib/track-id";
 import { NextResponse } from "next/server";
 import { isDifficulty, MAX_TRIES } from "@/lib/game";
 import { saveGame } from "@/lib/games";
@@ -6,7 +7,6 @@ import { finishedSong } from "@/lib/saved";
 import { getSession, getUserId } from "@/lib/session";
 import { SpotifySessionExpiredError } from "@/lib/spotify";
 
-const SPOTIFY_ID = /^[A-Za-z0-9]{22}$/;
 const GAME_ID = /^[A-Za-z0-9-]{8,64}$/;
 const RESULTS = new Set(["right", "wrong", "revealed"]);
 /** Far more blanks than any song has, just to bound the body. */
@@ -47,7 +47,7 @@ function parseGame(body: unknown) {
   const s = song as Record<string, unknown> | null;
   if (!s || typeof s !== "object") return null;
   const { trackId, title, artist, cover, durationMs } = s;
-  if (typeof trackId !== "string" || !SPOTIFY_ID.test(trackId)) return null;
+  if (typeof trackId !== "string" || !isTrackId(trackId)) return null;
   if (!isText(title, 500) || !isText(artist, 500)) return null;
   if (cover !== null && !isText(cover, 2_000)) return null;
   if (typeof durationMs !== "number" || !(durationMs >= 0)) return null;
