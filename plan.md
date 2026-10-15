@@ -76,6 +76,14 @@ Design by Claude (mockup approved 2026-10-10), with your requests: bigger player
 - [x] Home: notes closer to the record, bigger totals, "in N songs" on Words that keep dropping
 - [x] Your play-test on your account (2026-10-11, all good)
 
+## Phase 13: Play songs from YouTube — planned 2026-10-14 (Output/phase-13-spec.md, phase-13-plan.md)
+Why: Spotify's limits. Spotify stays working next to it; removing it is decided later.
+- [ ] A player layer, with Spotify's player behind it and no visible change
+- [ ] YouTube's official player (small, in the corner), with a wait for ads
+- [ ] Match each song to a video once (Topic uploads preferred, lyrics videos warned), saved forever; "Wrong video" button
+- [ ] The app's own song list: your cached Spotify library, pasted YouTube playlists, "Add a song"
+- [ ] Spotify optional; README note; your play-test
+
 ## Explicitly out of scope for this plan
 Anything from spec.md's V2 list stays out unless you decide otherwise first: sharing with other people or multi-account login, an unsynced-lyrics fallback mode, score history or leaderboards.
 
