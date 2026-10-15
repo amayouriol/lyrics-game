@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { loadYouTubeApi, YT_STATE, type YTPlayer } from "./youtubeApi";
+import { createPlayer, YT_STATE, type YTPlayer } from "./youtubeApi";
 import type { Player, PlayerOptions, PlayerStatus } from "./playerTypes";
 
 /**
@@ -84,7 +84,6 @@ export function useYouTubePlayer({
     if (!enabled || !videoId) return;
     let cancelled = false;
     let poll: ReturnType<typeof setInterval> | undefined;
-    let readyTimeout: ReturnType<typeof setTimeout> | undefined;
     let player: YTPlayer | null = null;
     let adLogged = false;
 
@@ -169,51 +168,50 @@ export function useYouTubePlayer({
       }
     };
 
+    const readyTimeout = setTimeout(() => {
+      if (!playerRef.current) fail("start_failed");
+    }, READY_TIMEOUT_MS);
+
     (async () => {
-      let YT;
       try {
-        YT = await loadYouTubeApi();
+        const created = await createPlayer(slot, {
+          width: PLAYER_WIDTH,
+          height: PLAYER_HEIGHT,
+          videoId,
+          playerVars: {
+            autoplay: 1,
+            controls: 0,
+            disablekb: 1,
+            fs: 0,
+            playsinline: 1,
+            rel: 0,
+            origin: window.location.origin,
+          },
+          events: {
+            onReady: (e) => {
+              clearTimeout(readyTimeout);
+              if (cancelled) return;
+              playerRef.current = e.target;
+              e.target.playVideo();
+              poll = setInterval(sync, POLL_MS);
+            },
+            onStateChange: sync,
+            onError: (e) => {
+              // 2: bad video id; 5: player problem; 100: removed or private;
+              // 101 and 150: the owner doesn't allow it to play in other sites.
+              console.info(`[youtube] error ${e.data}`);
+              fail(e.data === 5 ? "start_failed" : "video_unavailable", `YouTube error ${e.data}`);
+            },
+            onAutoplayBlocked: () => {
+              if (!cancelled) setStatus({ kind: "blocked" });
+            },
+          },
+        });
+        if (cancelled) created.destroy();
+        else player = created;
       } catch {
-        return fail("start_failed");
+        fail("start_failed");
       }
-      if (cancelled) return;
-
-      readyTimeout = setTimeout(() => {
-        if (!playerRef.current) fail("start_failed");
-      }, READY_TIMEOUT_MS);
-
-      player = new YT.Player(slot, {
-        width: PLAYER_WIDTH,
-        height: PLAYER_HEIGHT,
-        videoId,
-        playerVars: {
-          autoplay: 1,
-          controls: 0,
-          disablekb: 1,
-          fs: 0,
-          playsinline: 1,
-          rel: 0,
-          origin: window.location.origin,
-        },
-        events: {
-          onReady: (e) => {
-            clearTimeout(readyTimeout);
-            if (cancelled) return;
-            playerRef.current = e.target;            e.target.playVideo();
-            poll = setInterval(sync, POLL_MS);
-          },
-          onStateChange: sync,
-          onError: (e) => {
-            // 2: bad video id; 5: player problem; 100: removed or private;
-            // 101 and 150: the owner doesn't allow it to play in other sites.
-            console.info(`[youtube] error ${e.data}`);
-            fail(e.data === 5 ? "start_failed" : "video_unavailable", `YouTube error ${e.data}`);
-          },
-          onAutoplayBlocked: () => {
-            if (!cancelled) setStatus({ kind: "blocked" });
-          },
-        },
-      });
     })();
 
     return () => {

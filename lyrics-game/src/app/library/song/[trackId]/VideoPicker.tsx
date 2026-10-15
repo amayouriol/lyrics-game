@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { VideoCandidate, VideoWarning } from "@/lib/youtube";
 import type { VideoMatch } from "@/lib/video-matches";
-import { loadYouTubeApi, type YTPlayer } from "./play/youtubeApi";
+import { createPlayer, type YTPlayer } from "./play/youtubeApi";
 import type { TrackSummary } from "./loadSong";
 import styles from "./song.module.css";
 
@@ -40,21 +40,21 @@ function VideoCheck({ videoId, onResult }: { videoId: string; onResult: (result:
     const slot = document.createElement("div");
     box.current?.appendChild(slot);
     const giveUp = setTimeout(() => finish("failed"), GIVE_UP_MS);
-    loadYouTubeApi()
-      .then((YT) => {
-        if (finished) return;
-        player = new YT.Player(slot, {
-          width: 356,
-          height: 200,
-          videoId,
-          playerVars: { controls: 0, disablekb: 1, rel: 0, playsinline: 1, origin: window.location.origin },
-          events: {
-            onReady: () => {
-              settle = setTimeout(() => finish("ok"), SETTLE_MS);
-            },
-            onError: (e) => finish(e.data === 5 ? "failed" : "unavailable"),
-          },
-        });
+    createPlayer(slot, {
+      width: 356,
+      height: 200,
+      videoId,
+      playerVars: { controls: 0, disablekb: 1, rel: 0, playsinline: 1, origin: window.location.origin },
+      events: {
+        onReady: () => {
+          settle = setTimeout(() => finish("ok"), SETTLE_MS);
+        },
+        onError: (e) => finish(e.data === 5 ? "failed" : "unavailable"),
+      },
+    })
+      .then((created) => {
+        if (finished) created.destroy();
+        else player = created;
       })
       .catch(() => finish("failed"));
 
