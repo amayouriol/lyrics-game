@@ -76,13 +76,14 @@ Design by Claude (mockup approved 2026-10-10), with your requests: bigger player
 - [x] Home: notes closer to the record, bigger totals, "in N songs" on Words that keep dropping
 - [x] Your play-test on your account (2026-10-11, all good)
 
-## Phase 13: Play songs from YouTube — planned 2026-10-14 (Output/phase-13-spec.md, phase-13-plan.md)
-Why: Spotify's limits. Spotify stays working next to it; removing it is decided later.
-- [ ] A player layer, with Spotify's player behind it and no visible change
-- [ ] YouTube's official player (small, in the corner), with a wait for ads
-- [ ] Match each song to a video once (Topic uploads preferred, lyrics videos warned), saved forever; "Wrong video" button
-- [ ] The app's own song list: your cached Spotify library, pasted YouTube playlists, "Add a song"
-- [ ] Spotify optional; README note; your play-test
+## Phase 13: Play songs from YouTube — DONE 2026-10-15 (Output/phase-13-spec.md, phase-13-plan.md)
+Why: Spotify's limits. Spotify still works next to it; removing it was left for later.
+- [x] A player layer, with Spotify's player behind it and no visible change
+- [x] YouTube's official player (356 × 200, in the corner), with a wait for ads, captions switched off, and a frame on localhost because YouTube refuses numbered addresses like 127.0.0.1
+- [x] Match each song to a video once, checked to play before it's saved (Topic uploads preferred, lyrics videos warned, videos blocked in your country left out); "Wrong video?" link
+- [x] The app's own song list: a From YouTube tab, add by link, by title and artist, or a whole public playlist
+- [x] Spotify optional: "use the app without Spotify" on this computer, the saved copy of your library; README note
+- [x] Your play-test on your account (2026-10-15, all good)
 
 ## Explicitly out of scope for this plan
 Anything from spec.md's V2 list stays out unless you decide otherwise first: sharing with other people or multi-account login, an unsynced-lyrics fallback mode, score history or leaderboards.

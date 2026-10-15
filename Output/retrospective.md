@@ -73,3 +73,17 @@ AI makes writing code fast; the slow, expensive parts are **deciding what to bui
 3. Write a real `lyrics-game/CLAUDE.md` (commands, structure, workflow rules).
 4. Add tests for scoring, word hiding and progress.
 5. Before Phase 8: spike any new external dependency first, and open the phase as a branch + PR.
+
+## Phase 13 (YouTube) — what went wrong, and what to do next time
+Every problem below was found by playing on a real screen, none by lint or tests. Most cost a round trip with you.
+
+| What happened | Cause | Habit to keep |
+|---|---|---|
+| Every video said "can't be played here" | YouTube refuses pages whose address is a number (127.0.0.1); Spotify's login forces that address | Test the outside service from the address the app really runs on, before building on it |
+| A chosen video was ignored and Spotify played | Two parts of the dev server each kept their own copy of the saved matches | Data written by one route and read by another is read from the file, not from memory |
+| "Embeddable" videos still failed | YouTube's flag is a hint, not a promise | Check with the real player before saving a choice |
+| Captions gave the lyrics away, and came back after a pause | A personal YouTube setting overrides the embed; the module reloads on resume | Re-assert it while playing, and ask the person to test pause and resume |
+| The player was 320 × 180, under YouTube's 200-pixel rule | I quoted the rule and then didn't apply it | Re-read a rule against the number just chosen |
+| Lists of songs from music videos have swapped names | "Song - Artist" and "Artist - Song" look the same | Topic uploads are clean; a swap button could come later |
+
+What worked: building in small steps (player layer first, then one hard-coded video), a temporary test page for each risky piece (deleted afterwards), and asking for a screenshot at every failure.
