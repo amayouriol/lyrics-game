@@ -24,6 +24,8 @@ export interface PlayerOptions {
   durationMs: number;
   lineTimesMs: number[];
   onEnded: () => void;
+  /** The YouTube video to play; null or missing plays the song on Spotify. */
+  videoId?: string | null;
   /** False while another player is in use for this song; this one stays idle. Default true. */
   enabled?: boolean;
 }

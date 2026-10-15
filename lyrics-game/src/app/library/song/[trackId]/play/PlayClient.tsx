@@ -36,6 +36,7 @@ import { PlayAgain, ResultTile, Verdict } from "./ResultParts";
 import { SingResults, SingScreen, type SingGameResult } from "./SingScreen";
 import { LISTEN_LANG } from "./speech";
 import { usePlayback } from "./usePlayback";
+import { WrongVideoLink } from "./WrongVideoLink";
 import type { PlayerError } from "./playerTypes";
 import styles from "./play.module.css";
 
@@ -83,12 +84,15 @@ export function PlayClient({
   from,
   initialLevel,
   initialMode,
+  videoId,
   profile,
 }: {
   trackId: string;
   from: string | null;
   initialLevel: Difficulty;
   initialMode: PlayMode;
+  /** The YouTube video to play, or null to play on Spotify. */
+  videoId: string | null;
   /** For the top bar on the results screen. */
   profile: Profile;
 }) {
@@ -173,6 +177,7 @@ export function PlayClient({
           listenLang={LISTEN_LANG[language ?? "en"]}
           backHref={backHref}
           errors={ERRORS}
+          videoId={videoId}
           onFinished={setGameResult}
         />
       );
@@ -187,6 +192,7 @@ export function PlayClient({
         blanks={song.blanks[level]}
         level={level}
         backHref={backHref}
+        videoId={videoId}
         onFinished={setGameResult}
       />
     );
@@ -233,6 +239,7 @@ function PlayScreen({
   blanks,
   level,
   backHref,
+  videoId,
   onFinished,
 }: {
   trackId: string;
@@ -241,6 +248,8 @@ function PlayScreen({
   blanks: Blank[];
   level: Difficulty;
   backHref: string;
+  /** The YouTube video to play; null plays the song on Spotify. */
+  videoId: string | null;
   onFinished: (result: GameResult) => void;
 }) {
   const router = useRouter();
@@ -279,7 +288,7 @@ function PlayScreen({
     stop,
     setHoldBeforeMs,
     getPositionMs,
-  } = usePlayback({ trackId, durationMs: track.durationMs, lineTimesMs, onEnded });
+  } = usePlayback({ trackId, videoId, durationMs: track.durationMs, lineTimesMs, onEnded });
 
   const currentLine = lineIndex - 1;
   const activeId = activeBlankId(blanks, answers, currentLine);
@@ -509,6 +518,7 @@ function PlayScreen({
 
   return (
     <main className={styles.main}>
+      {videoId && <WrongVideoLink href={backHref} />}
       <div className={styles.body}>
         <div className={styles.topBar}>
           <button className={styles.quit} onClick={quit}>

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { isDifficulty } from "@/lib/game";
 import { getProfile, getSession, hasActiveSession } from "@/lib/session";
+import { getMatch } from "@/lib/video-matches";
 import { PlayClient } from "./PlayClient";
 
 // No header on the play screen, per the design.
@@ -9,7 +10,7 @@ export default async function PlayPage({
   searchParams,
 }: {
   params: Promise<{ trackId: string }>;
-  searchParams: Promise<{ from?: string; level?: string; mode?: string }>;
+  searchParams: Promise<{ from?: string; level?: string; mode?: string; source?: string }>;
 }) {
   const session = await getSession();
   if (!hasActiveSession(session)) {
@@ -17,7 +18,10 @@ export default async function PlayPage({
   }
 
   const { trackId } = await params;
-  const { from, level, mode } = await searchParams;
+  const { from, level, mode, source } = await searchParams;
+
+  // YouTube when the song has a chosen video (unless Spotify was picked); else Spotify.
+  const match = source === "spotify" ? null : await getMatch(trackId).catch(() => null);
 
   return (
     <PlayClient
@@ -25,6 +29,7 @@ export default async function PlayPage({
       from={from ?? null}
       initialLevel={isDifficulty(level) ? level : "medium"}
       initialMode={mode === "sing" ? "sing" : "type"}
+      videoId={match?.videoId ?? null}
       profile={getProfile(session)}
     />
   );

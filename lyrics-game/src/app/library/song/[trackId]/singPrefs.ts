@@ -55,6 +55,17 @@ export function usePlayMode(): [PlayMode, (mode: PlayMode) => void] {
   return [mode, (next) => write(MODE_KEY, next)];
 }
 
+const SOURCE_KEY = "lyrics-game:play-source";
+
+export type PlaySource = "youtube" | "spotify";
+
+/** Where music plays from, if you picked: null means YouTube when a video is chosen, else Spotify. */
+export function usePlaySource(): [PlaySource | null, (source: PlaySource) => void] {
+  const stored = useStored(SOURCE_KEY);
+  const source = stored === "youtube" || stored === "spotify" ? stored : null;
+  return [source, (next) => write(SOURCE_KEY, next)];
+}
+
 /** Whether you've read the headphones note and allowed the microphone once. */
 export function useSingIntroSeen(): [boolean, () => void] {
   return [useStored(INTRO_KEY) === "1", () => write(INTRO_KEY, "1")];

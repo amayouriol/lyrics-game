@@ -4,9 +4,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { loadYouTubeApi, YT_STATE, type YTPlayer } from "./youtubeApi";
 import type { Player, PlayerOptions, PlayerStatus } from "./playerTypes";
 
-/** The player sits small in the bottom-right corner. YouTube's rules: never hidden or covered. */
+/**
+ * The player sits small in the bottom-right corner, above the game's player
+ * bar (88 px tall). YouTube's rules: never hidden or covered. The "Wrong
+ * video?" link (wrongVideo.module.css) sits just above it.
+ */
 const PLAYER_WIDTH = 320;
 const PLAYER_HEIGHT = 180;
+const PLAYER_BOTTOM = 112;
 const READY_TIMEOUT_MS = 12_000;
 const POLL_MS = 250;
 /** YouTube pauses almost at once, so the wait before a line can start later than Spotify's. */
@@ -89,7 +94,7 @@ export function useYouTubePlayer({
     clockRef.current = { positionMs: 0, at: performance.now(), paused: true };
 
     const host = document.createElement("div");
-    host.style.cssText = `position:fixed;right:16px;bottom:16px;width:${PLAYER_WIDTH}px;height:${PLAYER_HEIGHT}px;z-index:50;background:#000;border-radius:8px;overflow:hidden;`;
+    host.style.cssText = `position:fixed;right:16px;bottom:${PLAYER_BOTTOM}px;width:${PLAYER_WIDTH}px;height:${PLAYER_HEIGHT}px;z-index:50;background:#000;border-radius:8px;overflow:hidden;`;
     const slot = document.createElement("div");
     host.appendChild(slot);
     document.body.appendChild(host);

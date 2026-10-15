@@ -26,10 +26,13 @@ Derived from: Output/phase-13-spec.md. Review before building.
 - Not tried on the real game screens (they need your Spotify login): the corner player's position over the bottom player bar is unchecked.
 
 ## 3. Matching songs to videos
-- [ ] Search with the title and artist, prefer Topic / auto-generated uploads, skip lyrics-video words, show the top 3 with warnings.
-- [ ] Save your pick; "Wrong video" swaps it.
-- [ ] Per-song source: YouTube if matched, else Spotify; a setting to force one.
-- [ ] `npm test`: title cleaning and the lyrics-video warning words.
+- [x] Search with the title and artist, prefer Topic / auto-generated uploads, skip lyrics-video words, show the top 3 with warnings.
+- [x] Save your pick; "Wrong video" swaps it.
+- [x] Per-song source: YouTube if matched, else Spotify; a setting to force one.
+- [x] `npm test`: title cleaning and the lyrics-video warning words.
+- Done (2026-10-14): `src/lib/youtube.ts` (search and ranking rules), `video-matches.ts` (saved in `.data/video-matches.json`), routes `/api/video/[trackId]` (read, save) and `/api/video/[trackId]/search`. Song screen has a "Music from" control, YouTube or Spotify, and a picker with three videos, each with a warning when it looks like a lyrics video, another version, or a different length; Topic uploads rank first. In the game, "Wrong video?" above the corner player leads back to the song screen to pick another. Your choice of source is remembered in this browser; with no choice, a song with a video plays on YouTube, else Spotify. 11 new checks (63 in all); lint and build pass.
+- Tried for real (2026-10-14): a search for "Never Gonna Give You Up" returned the Topic upload first, the official video second, and a "Lyrics" channel third (flagged after a fix: lyrics channels count even when the title doesn't say it); saving and reading a choice works, and a bad video id is refused. The test entry was deleted from `.data/`. The song screen and the game screens themselves need your Spotify login, so I haven't seen them: how the picker looks, and where the corner player and "Wrong video?" sit over the player bar, are for your play-test.
+- Changed from the spec: "Wrong video" doesn't swap in place; it opens the song screen's picker (your game in progress isn't kept). "Play again" on the home page doesn't know your source choice, so it follows the saved video (YouTube) if the song has one.
 
 ## 4. Own library list
 - [ ] The app's own list, started from your cached Spotify library (no new Spotify requests).

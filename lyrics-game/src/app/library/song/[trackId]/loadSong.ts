@@ -62,10 +62,13 @@ export function playHref(
   trackId: string,
   from: string | null,
   level: Difficulty,
-  mode: PlayMode = "type"
+  mode: PlayMode = "type",
+  /** Left out: YouTube when the song has a chosen video, else Spotify. */
+  source?: "youtube" | "spotify"
 ): string {
   const params = new URLSearchParams({ level });
   if (mode === "sing") params.set("mode", "sing");
+  if (source) params.set("source", source);
   if (from) params.set("from", from);
   return `/library/song/${trackId}/play?${params}`;
 }

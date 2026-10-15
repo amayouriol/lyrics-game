@@ -10,7 +10,15 @@ import { SING_DESCRIPTIONS, singLines } from "@/lib/sing";
 import { SaveButtons } from "../../SaveButtons";
 import { loadSong, playHref, type SongResult } from "./loadSong";
 import { askForMic, canRecognizeSpeech, micAccess } from "./play/speech";
-import { usePlayMode, useSingIntroSeen, useSingLanguage, type PlayMode } from "./singPrefs";
+import {
+  usePlayMode,
+  usePlaySource,
+  useSingIntroSeen,
+  useSingLanguage,
+  type PlayMode,
+  type PlaySource,
+} from "./singPrefs";
+import { useVideoMatch, VideoPicker } from "./VideoPicker";
 import styles from "./song.module.css";
 
 const noSubscribe = () => () => {};
@@ -52,8 +60,15 @@ export function SongClient({ trackId, from }: { trackId: string; from: string | 
     song?.kind === "ready" ? song.language : null
   );
   const mic = useMic(mode === "sing");
+  const [chosenSource, setSource] = usePlaySource();
+  const [match, setMatch] = useVideoMatch(trackId);
+  // Your pick if you made one, else YouTube once the song has a video, else Spotify.
+  const source: PlaySource = chosenSource ?? (match ? "youtube" : "spotify");
+  const waitingForVideo = source === "youtube" && !match;
   const canPlay =
-    mode === "sing" ? singCount > 0 && mic.ready && language !== null : blankCount > 0;
+    match !== undefined &&
+    !waitingForVideo &&
+    (mode === "sing" ? singCount > 0 && mic.ready && language !== null : blankCount > 0);
   const playLabel = mode === "sing" ? "Sing the song" : "Type the lyrics";
   const playIcon = mode === "sing" ? <MicIcon /> : <ArrowIcon />;
 
@@ -152,6 +167,36 @@ export function SongClient({ trackId, from }: { trackId: string; from: string | 
                 </div>
               </div>
 
+              <div className={styles.control}>
+                <div className={styles.controlTitle}>
+                  <span>Music from</span>
+                  <small>
+                    {source === "youtube" ? "A short ad can play first" : "Needs Spotify Premium"}
+                  </small>
+                </div>
+                <div className={styles.segmented}>
+                  {(["youtube", "spotify"] as const).map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      className={s === source ? styles.on : ""}
+                      aria-pressed={s === source}
+                      onClick={() => setSource(s)}
+                    >
+                      {s === "youtube" ? "YouTube" : "Spotify"}
+                    </button>
+                  ))}
+                </div>
+                {source === "youtube" && (
+                  <VideoPicker
+                    trackId={trackId}
+                    track={song.track}
+                    match={match}
+                    onChoose={setMatch}
+                  />
+                )}
+              </div>
+
               <div className={styles.explanation}>
                 <strong>
                   {mode === "sing" ? SING_DESCRIPTIONS[level] : DIFFICULTIES[level].description}
@@ -175,7 +220,7 @@ export function SongClient({ trackId, from }: { trackId: string; from: string | 
 
               <div className={styles.actions}>
                 {canPlay ? (
-                  <Link href={playHref(trackId, from, level, mode)} className={styles.start}>
+                  <Link href={playHref(trackId, from, level, mode, source)} className={styles.start}>
                     {playLabel}
                     <i>{playIcon}</i>
                   </Link>

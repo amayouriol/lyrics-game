@@ -34,6 +34,7 @@ import { useLineGlide, useSweep } from "./lyricsMotion";
 import type { ListeningProblem } from "./useListening";
 import { useListening } from "./useListening";
 import { usePlayback } from "./usePlayback";
+import { WrongVideoLink } from "./WrongVideoLink";
 import type { PlayerError } from "./playerTypes";
 import { PlayAgain, ResultTile, Verdict } from "./ResultParts";
 import styles from "./play.module.css";
@@ -72,11 +73,14 @@ export function SingScreen({
   listenLang,
   backHref,
   errors,
+  videoId,
   onFinished,
 }: {
   trackId: string;
   track: TrackSummary;
   lines: TimedLine[];
+  /** The YouTube video to play; null plays the song on Spotify. */
+  videoId: string | null;
   /** Per line, which words are sung for points. */
   singable: boolean[][];
   level: Difficulty;
@@ -107,7 +111,7 @@ export function SingScreen({
     stop,
     setHoldBeforeMs,
     getPositionMs,
-  } = usePlayback({ trackId, durationMs: track.durationMs, lineTimesMs, onEnded });
+  } = usePlayback({ trackId, videoId, durationMs: track.durationMs, lineTimesMs, onEnded });
 
   // Listening goes on while the song waits for you (Easy).
   const playing = status.kind === "playing" && (!paused || held);
@@ -278,6 +282,7 @@ export function SingScreen({
 
   return (
     <main className={styles.main}>
+      {videoId && <WrongVideoLink href={backHref} />}
       <div className={styles.body}>
         <div className={styles.topBar}>
           <button className={styles.quit} onClick={quit}>

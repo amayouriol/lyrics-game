@@ -467,6 +467,93 @@
   font-size: 15px;
 }
 
+/* Where the music comes from: the chosen YouTube video and the list to pick from. */
+.videoBox {
+  margin-top: 14px;
+}
+
+.videoCurrent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.videoCurrent > div,
+.videoText {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.videoCurrent strong,
+.videoText strong {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.videoCurrent small,
+.videoText small {
+  color: #6f6872;
+  font-size: 13px;
+}
+
+.videoList {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.videoItem {
+  display: grid;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+  grid-template-columns: 96px minmax(0, 1fr) auto;
+  padding: 10px;
+  border: 1px solid #c4bec6;
+  background: #fff;
+}
+
+.videoThumb {
+  aspect-ratio: 16 / 9;
+  background: #d9d4dc center / cover no-repeat;
+}
+
+.videoGood,
+.videoWarn {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.videoGood {
+  color: #3d6b4a;
+}
+
+.videoWarn {
+  color: #9a4a1f;
+}
+
+.videoItem .panelButton:disabled {
+  cursor: wait;
+  opacity: 0.5;
+}
+
+@media (max-width: 700px) {
+  .videoItem {
+    grid-template-columns: 80px minmax(0, 1fr);
+  }
+
+  .videoItem .panelButton {
+    grid-column: 1 / -1;
+  }
+}
+
 @media (max-width: 1050px) {
   .layout {
     grid-template-columns: 1fr;
