@@ -99,8 +99,8 @@ export function useYouTubePlayer({
     host.appendChild(slot);
     document.body.appendChild(host);
 
-    const fail = (error: "start_failed" | "video_unavailable") => {
-      if (!cancelled) setStatus({ kind: "error", error });
+    const fail = (error: "start_failed" | "video_unavailable", detail?: string) => {
+      if (!cancelled) setStatus({ kind: "error", error, detail });
     };
 
     const end = () => {
@@ -207,7 +207,7 @@ export function useYouTubePlayer({
             // 2: bad video id; 5: player problem; 100: removed or private;
             // 101 and 150: the owner doesn't allow it to play in other sites.
             console.info(`[youtube] error ${e.data}`);
-            fail(e.data === 5 ? "start_failed" : "video_unavailable");
+            fail(e.data === 5 ? "start_failed" : "video_unavailable", `YouTube error ${e.data}`);
           },
           onAutoplayBlocked: () => {
             if (!cancelled) setStatus({ kind: "blocked" });

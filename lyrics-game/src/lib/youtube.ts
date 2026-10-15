@@ -109,6 +109,30 @@ export function rankCandidates(
   return [...candidates].sort((a, b) => score(b, song.durationMs) - score(a, song.durationMs));
 }
 
+/** What YouTube says about where and how a video may be played. */
+export interface PlayRules {
+  embeddable?: boolean;
+  privacyStatus?: string;
+  /** Countries allowed, or countries blocked (YouTube gives one of the two). */
+  regionRestriction?: { allowed?: string[]; blocked?: string[] };
+}
+
+/**
+ * Whether a video can play in the game's corner player. A video flagged as
+ * embeddable can still be blocked in your country, so the region counts when
+ * it's known (it comes from the browser's language, a good guess, not proof).
+ */
+export function canPlayInGame(rules: PlayRules, region: string | null): boolean {
+  if (rules.embeddable === false) return false;
+  if (rules.privacyStatus && rules.privacyStatus !== "public") return false;
+  const restriction = rules.regionRestriction;
+  if (region && restriction) {
+    if (restriction.blocked?.includes(region)) return false;
+    if (restriction.allowed && !restriction.allowed.includes(region)) return false;
+  }
+  return true;
+}
+
 export type YouTubeFailure = "no_key" | "quota" | "failed";
 
 export class YouTubeError extends Error {
@@ -150,11 +174,11 @@ interface SearchItem {
 }
 
 /** The best three videos for a song, best first, each with a warning if it looks wrong. */
-export async function searchVideos(song: {
-  title: string;
-  primaryArtist: string;
-  durationMs: number;
-}): Promise<VideoCandidate[]> {
+export async function searchVideos(
+  song: { title: string; primaryArtist: string; durationMs: number },
+  /** Two-letter country, e.g. "ES", if known. */
+  region: string | null = null
+): Promise<VideoCandidate[]> {
   const found = (await call("search", {
     part: "snippet",
     type: "video",
@@ -163,18 +187,40 @@ export async function searchVideos(song: {
     videoCategoryId: "10", // Music
     maxResults: "10",
     q: searchQuery(song.title, song.primaryArtist),
+    ...(region ? { regionCode: region } : {}),
   })) as { items?: SearchItem[] };
 
-  const items = (found.items ?? []).filter((i) => i.id?.videoId && i.snippet);
-  if (items.length === 0) return [];
+  const results = (found.items ?? []).filter((i) => i.id?.videoId && i.snippet);
+  if (results.length === 0) return [];
 
   const details = (await call("videos", {
-    part: "contentDetails",
-    id: items.map((i) => i.id!.videoId!).join(","),
-  })) as { items?: { id: string; contentDetails?: { duration?: string } }[] };
+    part: "contentDetails,status",
+    id: results.map((i) => i.id!.videoId!).join(","),
+  })) as {
+    items?: {
+      id: string;
+      contentDetails?: { duration?: string; regionRestriction?: PlayRules["regionRestriction"] };
+      status?: { embeddable?: boolean; privacyStatus?: string };
+    }[];
+  };
   const lengths = new Map(
     (details.items ?? []).map((d) => [d.id, parseDuration(d.contentDetails?.duration ?? "")])
   );
+  const playable = new Set(
+    (details.items ?? [])
+      .filter((d) =>
+        canPlayInGame(
+          {
+            embeddable: d.status?.embeddable,
+            privacyStatus: d.status?.privacyStatus,
+            regionRestriction: d.contentDetails?.regionRestriction,
+          },
+          region
+        )
+      )
+      .map((d) => d.id)
+  );
+  const items = results.filter((i) => playable.has(i.id!.videoId!));
 
   const candidates = items.map((i): VideoCandidate => {
     const title = decodeEntities(i.snippet!.title ?? "");

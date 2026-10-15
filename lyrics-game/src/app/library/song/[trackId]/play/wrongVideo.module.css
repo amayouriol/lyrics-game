@@ -1,9 +1,15 @@
 /* The corner player is 320 x 180, 112 px above the bottom (clear of the player bar). */
-.link {
+.row {
   position: fixed;
   right: 16px;
-  bottom: 300px;
+  bottom: 296px;
   z-index: 50;
+  display: flex;
+  width: 320px;
+  justify-content: flex-start;
+}
+
+.link {
   padding: 4px 10px;
   background: rgba(0, 0, 0, 0.7);
   color: #fff;

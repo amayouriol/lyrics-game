@@ -16,12 +16,14 @@ export async function GET(request: Request, { params }: { params: Promise<{ trac
   const title = query.get("title") ?? "";
   const artist = query.get("artist") ?? "";
   const durationMs = Number(query.get("durationMs"));
+  const regionParam = query.get("region");
+  const region = regionParam && /^[A-Z]{2}$/.test(regionParam) ? regionParam : null;
   if (!title || title.length > 500 || !artist || artist.length > 500 || !(durationMs > 0)) {
     return NextResponse.json({ error: "invalid_query" }, { status: 400 });
   }
 
   try {
-    const videos = await searchVideos({ title, primaryArtist: artist, durationMs });
+    const videos = await searchVideos({ title, primaryArtist: artist, durationMs }, region);
     return NextResponse.json({ videos });
   } catch (error) {
     if (error instanceof YouTubeError) {

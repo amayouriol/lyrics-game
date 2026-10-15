@@ -372,7 +372,10 @@ export function SingScreen({
           {status.kind === "error" && (
             <div className={styles.panel}>
               <h2>{errors[status.error].title}</h2>
-              <p>{errors[status.error].body}</p>
+              <p>
+                {errors[status.error].body}
+                {status.detail ? ` (${status.detail})` : ""}
+              </p>
               <div className={styles.actions}>
                 {status.error === "permissions" && (
                   // Plain link: this is a server route, not a page to prefetch.
@@ -385,9 +388,16 @@ export function SingScreen({
                     Retry
                   </button>
                 )}
-                <Link href={backHref} className={styles.panelLink}>
-                  Back to song
-                </Link>
+                {status.error === "video_unavailable" && (
+                  <Link href={backHref} className={styles.panelButton}>
+                    Choose another video
+                  </Link>
+                )}
+                {status.error !== "video_unavailable" && (
+                  <Link href={backHref} className={styles.panelLink}>
+                    Back to song
+                  </Link>
+                )}
               </div>
             </div>
           )}

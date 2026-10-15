@@ -69,6 +69,9 @@ export function VideoPicker({
       artist: track.primaryArtist,
       durationMs: String(track.durationMs),
     });
+    // The browser's language region ("es-ES" → "ES") is a good guess of your country.
+    const region = new Intl.Locale(navigator.language).region;
+    if (region) query.set("region", region);
     try {
       const res = await fetch(`/api/video/${encodeURIComponent(trackId)}/search?${query}`);
       const body = await res.json();

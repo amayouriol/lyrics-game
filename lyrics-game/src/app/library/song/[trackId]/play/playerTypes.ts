@@ -17,7 +17,7 @@ export type PlayerStatus =
   | { kind: "playing" } // the song has started; it may be paused
   | { kind: "dropped" }
   | { kind: "blocked" }
-  | { kind: "error"; error: PlayerError };
+  | { kind: "error"; error: PlayerError; /** What the service said, shown small. */ detail?: string };
 
 export interface PlayerOptions {
   trackId: string;

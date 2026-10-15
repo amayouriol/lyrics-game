@@ -608,7 +608,10 @@ function PlayScreen({
           {status.kind === "error" && (
             <div className={styles.panel}>
               <h2>{ERRORS[status.error].title}</h2>
-              <p>{ERRORS[status.error].body}</p>
+              <p>
+                {ERRORS[status.error].body}
+                {status.detail ? ` (${status.detail})` : ""}
+              </p>
               <div className={styles.actions}>
                 {status.error === "permissions" && (
                   // Plain link: this is a server route, not a page to prefetch.
@@ -621,9 +624,16 @@ function PlayScreen({
                     Retry
                   </button>
                 )}
-                <Link href={backHref} className={styles.panelLink}>
-                  Back to song
-                </Link>
+                {status.error === "video_unavailable" && (
+                  <Link href={backHref} className={styles.panelButton}>
+                    Choose another video
+                  </Link>
+                )}
+                {status.error !== "video_unavailable" && (
+                  <Link href={backHref} className={styles.panelLink}>
+                    Back to song
+                  </Link>
+                )}
               </div>
             </div>
           )}
