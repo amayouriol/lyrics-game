@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { describeTracks, getTracks } from "@/lib/library";
+import { getOwnTracks, SOURCE_PREFIX } from "@/lib/own-library";
 import { getSaved } from "@/lib/saved";
 import { getSession, getUserId, getValidAccessToken } from "@/lib/session";
 import { SpotifyApiError, SpotifySessionExpiredError, type Track } from "@/lib/spotify";
@@ -29,6 +30,11 @@ export async function GET(request: NextRequest) {
           cover,
         })
       );
+    } else if (source.startsWith(SOURCE_PREFIX)) {
+      // Added from YouTube: kept by the app, no Spotify needed.
+      const own = await getOwnTracks(source.slice(SOURCE_PREFIX.length));
+      if (!own) return NextResponse.json({ error: "not_found" }, { status: 404 });
+      tracks = own;
     } else {
       const got = await getTracks(await getValidAccessToken(), source);
       tracks = got.data;

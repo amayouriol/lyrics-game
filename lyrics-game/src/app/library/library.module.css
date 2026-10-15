@@ -165,7 +165,7 @@
   display: grid;
   padding: 0 clamp(24px, 5.5vw, 88px);
   background: var(--violet);
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
 }
 
 .tabs button {
@@ -1132,4 +1132,78 @@
     width: auto;
     max-height: none;
   }
+}
+
+/* Adding songs from YouTube: a link, or a title and artist. */
+.addBox {
+  display: grid;
+  gap: 28px;
+  margin: 0 0 40px;
+  padding: 26px;
+  border: 1px solid #c4bec6;
+  background: #fff;
+}
+
+.addBox h3 {
+  margin: 0 0 6px;
+  font-family: "Archivo Black", sans-serif;
+  font-size: 17px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.addBox p {
+  margin: 0 0 14px;
+  color: #5d5660;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.addRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.addInput {
+  min-height: 48px;
+  flex: 1 1 220px;
+  padding: 0 14px;
+  border: 1px solid #c5c0c6;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+}
+
+.addInput:focus {
+  border-color: var(--violet);
+  outline: 0;
+}
+
+.addBox .smallButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.addResults {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.addBox .addMessage,
+.addBox .addError {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.addBox .addMessage {
+  color: #3d6b4a;
+}
+
+.addBox .addError {
+  color: #9a4a1f;
 }

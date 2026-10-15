@@ -7,6 +7,7 @@ import { ArrowIcon, MicIcon } from "@/components/icons";
 import { DIFFICULTIES, DIFFICULTY_ORDER, type Difficulty } from "@/lib/game";
 import { LANGUAGES, type Language } from "@/lib/language";
 import { SING_DESCRIPTIONS, singLines } from "@/lib/sing";
+import { isOwnId } from "@/lib/track-id";
 import { SaveButtons } from "../../SaveButtons";
 import { loadSong, playHref, type SongResult } from "./loadSong";
 import { askForMic, canRecognizeSpeech, micAccess } from "./play/speech";
@@ -62,8 +63,12 @@ export function SongClient({ trackId, from }: { trackId: string; from: string | 
   const mic = useMic(mode === "sing");
   const [chosenSource, setSource] = usePlaySource();
   const [match, setMatch] = useVideoMatch(trackId);
-  // Your pick if you made one, else YouTube once the song has a video, else Spotify.
-  const source: PlaySource = chosenSource ?? (match ? "youtube" : "spotify");
+  // A song added from YouTube can only play from YouTube. Otherwise: your pick if
+  // you made one, else YouTube once the song has a video, else Spotify.
+  const fromYouTubeOnly = isOwnId(trackId);
+  const source: PlaySource = fromYouTubeOnly
+    ? "youtube"
+    : (chosenSource ?? (match ? "youtube" : "spotify"));
   const waitingForVideo = source === "youtube" && !match;
   const canPlay =
     match !== undefined &&
@@ -181,6 +186,7 @@ export function SongClient({ trackId, from }: { trackId: string; from: string | 
                       type="button"
                       className={s === source ? styles.on : ""}
                       aria-pressed={s === source}
+                      disabled={fromYouTubeOnly && s === "spotify"}
                       onClick={() => setSource(s)}
                     >
                       {s === "youtube" ? "YouTube" : "Spotify"}

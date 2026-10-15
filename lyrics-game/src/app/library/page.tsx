@@ -7,8 +7,9 @@ import { SavedPanel } from "./SavedPanel";
 import { SavedProvider } from "./SavedProvider";
 
 /**
- * `/library`: search and two tabs, Saved in Lyric Drop (Favorites, Play
- * later) and From Spotify (your lists as cards; `?tab=spotify`).
+ * `/library`: search and three tabs, Saved in Lyric Drop (Favorites, Play
+ * later), From Spotify (your lists as cards; `?tab=spotify`) and From
+ * YouTube (added songs and playlists; `?tab=youtube`).
  * `/library?source=…`: one list's songs, with Favorites and Play later in a
  * side panel.
  */
@@ -23,7 +24,7 @@ export default async function LibraryPage({
   }
 
   const { source, tab } = await searchParams;
-  const initialTab: LibraryTab = tab === "spotify" ? "spotify" : "saved";
+  const initialTab: LibraryTab = tab === "spotify" || tab === "youtube" ? tab : "saved";
 
   return (
     <>

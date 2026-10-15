@@ -19,9 +19,10 @@ import { LibrarySearch } from "./LibrarySearch";
 import { SearchBox } from "./SearchBox";
 import { useSaved } from "./SavedProvider";
 import { songHref } from "./song/[trackId]/loadSong";
+import { YouTubeTab } from "./YouTubeTab";
 import styles from "./library.module.css";
 
-export type LibraryTab = "saved" | "spotify";
+export type LibraryTab = "saved" | "spotify" | "youtube";
 
 /**
  * The library's main page: a search across your whole library at the top,
@@ -36,7 +37,7 @@ export function LibraryHome({ initialTab }: { initialTab: LibraryTab }) {
   // The tab is kept in the address, so coming back from a playlist returns to it.
   const choose = (next: LibraryTab) => {
     setTab(next);
-    router.replace(next === "spotify" ? "/library?tab=spotify" : "/library", { scroll: false });
+    router.replace(next === "saved" ? "/library" : `/library?tab=${next}`, { scroll: false });
   };
 
   return (
@@ -83,8 +84,18 @@ export function LibraryHome({ initialTab }: { initialTab: LibraryTab }) {
               <span>From Spotify</span>
               <small>Liked songs and playlists</small>
             </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={tab === "youtube"}
+              className={tab === "youtube" ? styles.tabActive : ""}
+              onClick={() => choose("youtube")}
+            >
+              <span>From YouTube</span>
+              <small>Songs and playlists you add</small>
+            </button>
           </div>
-          {tab === "saved" ? <SavedTab /> : <SpotifyTab />}
+          {tab === "saved" ? <SavedTab /> : tab === "spotify" ? <SpotifyTab /> : <YouTubeTab />}
         </>
       )}
     </main>

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { describeTracks, getSources, getTracks } from "@/lib/library";
+import { getAllOwnTracks } from "@/lib/own-library";
 import { getSession, getValidAccessToken } from "@/lib/session";
 import { SpotifyApiError, SpotifySessionExpiredError, type Track } from "@/lib/spotify";
 
@@ -47,6 +48,12 @@ export async function GET() {
         seen.add(track.id);
         tracks.push(track);
       }
+    }
+    // Songs added from YouTube come after the Spotify ones.
+    for (const track of await getAllOwnTracks()) {
+      if (seen.has(track.id)) continue;
+      seen.add(track.id);
+      tracks.push(track);
     }
     return NextResponse.json({
       tracks: await describeTracks(tracks),

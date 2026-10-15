@@ -34,17 +34,22 @@ const EMPTY: Record<string, string> = {
 export function PlaylistClient({ source, sidebar }: { source: string; sidebar: ReactNode }) {
   const router = useRouter();
 
+  // Songs added from YouTube live in the app's own library, not on Spotify.
+  const own = source.startsWith("own:");
+
   // The list's name and count, from the same list as the cards page.
-  const [sources, setSources] = useState<Source[] | null>(null);
+  const [sources, setSources] = useState<Pick<Source, "id" | "name" | "count">[] | null>(null);
   useEffect(() => {
     let ignore = false;
-    fetchJson<{ sources: Source[] }>("/api/library/sources").then((r) => {
+    fetchJson<{ sources: Pick<Source, "id" | "name" | "count">[] }>(
+      own ? "/api/own/lists" : "/api/library/sources"
+    ).then((r) => {
       if (!ignore && r.status === "ok") setSources(r.data.sources);
     });
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [own]);
   const info = sources?.find((s) => s.id === source);
 
   const [reloadKey, setReloadKey] = useState(0);
@@ -103,11 +108,14 @@ export function PlaylistClient({ source, sidebar }: { source: string; sidebar: R
     <main className={styles.screen}>
       <section className={`${styles.top} ${styles.topList}`}>
         <div className={styles.title}>
-          <Link href={saved ? "/library" : "/library?tab=spotify"} className={styles.back}>
+          <Link
+            href={saved ? "/library" : own ? "/library?tab=youtube" : "/library?tab=spotify"}
+            className={styles.back}
+          >
             <ArrowIcon />
-            {saved ? "Back to library" : "All playlists"}
+            {saved ? "Back to library" : own ? "All YouTube songs" : "All playlists"}
           </Link>
-          <p>{saved ? "Saved in Lyric Drop" : "From Spotify"}</p>
+          <p>{saved ? "Saved in Lyric Drop" : own ? "From YouTube" : "From Spotify"}</p>
           <h1>{SAVED_NAMES[source] ?? info?.name ?? (sources ? "Playlist" : "")}</h1>
           <span>
             {count !== undefined &&
@@ -133,10 +141,12 @@ export function PlaylistClient({ source, sidebar }: { source: string; sidebar: R
 
             {state === "error" && (
               <div className={styles.errorPanel}>
-                <h2>{spotifyTrouble(result?.rateLimited, result?.retryAt).title}</h2>
+                <h2>
+                  {own ? "This list didn't load." : spotifyTrouble(result?.rateLimited, result?.retryAt).title}
+                </h2>
                 <p>
                   We couldn&apos;t load this list.{" "}
-                  {spotifyTrouble(result?.rateLimited, result?.retryAt).body}
+                  {own ? "It's probably a blip." : spotifyTrouble(result?.rateLimited, result?.retryAt).body}
                 </p>
                 <button className={styles.smallButton} onClick={() => setReloadKey((k) => k + 1)}>
                   Retry
