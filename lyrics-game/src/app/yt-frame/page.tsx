@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import {
   FRAME_TAG,
+  hideCaptions,
   isLoopbackHost,
   loadYouTubeApi,
   type YTPlayer,
@@ -36,8 +37,14 @@ export default function YouTubeFrame() {
     let timer: ReturnType<typeof setInterval> | undefined;
     const post = (message: Record<string, unknown>) =>
       window.parent.postMessage({ source: FRAME_TAG, ...message }, parentOrigin);
+    let captionsOff = false;
     const pushState = () => {
       if (!player) return;
+      // The captions module can load again once the video starts.
+      if (!captionsOff && player.getPlayerState() === 1) {
+        captionsOff = true;
+        hideCaptions(player);
+      }
       post({
         type: "state",
         state: player.getPlayerState(),
@@ -71,10 +78,13 @@ export default function YouTubeFrame() {
           fs: 0,
           playsinline: 1,
           rel: 0,
+          cc_load_policy: 0,
+          iv_load_policy: 3,
           origin: window.location.origin,
         },
         events: {
-          onReady: () => {
+          onReady: (e) => {
+            hideCaptions(e.target);
             post({ type: "ready" });
             timer = setInterval(pushState, 100);
           },

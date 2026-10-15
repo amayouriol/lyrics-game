@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { createPlayer, YT_STATE, type YTPlayer } from "./youtubeApi";
+import { createPlayer, hideCaptions, YT_STATE, type YTPlayer } from "./youtubeApi";
 import type { Player, PlayerOptions, PlayerStatus } from "./playerTypes";
 
 /**
@@ -151,6 +151,7 @@ export function useYouTubePlayer({
           clockRef.current = { positionMs: Math.min(position, hold - 1), at: performance.now(), paused: true };
           return;
         }
+        if (!startedRef.current) hideCaptions(p); // the captions module can load again once the song starts
         startedRef.current = true;
         clockRef.current = { positionMs: position, at: performance.now(), paused: false };
         setPaused(false);
@@ -185,6 +186,8 @@ export function useYouTubePlayer({
             fs: 0,
             playsinline: 1,
             rel: 0,
+            cc_load_policy: 0,
+            iv_load_policy: 3,
             origin: window.location.origin,
           },
           events: {
@@ -192,6 +195,7 @@ export function useYouTubePlayer({
               clearTimeout(readyTimeout);
               if (cancelled) return;
               playerRef.current = e.target;
+              hideCaptions(e.target);
               e.target.playVideo();
               poll = setInterval(sync, POLL_MS);
             },

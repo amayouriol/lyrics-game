@@ -21,6 +21,8 @@ export interface YTPlayer {
   getDuration(): number;
   getPlayerState(): number;
   getVideoData(): { video_id?: string };
+  /** YouTube's own player only; the framed player does this inside its frame. */
+  unloadModule?(module: string): void;
   destroy(): void;
 }
 
@@ -73,6 +75,20 @@ export function loadYouTubeApi(): Promise<YTNamespace> {
     document.head.appendChild(script);
   });
   return apiPromise;
+}
+
+/**
+ * Turns YouTube's captions off. Captions would show the lyrics, and a person's
+ * own YouTube setting ("always show captions") can switch them on whatever the
+ * embed asks for (seen 2026-10-14), so the player is told to drop the module.
+ */
+export function hideCaptions(player: YTPlayer): void {
+  try {
+    player.unloadModule?.("captions");
+    player.unloadModule?.("cc");
+  } catch {
+    // An older player without the call: the playerVars still ask for no captions.
+  }
 }
 
 /** Messages between the game page and /yt-frame (see below). */
