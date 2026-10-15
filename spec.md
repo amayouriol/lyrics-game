@@ -42,5 +42,5 @@ You can log in, pick a song from your library, listen to it in full, guess words
 - Sharing the app with friends, or support for other people to log in with their own Spotify accounts.
 - A fallback mode for songs with no synced lyrics (e.g. unsynced lyrics as a backup).
 - A history of past scores, per-song or per-artist stats, or some kind of personal leaderboard.
-- (2026-10-14, after Phase 13 planning) A hosted version for friends: YouTube only, per-friend data, shared password. See Output/phase-13-spec.md, "Ideas for later".
+- (2026-10-14, after Phase 13 planning) A hosted version for friends: YouTube only, per-friend data, shared password. Promoted to Phase 14 on 2026-10-15 (Output/phase-14-spec.md).
 - (2026-10-14) A general search bar in the library, removing Spotify, and only offering songs with synced lyrics when adding. Same place.

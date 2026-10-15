@@ -85,6 +85,14 @@ Why: Spotify's limits. Spotify still works next to it; removing it was left for 
 - [x] Spotify optional: "use the app without Spotify" on this computer, the saved copy of your library; README note
 - [x] Your play-test on your account (2026-10-15, all good)
 
+## Phase 14: A web version for friends (YouTube only) — planned 2026-10-15 (Output/phase-14-spec.md, phase-14-plan.md)
+Why: you asked for a public link. Step 0 is a spike on the risky parts before anything is changed.
+- [ ] Spike: word lists, YouTube player, YouTube key and the database all work from a free host
+- [ ] Web mode: no Spotify anywhere in the hosted version
+- [ ] Storage layer: files on your computer, a free database online, same code above it
+- [ ] A person id, a shared-word gate and daily caps on searches
+- [ ] Put it online (Vercel + Upstash, you create the accounts); notes page; play-test
+
 ## Explicitly out of scope for this plan
 Anything from spec.md's V2 list stays out unless you decide otherwise first: sharing with other people or multi-account login, an unsynced-lyrics fallback mode, score history or leaderboards.
 
