@@ -2,9 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { fetchToken, getSharedPlayer, type PlayerError } from "./sharedPlayer";
-
-export type { PlayerError };
+import { fetchToken, getSharedPlayer } from "./sharedPlayer";
+import type { Player, PlayerError, PlayerOptions, PlayerStatus } from "./playerTypes";
 
 const READY_TIMEOUT_MS = 10_000;
 const RESYNC_MS = 1_000;
@@ -19,13 +18,6 @@ const END_GRACE_MS = 1_500;
  * so pausing slightly early keeps the next line's first word from playing.
  */
 const HOLD_LEAD_MS = 300;
-
-export type PlayerStatus =
-  | { kind: "connecting" }
-  | { kind: "playing" } // the song has started; it may be paused
-  | { kind: "dropped" }
-  | { kind: "blocked" }
-  | { kind: "error"; error: PlayerError };
 
 interface Clock {
   positionMs: number;
@@ -59,17 +51,7 @@ function linesStarted(lineTimesMs: number[], positionMs: number): number {
  * while the current one has unanswered words). The song pauses just before
  * it and continues by itself once the hold is set back to null.
  */
-export function usePlayer({
-  trackId,
-  durationMs,
-  lineTimesMs,
-  onEnded,
-}: {
-  trackId: string;
-  durationMs: number;
-  lineTimesMs: number[];
-  onEnded: () => void;
-}) {
+export function usePlayer({ trackId, durationMs, lineTimesMs, onEnded }: PlayerOptions): Player {
   const router = useRouter();
   const [status, setStatus] = useState<PlayerStatus>({ kind: "connecting" });
   const [paused, setPaused] = useState(true);

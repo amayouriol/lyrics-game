@@ -1,8 +1,8 @@
 "use client";
 
-const SDK_URL = "https://sdk.scdn.co/spotify-player.js";
+import type { PlayerError } from "./playerTypes";
 
-export type PlayerError = "permissions" | "premium" | "unsupported" | "start_failed";
+const SDK_URL = "https://sdk.scdn.co/spotify-player.js";
 
 /**
  * The page's one Spotify player. Spotify only registers the first player a

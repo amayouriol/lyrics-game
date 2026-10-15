@@ -33,7 +33,8 @@ import type { TrackSummary } from "../loadSong";
 import { useLineGlide, useSweep } from "./lyricsMotion";
 import type { ListeningProblem } from "./useListening";
 import { useListening } from "./useListening";
-import { usePlayer, type PlayerError } from "./usePlayer";
+import { usePlayback } from "./usePlayback";
+import type { PlayerError } from "./playerTypes";
 import { PlayAgain, ResultTile, Verdict } from "./ResultParts";
 import styles from "./play.module.css";
 
@@ -106,7 +107,7 @@ export function SingScreen({
     stop,
     setHoldBeforeMs,
     getPositionMs,
-  } = usePlayer({ trackId, durationMs: track.durationMs, lineTimesMs, onEnded });
+  } = usePlayback({ trackId, durationMs: track.durationMs, lineTimesMs, onEnded });
 
   // Listening goes on while the song waits for you (Easy).
   const playing = status.kind === "playing" && (!paused || held);

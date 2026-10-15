@@ -35,7 +35,8 @@ import { useLineGlide, useSweep } from "./lyricsMotion";
 import { PlayAgain, ResultTile, Verdict } from "./ResultParts";
 import { SingResults, SingScreen, type SingGameResult } from "./SingScreen";
 import { LISTEN_LANG } from "./speech";
-import { usePlayer, type PlayerError } from "./usePlayer";
+import { usePlayback } from "./usePlayback";
+import type { PlayerError } from "./playerTypes";
 import styles from "./play.module.css";
 
 const ERRORS: Record<PlayerError, { title: string; body: string }> = {
@@ -274,7 +275,7 @@ function PlayScreen({
     stop,
     setHoldBeforeMs,
     getPositionMs,
-  } = usePlayer({ trackId, durationMs: track.durationMs, lineTimesMs, onEnded });
+  } = usePlayback({ trackId, durationMs: track.durationMs, lineTimesMs, onEnded });
 
   const currentLine = lineIndex - 1;
   const activeId = activeBlankId(blanks, answers, currentLine);

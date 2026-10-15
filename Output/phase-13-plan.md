@@ -10,9 +10,10 @@ Derived from: Output/phase-13-spec.md. Review before building.
 - **Risks to check first** (step 2): how to tell an ad from the song using the player's events; how fast pause and continue are for the line-end wait. If either fails, I stop and tell you before going on.
 
 ## 1. Player layer (no visible change)
-- [ ] Write the shared player shape from what `PlayScreen`, `SingScreen` and `PlayClient` use today.
-- [ ] Make `usePlayer.ts` match it; the game screens use the shape, not Spotify types.
-- [ ] `npm test`, lint and build pass; a Spotify song plays exactly as before.
+- [x] Write the shared player shape from what the Type and Sing screens use today.
+- [x] Make `usePlayer.ts` match it; the game screens use the shape, not Spotify types.
+- [x] `npm test`, lint and build pass; a Spotify song plays exactly as before.
+- Done (2026-10-14): new `playerTypes.ts` (the shape: status, errors, controls) and `usePlayback.ts` (the one hook the screens call; Spotify for now). `usePlayer.ts` now returns that shape; `PlayClient.tsx` and `SingScreen.tsx` call `usePlayback`. No behavior changed: lint, 52 checks and build pass. Not tried on a real Spotify song (avoids extra Spotify requests); you'll see it in the Phase 13 play-test.
 
 ## 2. YouTube player
 - [ ] Loading YouTube's player in the corner (320 × 180) with start, pause, continue, position, "ended".
