@@ -12,13 +12,14 @@ Earlier decision (memory, Phase 12): the project stays Spotify-only and personal
 
 ### This phase does
 1. **A player layer.** The game screens talk to one "player" and don't care which one is behind it. Spotify's player (today's code) moves behind it with no visible change. YouTube becomes the second one.
-2. **YouTube player.** The official embedded player, shown small in the bottom-right corner of the game screen (320 × 180 pixels; YouTube's minimum is 200 × 200 and the player may never be hidden or covered). It must support everything the game needs from a player: start, pause and continue, the song's position, "song ended", and the pause before a line while words are still open.
+2. **YouTube player.** The official embedded player, shown small in the bottom-right corner of the game screen (356 × 200 pixels; YouTube's rule is a player at least 200 pixels high and wide, never hidden or covered. *Changed 2026-10-14: it was 320 × 180, which is under that rule.*). It must support everything the game needs from a player: start, pause and continue, the song's position, "song ended", and the pause before a line while words are still open.
 3. **Ads.** Without YouTube Premium in the browser, a short ad can play before a song (rarely in the middle). While an ad plays, the game waits: the lyrics clock does not start and the screen says "A short ad is playing. Your song starts right after." We never block or skip ads.
 4. **Matching a song to a video.** For each song, the game finds a YouTube video once, you confirm it, and the choice is saved on disk (`.data/video-matches.json`) forever. Matching prefers:
    - "Topic" uploads and auto-generated ones ("Provided to YouTube by …"): they show only the cover picture, no lyrics, and have clean titles.
    - Skips titles with "lyrics", "lyric video", "karaoke", "letra", "sing along".
    - Shows the top 3 results; any that look like lyrics videos carry a warning. You pick one.
    - A "Wrong video" button in the game picks another match and saves it.
+   - *Added 2026-10-14 after play-testing:* YouTube's own "can be embedded" flag isn't reliable (Lady Gaga's "Bloody Mary" Topic uploads said yes and then answered error 150). So "Use this video" first loads the video in a visible player, without playing it, and only saves it if YouTube accepts it; otherwise it says "This one can't be played here. Try another." Videos blocked in your country (guessed from the browser's language) are left out of the list.
 5. **Per-song source.** A song with a saved YouTube match plays from YouTube; otherwise from Spotify if it's available. A setting forces one or the other.
 6. **Your own library list.** The app keeps its own list of songs (`.data/`), filled three ways:
    - your cached Spotify library as the starting list (no new Spotify requests);

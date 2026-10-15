@@ -1,11 +1,11 @@
-/* The corner player is 320 x 180, 112 px above the bottom (clear of the player bar). */
+/* The corner player is 356 x 200, 112 px above the bottom (clear of the player bar). */
 .row {
   position: fixed;
   right: 16px;
-  bottom: 296px;
+  bottom: 316px;
   z-index: 50;
   display: flex;
-  width: 320px;
+  width: 356px;
   justify-content: flex-start;
 }
 

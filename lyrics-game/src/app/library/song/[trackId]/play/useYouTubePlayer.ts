@@ -9,8 +9,8 @@ import type { Player, PlayerOptions, PlayerStatus } from "./playerTypes";
  * bar (88 px tall). YouTube's rules: never hidden or covered. The "Wrong
  * video?" link (wrongVideo.module.css) sits just above it.
  */
-const PLAYER_WIDTH = 320;
-const PLAYER_HEIGHT = 180;
+const PLAYER_WIDTH = 356;
+const PLAYER_HEIGHT = 200;
 const PLAYER_BOTTOM = 112;
 const READY_TIMEOUT_MS = 12_000;
 const POLL_MS = 250;
