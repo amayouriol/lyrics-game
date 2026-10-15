@@ -70,6 +70,7 @@ export function useYouTubePlayer({
   const onEndedRef = useRef(onEnded);
   const holdRef = useRef<number | null>(null);
   const heldRef = useRef(false);
+  const lastHideRef = useRef(0);
 
   useEffect(() => {
     onEndedRef.current = onEnded;
@@ -151,7 +152,12 @@ export function useYouTubePlayer({
           clockRef.current = { positionMs: Math.min(position, hold - 1), at: performance.now(), paused: true };
           return;
         }
-        if (!startedRef.current) hideCaptions(p); // the captions module can load again once the song starts
+        // The captions module loads again after a pause (seen 2026-10-15), so
+        // while the song plays it is told to stay off, once a second.
+        if (performance.now() - lastHideRef.current > 1000) {
+          lastHideRef.current = performance.now();
+          hideCaptions(p);
+        }
         startedRef.current = true;
         clockRef.current = { positionMs: position, at: performance.now(), paused: false };
         setPaused(false);
@@ -199,7 +205,10 @@ export function useYouTubePlayer({
               e.target.playVideo();
               poll = setInterval(sync, POLL_MS);
             },
-            onStateChange: sync,
+            onStateChange: () => {
+              lastHideRef.current = 0; // a new state (resuming after a pause): switch captions off at once
+              sync();
+            },
             onError: (e) => {
               // 2: bad video id; 5: player problem; 100: removed or private;
               // 101 and 150: the owner doesn't allow it to play in other sites.

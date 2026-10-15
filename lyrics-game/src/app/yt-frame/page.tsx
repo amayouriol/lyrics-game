@@ -37,12 +37,13 @@ export default function YouTubeFrame() {
     let timer: ReturnType<typeof setInterval> | undefined;
     const post = (message: Record<string, unknown>) =>
       window.parent.postMessage({ source: FRAME_TAG, ...message }, parentOrigin);
-    let captionsOff = false;
+    let lastHide = 0;
     const pushState = () => {
       if (!player) return;
-      // The captions module can load again once the video starts.
-      if (!captionsOff && player.getPlayerState() === 1) {
-        captionsOff = true;
+      // The captions module loads again after a pause (seen 2026-10-15), so
+      // while the video plays it is told to stay off, once a second.
+      if (player.getPlayerState() === 1 && performance.now() - lastHide > 1000) {
+        lastHide = performance.now();
         hideCaptions(player);
       }
       post({
@@ -88,7 +89,10 @@ export default function YouTubeFrame() {
             post({ type: "ready" });
             timer = setInterval(pushState, 100);
           },
-          onStateChange: pushState,
+          onStateChange: () => {
+            lastHide = 0; // a new state (resuming after a pause): switch captions off at once
+            pushState();
+          },
           onError: (e) => post({ type: "error", code: e.data }),
           onAutoplayBlocked: () => post({ type: "autoplay-blocked" }),
         },
