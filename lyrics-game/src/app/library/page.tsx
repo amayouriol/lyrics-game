@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getProfile, getSession, hasActiveSession } from "@/lib/session";
+import { currentProfile, getSession, hasAccess } from "@/lib/session";
 import { Header } from "@/components/Header";
 import { LibraryHome, type LibraryTab } from "./LibraryHome";
 import { PlaylistClient } from "./PlaylistClient";
@@ -19,16 +19,17 @@ export default async function LibraryPage({
   searchParams: Promise<{ source?: string; tab?: string }>;
 }) {
   const session = await getSession();
-  if (!hasActiveSession(session)) {
+  if (!(await hasAccess(session))) {
     redirect("/");
   }
+  const profile = await currentProfile(session);
 
   const { source, tab } = await searchParams;
   const initialTab: LibraryTab = tab === "spotify" || tab === "youtube" ? tab : "saved";
 
   return (
     <>
-      <Header profile={getProfile(session)} />
+      <Header profile={profile} />
       <SavedProvider>
         {source ? (
           <PlaylistClient key={source} source={source} sidebar={<SavedPanel />} />

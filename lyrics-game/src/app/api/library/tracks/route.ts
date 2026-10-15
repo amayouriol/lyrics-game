@@ -2,7 +2,13 @@ import { type NextRequest, NextResponse } from "next/server";
 import { describeTracks, getTracks } from "@/lib/library";
 import { getOwnTracks, SOURCE_PREFIX } from "@/lib/own-library";
 import { getSaved } from "@/lib/saved";
-import { getSession, getUserId, getValidAccessToken } from "@/lib/session";
+import {
+  getSession,
+  getUserId,
+  getValidAccessToken,
+  hasActiveSession,
+  isLocalMode,
+} from "@/lib/session";
 import { SpotifyApiError, SpotifySessionExpiredError, type Track } from "@/lib/spotify";
 
 export async function GET(request: NextRequest) {
@@ -36,7 +42,9 @@ export async function GET(request: NextRequest) {
       if (!own) return NextResponse.json({ error: "not_found" }, { status: 404 });
       tracks = own;
     } else {
-      const got = await getTracks(await getValidAccessToken(), source);
+      // Without Spotify, only the saved copy of the list can be shown.
+      const offline = !hasActiveSession(await getSession()) && (await isLocalMode());
+      const got = await getTracks(offline ? null : await getValidAccessToken(), source);
       tracks = got.data;
       updatedAt = got.updatedAt;
       blockedUntil = got.blockedUntil ?? null;

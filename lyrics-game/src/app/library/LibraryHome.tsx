@@ -199,6 +199,8 @@ interface SourcesAnswer {
   updatedAt: number;
   /** Spotify is refusing until then, so this is an older saved copy. */
   blockedUntil: number | null;
+  /** Not logged in to Spotify: this is the saved copy, however old. */
+  offline?: boolean;
 }
 
 type Loaded =
@@ -246,14 +248,22 @@ function SpotifyTab() {
         <div>
           <p>
             {answer
-              ? answer.data.blockedUntil
-                ? `Spotify is limiting this app until ${moment(answer.data.blockedUntil)}`
-                : `Updated from Spotify ${ago(answer.data.updatedAt, answer.loadedAt)}`
+              ? answer.data.offline
+                ? "Spotify isn't connected: showing your saved copy"
+                : answer.data.blockedUntil
+                  ? `Spotify is limiting this app until ${moment(answer.data.blockedUntil)}`
+                  : `Updated from Spotify ${ago(answer.data.updatedAt, answer.loadedAt)}`
               : "From your Spotify library"}
           </p>
           <h2>Your Spotify playlists</h2>
         </div>
-        {answer && !answer.data.blockedUntil && (
+        {answer && answer.data.offline && (
+          // Plain link: this starts Spotify auth and should not be prefetched.
+          <a className={styles.syncButton} href="/api/auth/login">
+            Connect Spotify
+          </a>
+        )}
+        {answer && !answer.data.offline && !answer.data.blockedUntil && (
           <button className={styles.syncButton} onClick={() => reload(true)}>
             <RefreshIcon />
             Refresh from Spotify
@@ -287,6 +297,11 @@ function SpotifyTab() {
           {answer.data.blockedUntil && (
             <p className={styles.hint}>
               Showing your playlists as of {ago(answer.data.updatedAt, answer.loadedAt)}.
+            </p>
+          )}
+          {answer.data.offline && answer.data.sources.length === 0 && (
+            <p className={styles.hint}>
+              Nothing is saved from Spotify yet. Connect Spotify once to load your playlists.
             </p>
           )}
           <div className={styles.cards}>

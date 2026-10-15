@@ -28,6 +28,7 @@ Earlier decision (memory, Phase 12): the project stays Spotify-only and personal
    - "Add a song": a pasted YouTube link, or a title and artist (search, top 3, you pick).
    Saved songs and progress keep working: they stay keyed by the same song IDs, and a song's YouTube video is stored next to it.
 7. **Spotify becomes optional.** The app opens and plays without logging in to Spotify, as long as a song has a YouTube match.
+   - *How, decided 2026-10-14:* the start page gets a second link, "Or use the app without Spotify" (YouTube songs only). It only works when the address in the browser is this computer's own (`127.0.0.1` or `localhost`), so others on the same network can't use it. Your games, saved songs and library copy stay under your Spotify id, which the app remembers from your last login (or the only id in the saved files); without Spotify they are still yours. The **From Spotify** tab, the whole-library search and song details for Spotify songs use the saved copy of your library, however old, and a **Connect Spotify** button (also in the top-right menu) is there for when you want fresh data or Spotify playback. A hosted version for friends would need a real login; this is not that.
 
 ### This phase does not do
 - Remove Spotify code or the Spotify login. (Decided after play-testing, in its own step.)

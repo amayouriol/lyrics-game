@@ -1,5 +1,5 @@
 import { Header } from "@/components/Header";
-import { getProfile, getSession, hasActiveSession } from "@/lib/session";
+import { currentProfile, getSession, hasAccess, isThisMachine } from "@/lib/session";
 import { HomeClient } from "./HomeClient";
 import styles from "./page.module.css";
 
@@ -9,16 +9,18 @@ export default async function HomePage({
   searchParams: Promise<{ expired?: string }>;
 }) {
   const session = await getSession();
-  if (hasActiveSession(session)) {
+  const { expired } = await searchParams;
+  // A session that ran out sends you here with ?expired, even if you use the app without Spotify.
+  if (!expired && (await hasAccess(session))) {
+    const profile = await currentProfile(session);
     return (
       <>
-        <Header profile={getProfile(session)} />
-        <HomeClient name={getProfile(session).name} />
+        <Header profile={profile} />
+        <HomeClient name={profile.name} />
       </>
     );
   }
-
-  const { expired } = await searchParams;
+  const canSkipSpotify = await isThisMachine();
 
   return (
     <main className={styles.main} id="top">
@@ -63,6 +65,12 @@ export default async function HomePage({
               <ArrowIcon />
             </i>
           </a>
+
+          {canSkipSpotify && (
+            <a className={styles.localLink} href="/api/auth/local">
+              Or use the app without Spotify (YouTube songs only)
+            </a>
+          )}
 
           <p className={styles.disclaimer} id="spotify-note">
             <span aria-hidden="true">*</span> Spotify Premium is required for playback. We use

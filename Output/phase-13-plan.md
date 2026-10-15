@@ -52,8 +52,10 @@ Built in three parts, each its own commit (4a behind the scenes, 4b the library,
 - Limits worth knowing: a playlist of music videos with "Song - Artist" titles gets swapped names (see above); videos YouTube flags as blocked in your country are left out, but a few that look fine can still fail at play time, and then "Choose another video" on the song screen fixes it.
 
 ## 5. Spotify optional, README, play-test
-- [ ] The app opens and plays matched songs without a Spotify login.
-- [ ] README: YouTube key step, a short legal note (official player only, no audio downloads, lyrics from LRCLIB, personal project).
-- [ ] plan.md gets a Phase 13 section; V2 ideas into spec.md.
-- [ ] `npm run lint`, `npm test`, `npm run build` pass; GitHub check passes.
+- [x] The app opens and plays matched songs without a Spotify login.
+- [x] README: YouTube key step, a short legal note (official player only, no audio downloads, lyrics from LRCLIB, personal project).
+- [x] plan.md gets a Phase 13 section; V2 ideas into spec.md.
+- [x] `npm run lint`, `npm test`, `npm run build` pass; GitHub check passes.
 - [ ] Your play-test on your account; then `Close Phase 13: …` and push.
+- **Step 5 done (2026-10-15), except your play-test:** a link on the start page, "Or use the app without Spotify" (only on `127.0.0.1`/`localhost`; a cookie in your browser remembers the choice). Without Spotify: the home page, library, song and play pages open; your games and saved songs stay yours (the app remembers your Spotify id in `.data/last-user.json`, or takes the only id in the saved files); the From Spotify tab, the whole-library search (4,253 songs) and lyrics for Spotify songs come from the saved copy of your library; the top-right menu says "Not connected to Spotify" with a Connect Spotify link. Spotify-only things (Spotify playback, refreshing the library) ask you to connect. Tried in my browser pane with no Spotify login: home, the three library tabs, the saved library, your saved songs, lyrics for a Spotify song and for a YouTube song all load; the player token answers "not logged in" as it should. README updated (YouTube key, the two music sources, what the app never does, the local-only note).
+- Not tried: playing a Spotify song while Spotify is connected again after this change (the code on that path is unchanged), and the corner player in a song you play from local mode.

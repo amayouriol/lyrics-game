@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { isDifficulty } from "@/lib/game";
-import { getProfile, getSession, hasActiveSession } from "@/lib/session";
+import { currentProfile, getSession, hasAccess } from "@/lib/session";
 import { getMatch } from "@/lib/video-matches";
 import { PlayClient } from "./PlayClient";
 
@@ -13,9 +13,10 @@ export default async function PlayPage({
   searchParams: Promise<{ from?: string; level?: string; mode?: string; source?: string }>;
 }) {
   const session = await getSession();
-  if (!hasActiveSession(session)) {
+  if (!(await hasAccess(session))) {
     redirect("/");
   }
+  const profile = await currentProfile(session);
 
   const { trackId } = await params;
   const { from, level, mode, source } = await searchParams;
@@ -30,7 +31,7 @@ export default async function PlayPage({
       initialLevel={isDifficulty(level) ? level : "medium"}
       initialMode={mode === "sing" ? "sing" : "type"}
       videoId={match?.videoId ?? null}
-      profile={getProfile(session)}
+      profile={profile}
     />
   );
 }

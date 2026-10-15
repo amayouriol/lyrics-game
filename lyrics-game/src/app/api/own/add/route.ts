@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { addOwnSong, addOwnSongs } from "@/lib/own-library";
-import { getSession, hasActiveSession } from "@/lib/session";
+import { getSession, hasAccess } from "@/lib/session";
 import type { Track } from "@/lib/spotify";
 import { ownIdFor } from "@/lib/track-id";
 import { setMatch, setMatchesIfMissing } from "@/lib/video-matches";
@@ -36,7 +36,7 @@ function toTrack(song: VideoSong): Track {
  * The song's details come from YouTube here, not from the browser.
  */
 export async function POST(request: Request) {
-  if (!hasActiveSession(await getSession())) {
+  if (!(await hasAccess(await getSession()))) {
     return NextResponse.json({ error: "session_expired" }, { status: 401 });
   }
   let body: Record<string, unknown>;

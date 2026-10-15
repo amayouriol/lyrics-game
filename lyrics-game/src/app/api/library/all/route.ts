@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { describeTracks, getSources, getTracks } from "@/lib/library";
 import { getAllOwnTracks } from "@/lib/own-library";
-import { getSession, getValidAccessToken } from "@/lib/session";
+import { getSession, getValidAccessToken, hasActiveSession, isLocalMode } from "@/lib/session";
 import { SpotifyApiError, SpotifySessionExpiredError, type Track } from "@/lib/spotify";
 
 /** Playlists loaded at the same time; Spotify rate-limits bursts. */
@@ -14,8 +14,16 @@ const PARALLEL = 2;
  */
 export async function GET() {
   try {
-    const accessToken = await getValidAccessToken();
-    const got = await getSources(accessToken);
+    // Without Spotify, search the saved copy of your lists (and the songs added from YouTube).
+    const offline = !hasActiveSession(await getSession()) && (await isLocalMode());
+    const accessToken = offline ? null : await getValidAccessToken();
+    let got;
+    try {
+      got = await getSources(accessToken);
+    } catch (error) {
+      if (!offline || !(error instanceof SpotifySessionExpiredError)) throw error;
+      got = { data: [], updatedAt: 0 } as Awaited<ReturnType<typeof getSources>>;
+    }
     const sources = got.data;
     let blockedUntil = got.blockedUntil ?? null;
 
@@ -29,7 +37,8 @@ export async function GET() {
             lists[i + j] = list.data;
             if (list.blockedUntil) blockedUntil = list.blockedUntil;
           } catch (error) {
-            if (error instanceof SpotifySessionExpiredError) throw error;
+            // Offline, a list that was never saved is just left out.
+            if (error instanceof SpotifySessionExpiredError && !offline) throw error;
             if (error instanceof SpotifyApiError && error.rateLimited) {
               rateLimited = true;
               blockedUntil = error.retryAt ?? blockedUntil;

@@ -1,17 +1,18 @@
 import { redirect } from "next/navigation";
 import { Header } from "@/components/Header";
-import { getProfile, getSession, hasActiveSession } from "@/lib/session";
+import { currentProfile, getSession, hasAccess } from "@/lib/session";
 import { HowToPlay } from "./HowToPlay";
 
 export default async function HowToPlayPage() {
   const session = await getSession();
-  if (!hasActiveSession(session)) {
+  if (!(await hasAccess(session))) {
     redirect("/");
   }
+  const profile = await currentProfile(session);
 
   return (
     <>
-      <Header profile={getProfile(session)} />
+      <Header profile={profile} />
       <HowToPlay />
     </>
   );

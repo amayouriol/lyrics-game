@@ -88,14 +88,24 @@ export function Header({ profile }: { profile: Profile }) {
           <div className={styles.menu} role="menu">
             <div className={styles.who}>
               {name && <span className={styles.name}>{name}</span>}
-              <span className={styles.plan}>Spotify Premium</span>
+              <span className={styles.plan}>
+                {profile.connected ? "Spotify Premium" : "Not connected to Spotify"}
+              </span>
             </div>
-            <form action="/api/auth/logout" method="POST">
-              <button type="submit" role="menuitem" className={styles.menuItem}>
-                Log out
+            {profile.connected ? (
+              <form action="/api/auth/logout" method="POST">
+                <button type="submit" role="menuitem" className={styles.menuItem}>
+                  Log out
+                  <ArrowIcon />
+                </button>
+              </form>
+            ) : (
+              // Plain link: this starts Spotify auth and should not be prefetched.
+              <a href="/api/auth/login" role="menuitem" className={styles.menuItem}>
+                Connect Spotify
                 <ArrowIcon />
-              </button>
-            </form>
+              </a>
+            )}
           </div>
         )}
       </div>

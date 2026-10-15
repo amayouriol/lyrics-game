@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSession, hasActiveSession } from "@/lib/session";
+import { getSession, hasAccess } from "@/lib/session";
 import { failureStatus, searchVideos, YouTubeError } from "@/lib/youtube";
 
 /**
@@ -8,7 +8,7 @@ import { failureStatus, searchVideos, YouTubeError } from "@/lib/youtube";
  * free daily quota, so it only runs when you press search.
  */
 export async function GET(request: Request) {
-  if (!hasActiveSession(await getSession())) {
+  if (!(await hasAccess(await getSession()))) {
     return NextResponse.json({ error: "session_expired" }, { status: 401 });
   }
   const query = new URL(request.url).searchParams;

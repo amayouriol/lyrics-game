@@ -4,7 +4,14 @@ import { playedTrackIds } from "./games";
 import type { Language } from "./language";
 import { getCachedInfo, type LyricsStatus } from "./lyrics";
 import { getUserId } from "./session";
-import { listSources, listTracks, SpotifyApiError, type Source, type Track } from "./spotify";
+import {
+  listSources,
+  listTracks,
+  SpotifyApiError,
+  SpotifySessionExpiredError,
+  type Source,
+  type Track,
+} from "./spotify";
 
 /**
  * Your playlist list and each playlist's songs are kept on disk and reused
@@ -71,12 +78,17 @@ export interface FromSpotify<T> {
  */
 async function fromSpotify<T>(
   slot: string,
-  load: () => Promise<T>,
+  /** Null when Spotify isn't connected: only the saved copy, however old, can be used. */
+  load: (() => Promise<T>) | null,
   force = false
 ): Promise<FromSpotify<T>> {
   const userId = await getUserId();
   const all = await readCache();
   const saved = all[userId]?.[slot];
+  if (!load) {
+    if (!saved) throw new SpotifySessionExpiredError("Spotify isn't connected and this isn't saved");
+    return { data: saved.data as T, updatedAt: saved.at };
+  }
   if (saved && !force && Date.now() - saved.at < FRESH_MS) {
     return { data: saved.data as T, updatedAt: saved.at };
   }
@@ -102,13 +114,31 @@ async function fromSpotify<T>(
 }
 
 /** Liked Songs and the playlists you own. `refresh` reloads them from Spotify now. */
-export function getSources(accessToken: string, refresh = false) {
-  return fromSpotify<Source[]>("sources", () => listSources(accessToken), refresh);
+export function getSources(accessToken: string | null, refresh = false) {
+  return fromSpotify<Source[]>(
+    "sources",
+    accessToken ? () => listSources(accessToken) : null,
+    refresh
+  );
 }
 
 /** One list's songs. */
-export function getTracks(accessToken: string, sourceId: string) {
-  return fromSpotify<Track[]>(`tracks:${sourceId}`, () => listTracks(accessToken, sourceId));
+export function getTracks(accessToken: string | null, sourceId: string) {
+  return fromSpotify<Track[]>(
+    `tracks:${sourceId}`,
+    accessToken ? () => listTracks(accessToken, sourceId) : null
+  );
+}
+
+/** A song from any saved list, for when Spotify can't be asked for it (not connected). */
+export async function findCachedTrack(trackId: string): Promise<Track | null> {
+  const mine = (await readCache())[await getUserId()];
+  for (const [slot, stored] of Object.entries(mine ?? {})) {
+    if (!slot.startsWith("tracks:")) continue;
+    const found = (stored.data as Track[]).find((t) => t.id === trackId);
+    if (found) return found;
+  }
+  return null;
 }
 
 /**

@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { getDictionary, getLanguage } from "@/lib/dictionary";
 import { DIFFICULTY_ORDER, pickBlanks } from "@/lib/game";
+import { findCachedTrack } from "@/lib/library";
 import { getLyrics } from "@/lib/lyrics";
 import { getOwnSong } from "@/lib/own-library";
 import { singableWords } from "@/lib/sing";
-import { getSession, getValidAccessToken, hasActiveSession } from "@/lib/session";
+import { getSession, getValidAccessToken, hasAccess, hasActiveSession } from "@/lib/session";
 import { getTrack, SpotifySessionExpiredError } from "@/lib/spotify";
 import { isOwnId, isTrackId } from "@/lib/track-id";
 
@@ -20,15 +21,21 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tra
   }
 
   // A song added from YouTube needs no Spotify, but is still only for the logged-in user.
-  if (isOwnId(trackId) && !hasActiveSession(await getSession())) {
+  if (isOwnId(trackId) && !(await hasAccess(await getSession()))) {
     return NextResponse.json({ error: "session_expired" }, { status: 401 });
   }
 
   try {
     // A song added from YouTube is in the app's own library, not on Spotify.
+    // Without Spotify, a Spotify song is found in the saved copy of your lists.
+    const connected = hasActiveSession(await getSession());
     const track = isOwnId(trackId)
       ? await getOwnSong(trackId)
-      : await getTrack(await getValidAccessToken(), trackId);
+      : connected
+        ? await getTrack(await getValidAccessToken(), trackId)
+        : (await hasAccess(await getSession()))
+          ? await findCachedTrack(trackId)
+          : await getTrack(await getValidAccessToken(), trackId);
     if (!track) {
       return NextResponse.json({ error: "not_found" }, { status: 404 });
     }

@@ -1,5 +1,6 @@
 import { getIronSession, type IronSession, type SessionOptions } from "iron-session";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { knownUser, rememberUser } from "./local-user";
 import { getCurrentUser, refreshAccessToken, SpotifySessionExpiredError } from "./spotify";
 
 export interface SessionData {
@@ -20,11 +21,20 @@ export interface SessionData {
 export interface Profile {
   name: string | null;
   picture: string | null;
+  /** Logged in to Spotify (false when using the app without it). */
+  connected: boolean;
 }
 
 /** Your name and picture as kept at login. No Spotify request: until you log in again, both are null. */
 export function getProfile(session: SessionData): Profile {
-  return { name: session.name ?? null, picture: session.picture ?? null };
+  return { name: session.name ?? null, picture: session.picture ?? null, connected: true };
+}
+
+/** The profile for the top bar: yours from the login, or, without Spotify, the one remembered from the last login. */
+export async function currentProfile(session: SessionData): Promise<Profile> {
+  if (hasActiveSession(session)) return getProfile(session);
+  const { name, picture } = await knownUser();
+  return { name, picture, connected: false };
 }
 
 const sessionOptions: SessionOptions = {
@@ -48,6 +58,30 @@ export function hasActiveSession(session: SessionData): boolean {
   return Boolean(session.accessToken && session.refreshToken && session.expiresAt);
 }
 
+/**
+ * Using the app without Spotify is a choice you make on the start page, and
+ * only works when the address in the browser is this machine's own
+ * (127.0.0.1 or localhost), so it isn't open to others on the same network.
+ * (The address comes from the request, so this is a convenience for a home
+ * computer, not a lock: a hosted version needs a real login.)
+ */
+export const LOCAL_COOKIE = "lyrics_game_local";
+
+export async function isThisMachine(): Promise<boolean> {
+  const name = ((await headers()).get("host") ?? "").replace(/:\d+$/, "");
+  return name === "127.0.0.1" || name === "localhost" || name === "[::1]";
+}
+
+/** You chose to use the app without Spotify, on this machine. */
+export async function isLocalMode(): Promise<boolean> {
+  return (await isThisMachine()) && (await cookies()).get(LOCAL_COOKIE)?.value === "1";
+}
+
+/** Logged in to Spotify, or using the app without it. */
+export async function hasAccess(session: SessionData): Promise<boolean> {
+  return hasActiveSession(session) || (await isLocalMode());
+}
+
 const REFRESH_BUFFER_MS = 60_000;
 
 /**
@@ -68,7 +102,15 @@ export async function getValidAccessToken(): Promise<string> {
  */
 export async function getUserId(): Promise<string> {
   const session = await getSession();
-  if (session.userId && hasActiveSession(session)) return session.userId;
+  if (!hasActiveSession(session) && (await isLocalMode())) return (await knownUser()).id;
+  if (session.userId && hasActiveSession(session)) {
+    await rememberUser({
+      id: session.userId,
+      name: session.name ?? null,
+      picture: session.picture ?? null,
+    });
+    return session.userId;
+  }
   // Same session object as the token refresh, so saving the id can't
   // overwrite freshly refreshed tokens with old ones.
   const accessToken = await validAccessToken(session);
@@ -78,6 +120,7 @@ export async function getUserId(): Promise<string> {
   session.name = me.name ?? undefined;
   session.picture = me.picture ?? undefined;
   await session.save();
+  await rememberUser({ id: me.id, name: me.name ?? null, picture: me.picture ?? null });
   return session.userId;
 }
 

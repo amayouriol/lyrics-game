@@ -1,7 +1,7 @@
 import { isTrackId } from "@/lib/track-id";
 import { type NextRequest, NextResponse } from "next/server";
 import { checkTracks, getCachedInfo, type LyricsLookup } from "@/lib/lyrics";
-import { getSession, hasActiveSession } from "@/lib/session";
+import { getSession, hasAccess } from "@/lib/session";
 
 const MAX_BATCH = 10;
 const MAX_TEXT = 300;
@@ -33,7 +33,7 @@ function parseBody(body: unknown): LyricsLookup[] | null {
 export async function POST(request: NextRequest) {
   // Only the logged-in user can use this, so it isn't an open proxy to LRCLIB.
   const session = await getSession();
-  if (!hasActiveSession(session)) {
+  if (!(await hasAccess(session))) {
     return NextResponse.json({ error: "session_expired" }, { status: 401 });
   }
 

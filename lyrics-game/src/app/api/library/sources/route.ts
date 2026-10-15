@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getSources, markListsOutdated } from "@/lib/library";
-import { getSession, getValidAccessToken } from "@/lib/session";
+import { getSession, getValidAccessToken, hasActiveSession, isLocalMode } from "@/lib/session";
 import { SpotifyApiError, SpotifySessionExpiredError } from "@/lib/spotify";
 
 /**
@@ -10,6 +10,21 @@ import { SpotifyApiError, SpotifySessionExpiredError } from "@/lib/spotify";
  */
 export async function GET(request: NextRequest) {
   try {
+    // Without Spotify, only the saved copy of your lists can be shown.
+    if (!hasActiveSession(await getSession()) && (await isLocalMode())) {
+      try {
+        const got = await getSources(null);
+        return NextResponse.json({
+          sources: got.data,
+          updatedAt: got.updatedAt,
+          blockedUntil: null,
+          offline: true,
+        });
+      } catch (error) {
+        if (!(error instanceof SpotifySessionExpiredError)) throw error;
+        return NextResponse.json({ sources: [], updatedAt: 0, blockedUntil: null, offline: true });
+      }
+    }
     const accessToken = await getValidAccessToken();
     const refresh = request.nextUrl.searchParams.get("refresh") === "1";
     const got = await getSources(accessToken, refresh);

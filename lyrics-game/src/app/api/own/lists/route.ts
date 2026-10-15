@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { getOwnSources } from "@/lib/own-library";
-import { getSession, hasActiveSession } from "@/lib/session";
+import { getSession, hasAccess } from "@/lib/session";
 
 /** The songs and playlists added from YouTube, as cards for the library. */
 export async function GET() {
-  if (!hasActiveSession(await getSession())) {
+  if (!(await hasAccess(await getSession()))) {
     return NextResponse.json({ error: "session_expired" }, { status: 401 });
   }
   try {
