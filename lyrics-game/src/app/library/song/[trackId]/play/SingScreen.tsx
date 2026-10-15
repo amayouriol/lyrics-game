@@ -302,6 +302,12 @@ export function SingScreen({
             <div className={styles.status}>Getting the player ready…</div>
           )}
 
+          {status.kind === "ad" && (
+            <div className={styles.status}>
+              A short ad is playing. Your song starts right after.
+            </div>
+          )}
+
           {status.kind === "dropped" && (
             <div className={styles.panel}>
               <h2>Paused: Spotify is playing somewhere else.</h2>

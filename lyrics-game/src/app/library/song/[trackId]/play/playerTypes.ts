@@ -1,13 +1,19 @@
 /**
  * What the game screens need from a music player, whichever service is behind
- * it (Spotify today, YouTube next). Screens use these types and `usePlayback`,
- * never a service's own types.
+ * it (Spotify or YouTube). Screens use these types and `usePlayback`, never a
+ * service's own types.
  */
 
-export type PlayerError = "permissions" | "premium" | "unsupported" | "start_failed";
+export type PlayerError =
+  | "permissions"
+  | "premium"
+  | "unsupported"
+  | "start_failed"
+  | "video_unavailable";
 
 export type PlayerStatus =
   | { kind: "connecting" }
+  | { kind: "ad" } // YouTube is showing an ad; the song hasn't started
   | { kind: "playing" } // the song has started; it may be paused
   | { kind: "dropped" }
   | { kind: "blocked" }
@@ -18,6 +24,8 @@ export interface PlayerOptions {
   durationMs: number;
   lineTimesMs: number[];
   onEnded: () => void;
+  /** False while another player is in use for this song; this one stays idle. Default true. */
+  enabled?: boolean;
 }
 
 export interface Player {

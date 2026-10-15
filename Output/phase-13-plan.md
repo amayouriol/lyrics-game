@@ -16,11 +16,14 @@ Derived from: Output/phase-13-spec.md. Review before building.
 - Done (2026-10-14): new `playerTypes.ts` (the shape: status, errors, controls) and `usePlayback.ts` (the one hook the screens call; Spotify for now). `usePlayer.ts` now returns that shape; `PlayClient.tsx` and `SingScreen.tsx` call `usePlayback`. No behavior changed: lint, 52 checks and build pass. Not tried on a real Spotify song (avoids extra Spotify requests); you'll see it in the Phase 13 play-test.
 
 ## 2. YouTube player
-- [ ] Loading YouTube's player in the corner (320 × 180) with start, pause, continue, position, "ended".
-- [ ] Ads: the game waits while an ad plays and shows the ad text; the lyrics clock starts when the real song starts.
-- [ ] The line-end wait works (pause just before the next line, continue when answered).
-- [ ] Errors: can't embed, video removed, no internet — clear message and "pick another".
-- [ ] Try it on one hard-coded video before any matching work.
+- [x] Loading YouTube's player in the corner (320 × 180) with start, pause, continue, position, "ended".
+- [~] Ads: the game waits while an ad plays and shows the ad text; the lyrics clock starts when the real song starts. Built, **not seen with a real ad yet** (see note).
+- [x] The line-end wait works (pause just before the next line, continue when answered).
+- [~] Errors: can't embed, video removed, no internet — clear message ("This video can't be played here."). Built; "pick another" comes with step 3. Not triggered live.
+- [x] Try it on one hard-coded video before any matching work.
+- Done (2026-10-14): `useYouTubePlayer.ts` (same shape as the Spotify player) and `youtubeApi.ts` (loads YouTube's player, no packages). `usePlayback.ts` uses YouTube when the page address has `?yt=<video id>` (a test link; step 3 replaces it with the saved match), otherwise Spotify. New "ad" status and "video_unavailable" error with texts on both screens. Tried on a temporary page (deleted) with one real video: it plays, the lyrics clock stays within a second of YouTube's, pause and continue work, and the wait before a line holds the clock just before it and continues when released. Lint, 52 checks and build pass.
+- Note on ads: the ad check compares the video YouTube reports (its id and length) with the song's. I haven't seen an ad in my tests, so that check is a best guess. When you play-test, if an ad plays and the lyrics start early, tell me: the browser console prints "[youtube] ad detected" when the check fires, and we adjust it.
+- Not tried on the real game screens (they need your Spotify login): the corner player's position over the bottom player bar is unchecked.
 
 ## 3. Matching songs to videos
 - [ ] Search with the title and artist, prefer Topic / auto-generated uploads, skip lyrics-video words, show the top 3 with warnings.

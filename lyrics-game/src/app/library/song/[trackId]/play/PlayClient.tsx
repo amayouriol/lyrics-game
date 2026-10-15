@@ -56,6 +56,10 @@ const ERRORS: Record<PlayerError, { title: string; body: string }> = {
     title: "The player didn't start.",
     body: "Spotify's player didn't respond. It's probably a blip.",
   },
+  video_unavailable: {
+    title: "This video can't be played here.",
+    body: "Its owner doesn't allow it on other sites, or it was removed.",
+  },
 };
 
 const HELP_DEFAULT =
@@ -527,6 +531,12 @@ function PlayScreen({
         <div className={styles.center}>
           {status.kind === "connecting" && (
             <div className={styles.status}>Getting the player ready…</div>
+          )}
+
+          {status.kind === "ad" && (
+            <div className={styles.status}>
+              A short ad is playing. Your song starts right after.
+            </div>
           )}
 
           {status.kind === "dropped" && (

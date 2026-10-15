@@ -51,7 +51,13 @@ function linesStarted(lineTimesMs: number[], positionMs: number): number {
  * while the current one has unanswered words). The song pauses just before
  * it and continues by itself once the hold is set back to null.
  */
-export function usePlayer({ trackId, durationMs, lineTimesMs, onEnded }: PlayerOptions): Player {
+export function usePlayer({
+  trackId,
+  durationMs,
+  lineTimesMs,
+  onEnded,
+  enabled = true,
+}: PlayerOptions): Player {
   const router = useRouter();
   const [status, setStatus] = useState<PlayerStatus>({ kind: "connecting" });
   const [paused, setPaused] = useState(true);
@@ -103,6 +109,7 @@ export function usePlayer({ trackId, durationMs, lineTimesMs, onEnded }: PlayerO
 
   // Attach to the shared player and start this song on it.
   useEffect(() => {
+    if (!enabled) return; // this song plays on YouTube
     let cancelled = false;
     let player: Spotify.Player | null = null;
     let readyTimeout: ReturnType<typeof setTimeout> | undefined;
@@ -296,7 +303,7 @@ export function usePlayer({ trackId, durationMs, lineTimesMs, onEnded }: PlayerO
       playerRef.current = null;
       deviceRef.current = null;
     };
-  }, [trackId, durationMs, requestPlay, expire]);
+  }, [trackId, durationMs, requestPlay, expire, enabled]);
 
   // Advance the clock between player events.
   useEffect(() => {
