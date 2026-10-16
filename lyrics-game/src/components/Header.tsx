@@ -92,20 +92,20 @@ export function Header({ profile }: { profile: Profile }) {
                 {profile.connected ? "Spotify Premium" : "Not connected to Spotify"}
               </span>
             </div>
-            {profile.connected ? (
-              <form action="/api/auth/logout" method="POST">
-                <button type="submit" role="menuitem" className={styles.menuItem}>
-                  Log out
-                  <ArrowIcon />
-                </button>
-              </form>
-            ) : (
+            {!profile.connected && (
               // Plain link: this starts Spotify auth and should not be prefetched.
               <a href="/api/auth/login" role="menuitem" className={styles.menuItem}>
                 Connect Spotify
                 <ArrowIcon />
               </a>
             )}
+            {/* Also when not connected: it leaves "use without Spotify" and returns to the start page. */}
+            <form action="/api/auth/logout" method="POST">
+              <button type="submit" role="menuitem" className={styles.menuItem}>
+                Log out
+                <ArrowIcon />
+              </button>
+            </form>
           </div>
         )}
       </div>
