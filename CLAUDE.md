@@ -1,17 +1,17 @@
 # Lyrics Game
 
-A personal Next.js web app: connects to my Spotify Premium account, plays a song in the browser, shows synced lyrics (LRCLIB), hides words and I type them. Single user, desktop browser.
+A personal Next.js web app: plays a song in the browser from my Spotify Premium account or from YouTube, shows synced lyrics (LRCLIB), hides words and I type or sing them. Single user, desktop browser. Spotify is optional since Phase 13. A web version for friends (YouTube only) is planned in Phase 14.
 
 ## Where things are
 - `lyrics-game/` — the app. Read `lyrics-game/AGENTS.md` first: Next.js 16 has breaking changes; check `node_modules/next/dist/docs/` before writing Next code.
 - `spec.md` — the whole project. `plan.md` — the phase roadmap. `Lyrics Game prototype flow-handoff.zip` — the design handoff (screens, copy, colors) the specs and `globals.css` refer to.
 - `Output/phase-N-spec.md` (what and why) and `Output/phase-N-plan.md` (checklist) — one pair per phase. `Output/retrospective.md` — lessons so far.
-- `lyrics-game/src/lib/` — server logic: `spotify.ts`, `library.ts` (library + on-disk copy), `spotify-block.ts` (rate-limit block), `lyrics.ts` / `lyrics-cache.ts`, `game.ts` (blanks, guesses, scoring), `games.ts` / `progress.ts` / `saved.ts` (my data), `json-file.ts`.
+- `lyrics-game/src/lib/` — server logic: `spotify.ts`, `library.ts` (library + on-disk copy), `spotify-block.ts` (rate-limit block), `lyrics.ts` / `lyrics-cache.ts`, `game.ts` (blanks, guesses, scoring), `games.ts` / `progress.ts` / `saved.ts` (my data), `json-file.ts`. YouTube (Phase 13): `youtube.ts` (search, ranking, links, playlists), `video-matches.ts` (the chosen video per song), `own-library.ts` (songs and lists added from YouTube, ids `yt-<video id>`), `track-id.ts`, `local-user.ts` (who you are without Spotify).
 - `lyrics-game/src/app/` — pages and `api/` routes. `src/components/` — shared UI.
-- `lyrics-game/.data/` — my data and caches (gitignored, never commit). `.env.local` holds Spotify keys (gitignored; only `.env.local.example` is tracked).
+- `lyrics-game/.data/` — my data and caches (gitignored, never commit). `.env.local` holds the Spotify keys and `YOUTUBE_API_KEY` (gitignored; only `.env.local.example` is tracked).
 
 ## Commands (run in `lyrics-game/`)
-- `npm run dev` — dev server on port 3000 (or preview `lyrics-game-dev` from `.claude/launch.json`). Spotify login redirects to `http://127.0.0.1:3000`.
+- `npm run dev` — dev server on port 3000 (or preview `lyrics-game-dev` from `.claude/launch.json`). Spotify login redirects to `http://127.0.0.1:3000`, so the app runs at that address, not `localhost`.
 - `npm run lint` and `npm run build` — both must pass before a step is done.
 - `npm test` — rule checks for the game (`src/lib/*.test.ts`, Node's built-in runner, no extra packages). Must pass too. When a game rule changes, update or add a check.
 
@@ -26,6 +26,14 @@ A personal Next.js web app: connects to my Spotify Premium account, plays a song
 - Keep Spotify requests low: it rate-limits hard (multi-hour blocks). Reuse the on-disk library copy (6 h) and respect the remembered block; never add loops that re-fetch the whole library.
 - Spotify's API changes without warning (e.g. playlist `/tracks` → `/items`). When something breaks, check the current docs before assuming our code is wrong.
 - LRCLIB sometimes answers 503; lyrics are cached in `.data/lyrics-cache.json`.
+
+## YouTube (Phase 13)
+- Official embedded player only: never hide it or cover it (at least 200 px high, the corner player is 356 × 200), never block ads, never download audio. Captions are switched off in code, because they would show the lyrics.
+- YouTube refuses to play on a page whose address is a number, so on `127.0.0.1` the player runs in a frame served from `localhost` (`/yt-frame`, see `createPlayer` in `youtubeApi.ts`). Test any YouTube change from `127.0.0.1:3000`, not only `localhost`.
+- The free YouTube key allows about 100 searches a day: search only when the user asks, and save every choice. Playlists and link details cost almost nothing.
+- "Embeddable" in YouTube's data is only a hint. A video is saved only after it loads in a visible player (`VideoChoices.tsx`).
+- Data that one route writes and another reads (video choices, own library) uses `freshJsonFile`, read from the file each time. A copy kept in memory went stale in dev and played the wrong source.
+- Without Spotify ("use the app without Spotify" on the start page) only works on `127.0.0.1`/`localhost`; your data stays under the remembered Spotify id.
 
 ## Writing style
 - UI text, specs, plans and commit messages: plain, short English that a non-developer understands. No jargon in anything the user reads.
