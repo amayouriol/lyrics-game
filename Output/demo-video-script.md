@@ -17,7 +17,7 @@ A short screen recording for your portfolio or to send people. It shows how the 
 4. **Play, 30 s.** The music starts, the lyrics move, blanks drop out. Type a word, show the points and the streak, show the song waiting for a word. Keep the corner player visible: it is YouTube's own.
 5. **Results, 10 s.** The end screen: score, accuracy, your guesses.
 6. **Home, 10 s.** Your totals and "Words that keep dropping."
-7. **End card, 10 s.** Text on screen: "Built with Next.js, React and TypeScript. YouTube's official player. Lyrics from LRCLIB." and the GitHub link (https://github.com/andrea2220896-max/lyrics-game).
+7. **End card, 10 s.** Text on screen: "Built with Next.js, React and TypeScript. YouTube's official player. Lyrics from LRCLIB." and the GitHub link (https://github.com/amayouriol/lyrics-game).
 
 ## What to say (one line each)
 - "Lyric Drop hides words from a song's lyrics, and you fill them in as it plays."

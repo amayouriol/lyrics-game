@@ -29,7 +29,7 @@ You can use either one, or both. The app never downloads audio from YouTube, nev
 ### 1. Get the code
 
 ```bash
-git clone https://github.com/andrea2220896-max/lyrics-game.git
+git clone https://github.com/amayouriol/lyrics-game.git
 ```
 
 This creates a `lyrics-game` folder, and the app lives in another `lyrics-game` folder inside it. Every command below runs from there:
