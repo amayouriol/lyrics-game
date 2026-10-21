@@ -107,12 +107,49 @@ Leave the terminal open while you play. To stop, press `Ctrl + C` in it. Next ti
 - **Spotify limits requests.** If the app asks too often, Spotify blocks it for a few hours. The app keeps a copy of your library for 6 hours and remembers a block, so it won't keep asking. If you see "Spotify is limiting this app until…", wait until that time.
 - **Your data stays on your computer.** Games, saved songs and caches are kept in `lyrics-game/.data/`, which is created on first use and never uploaded. Delete it to start fresh.
 - **Lyrics and videos.** Lyrics come from LRCLIB, a community service, and are shown only as the game needs them. On YouTube, the game prefers "Topic" uploads (the cover picture and nothing else), warns about lyrics videos (which would give the words away) and turns YouTube's captions off. Some videos, mostly from big labels, can't be played outside YouTube; the app checks before it saves one and asks you to choose another.
-- **Without Spotify** the app only opens from this computer's own address (`127.0.0.1`). Anyone else on your network can't use it that way. A website for friends would need its own login and is not part of this app yet.
+- **Without Spotify** the app only opens from this computer's own address (`127.0.0.1`). Anyone else on your network can't use it that way. For friends, use the web version above.
 - **If Spotify plays on another device** (your phone, for example), the game pauses. Press play in the app to bring it back.
+
+## A web version for friends (optional)
+
+You can also put a copy online that your friends open from a link. It is **YouTube only** (Spotify's rules don't allow a public game built on it), it asks for a **shared word** you give your friends, and each friend's games and songs are kept apart under a random id in their browser. Your own copy on your computer stays as it is.
+
+It runs free on two services. You create the accounts yourself; nothing is paid.
+
+### 1. A free database (Upstash)
+
+1. Sign up at [upstash.com](https://upstash.com) and choose the free plan.
+2. Create a **Redis** database and pick the region closest to your friends.
+3. Open the database and find the **REST API** section. Keep two values: `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` (the normal read-and-write token).
+
+### 2. A place to run it (Vercel)
+
+1. Sign up at [vercel.com](https://vercel.com) with GitHub and choose the free **Hobby** plan (for personal, non-commercial use).
+2. **Add New → Project**, pick this repository, and set **Root Directory** to `lyrics-game`.
+3. Before the first deploy, open **Environment Variables** and add these five. Type them yourself; never put them in the code or in git:
+
+| Name | Value |
+| --- | --- |
+| `APP_MODE` | `web` |
+| `WEB_GATE_WORD` | the shared word you choose (case doesn't matter) |
+| `YOUTUBE_API_KEY` | your YouTube key (step 3 of the setup above) |
+| `UPSTASH_REDIS_REST_URL` | from Upstash |
+| `UPSTASH_REDIS_REST_TOKEN` | from Upstash |
+
+4. Click **Deploy**. Vercel gives you an address like `your-project.vercel.app`. Open it: you should see **Enter the word**. Send friends the link and the word, separately.
+
+### Good to know about the web version
+
+- **Without the word nothing opens.** If `WEB_GATE_WORD` is missing, the site stays locked. To lock everyone out and ask for a new word, change it in Vercel (**Settings → Environment Variables**) and redeploy.
+- **Daily limits keep YouTube's free allowance safe.** Each person gets 10 searches and 3 playlist imports a day, and all friends together get 80 searches. Pasting a link to one video isn't limited. The numbers are at the top of `lyrics-game/src/lib/limits.ts`.
+- **Friends' data** is a random id in a cookie. Clearing the browser's cookies starts that person from zero, and there is no sync between devices. Lyrics and the video chosen for each song are shared, so a song one friend added is quick for the next.
+- **Previews are private.** Vercel puts every non-`main` branch on its own address that only you can open while logged in to Vercel. Friends use the main address.
+- **Free-plan limits.** The first visit after a quiet spell can take a few seconds. Upstash's free plan has a monthly allowance that is plenty for a few friends.
+- **Lyrics** come from LRCLIB, a community service, and aren't licensed for public use. That is why the link is behind a word and shared only with friends.
 
 ## For developers
 
-Built with Next.js 16, React and TypeScript, with no database: everything is stored as files in `.data/`.
+Built with Next.js 16, React and TypeScript. On your computer, everything is stored as files in `.data/`. The web version (`APP_MODE=web`) keeps the same data in a free Upstash Redis database instead, through the same code (`src/lib/storage.ts`).
 
 | Command | What it does |
 | --- | --- |
