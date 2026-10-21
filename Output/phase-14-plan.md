@@ -24,9 +24,9 @@ A tiny throwaway deploy that proves the four risky things:
 - [x] Checks: in web mode no Spotify code path runs. Done (2026-10-20): `app-mode.test.ts` (switch, 404 answer, every Spotify route checks it). Also tried by hand with `APP_MODE=web`: pages load, Spotify routes answer 404. A temporary "web" person id stands in until Step 3.
 
 ## 2. Storage layer
-- [ ] Database backend for the saved files (games, saved songs, added songs, saved video choices) behind the same `read` and `update`.
-- [ ] Lyrics cache and word-language cache in the database, one key per song.
-- [ ] `npm test`: both backends answer the same way (the database one against a small fake).
+- [x] Database backend for the saved files (games, saved songs, added songs, saved video choices) behind the same `read` and `update`. Done (2026-10-20): `storage.ts` (files or database by `APP_MODE`), `database.ts` (Upstash by plain requests). Your files keep their shape: your 17 games and added song still read as before. Added songs are now per person, so the add/lists/lyrics routes pass the person's id.
+- [x] Lyrics cache and word-language cache in the database, one key per song. Done (2026-10-20): `lyrics:<id>` and `language:<id>`; a database that doesn't answer just means songs are checked again.
+- [x] `npm test`: both backends answer the same way (the database one against a small fake). Done (2026-10-20): `storage.test.ts` runs every check on both; `web-data.test.ts` checks per-person and shared data. 99 checks pass.
 
 ## 3. Person id, gate and fair use
 - [ ] Random person id in a cookie in web mode; every route uses it.

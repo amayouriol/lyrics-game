@@ -1,11 +1,11 @@
-import { jsonFile } from "./json-file";
+import { keyedStore } from "./storage.ts";
 import type { Game } from "./progress";
 
-// Your finished games, per Spotify user id.
-const store = jsonFile<Record<string, Game[]>>("games.json", () => ({}));
+// Your finished games, per user id.
+const store = keyedStore<Game[]>("games", () => []);
 
 export async function getGames(userId: string): Promise<Game[]> {
-  return (await store.read())[userId] ?? [];
+  return store.read(userId);
 }
 
 /** Ids of the songs you've finished at least once. */
@@ -15,9 +15,8 @@ export async function playedTrackIds(userId: string): Promise<Set<string>> {
 
 /** Saves a finished game. A game id already saved (a retry, a reload) is left alone. */
 export function saveGame(userId: string, game: Game): Promise<"saved" | "duplicate"> {
-  return store.update((all) => {
-    const games = all[userId] ?? [];
-    if (games.some((g) => g.id === game.id)) return { next: all, result: "duplicate" };
-    return { next: { ...all, [userId]: [...games, game] }, result: "saved" };
+  return store.update(userId, (games) => {
+    if (games.some((g) => g.id === game.id)) return { next: games, result: "duplicate" };
+    return { next: [...games, game], result: "saved" };
   });
 }

@@ -1,5 +1,7 @@
 import { promises as fs } from "fs";
 import path from "path";
+import { isWebMode } from "./app-mode.ts";
+import { getDatabase } from "./database.ts";
 import type { LyricLine } from "./lyrics";
 
 export interface CacheEntry {
@@ -38,7 +40,25 @@ async function load(): Promise<Map<string, CacheEntry>> {
   return loading;
 }
 
+// In the web version: one database entry per song, shared by everyone.
+const entryKey = (id: string) => `lyrics:${id}`;
+
+async function getFromDatabase(ids: string[]): Promise<Map<string, CacheEntry>> {
+  const found = new Map<string, CacheEntry>();
+  try {
+    const raws = await getDatabase().getMany(ids.map(entryKey));
+    raws.forEach((raw, i) => {
+      if (raw !== null) found.set(ids[i], JSON.parse(raw) as CacheEntry);
+    });
+  } catch (error) {
+    // Like an unreadable file: the songs just get checked again.
+    console.warn("[lyrics-cache] could not read the database:", error);
+  }
+  return found;
+}
+
 export async function getCacheEntries(ids: string[]): Promise<Map<string, CacheEntry>> {
+  if (isWebMode()) return getFromDatabase(ids);
   const all = await load();
   const found = new Map<string, CacheEntry>();
   for (const id of ids) {
@@ -49,6 +69,14 @@ export async function getCacheEntries(ids: string[]): Promise<Map<string, CacheE
 }
 
 export async function saveCacheEntries(entries: [string, CacheEntry][]): Promise<void> {
+  if (isWebMode()) {
+    try {
+      await getDatabase().setMany(entries.map(([id, entry]) => [entryKey(id), JSON.stringify(entry)]));
+    } catch (error) {
+      console.error("[lyrics-cache] could not write to the database:", error);
+    }
+    return;
+  }
   const all = await load();
   for (const [id, entry] of entries) all.set(id, entry);
   // Writes are chained so two batches finishing together can't interleave

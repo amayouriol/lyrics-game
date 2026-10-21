@@ -6,7 +6,13 @@ import { findCachedTrack } from "@/lib/library";
 import { getLyrics } from "@/lib/lyrics";
 import { getOwnSong } from "@/lib/own-library";
 import { singableWords } from "@/lib/sing";
-import { getSession, getValidAccessToken, hasAccess, hasActiveSession } from "@/lib/session";
+import {
+  getSession,
+  getUserId,
+  getValidAccessToken,
+  hasAccess,
+  hasActiveSession,
+} from "@/lib/session";
 import { getTrack, SpotifySessionExpiredError } from "@/lib/spotify";
 import { isOwnId, isTrackId } from "@/lib/track-id";
 
@@ -37,7 +43,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tra
     // Without Spotify, a Spotify song is found in the saved copy of your lists.
     const connected = hasActiveSession(await getSession());
     const track = isOwnId(trackId)
-      ? await getOwnSong(trackId)
+      ? await getOwnSong(await getUserId(), trackId)
       : connected
         ? await getTrack(await getValidAccessToken(), trackId)
         : (await hasAccess(await getSession()))

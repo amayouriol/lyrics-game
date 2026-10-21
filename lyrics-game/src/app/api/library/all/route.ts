@@ -2,7 +2,13 @@ import { isWebMode } from "@/lib/app-mode";
 import { NextResponse } from "next/server";
 import { describeTracks, getSources, getTracks } from "@/lib/library";
 import { getAllOwnTracks } from "@/lib/own-library";
-import { getSession, getValidAccessToken, hasActiveSession, isLocalMode } from "@/lib/session";
+import {
+  getSession,
+  getUserId,
+  getValidAccessToken,
+  hasActiveSession,
+  isLocalMode,
+} from "@/lib/session";
 import { SpotifyApiError, SpotifySessionExpiredError, type Track } from "@/lib/spotify";
 
 /** Playlists loaded at the same time; Spotify rate-limits bursts. */
@@ -16,7 +22,7 @@ const PARALLEL = 2;
 export async function GET() {
   // The web version has only the songs added from YouTube, and no Spotify to ask.
   if (isWebMode()) {
-    const tracks = await describeTracks(await getAllOwnTracks());
+    const tracks = await describeTracks(await getAllOwnTracks(await getUserId()));
     return NextResponse.json({ tracks, failed: [], rateLimited: false, blockedUntil: null });
   }
   try {
@@ -65,7 +71,7 @@ export async function GET() {
       }
     }
     // Songs added from YouTube come after the Spotify ones.
-    for (const track of await getAllOwnTracks()) {
+    for (const track of await getAllOwnTracks(await getUserId())) {
       if (seen.has(track.id)) continue;
       seen.add(track.id);
       tracks.push(track);

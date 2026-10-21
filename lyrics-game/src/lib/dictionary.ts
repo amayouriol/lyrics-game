@@ -1,5 +1,7 @@
 import { promises as fs } from "fs";
 import path from "path";
+import { isWebMode } from "./app-mode";
+import { getDatabase } from "./database";
 import { makeIsWord, normalize, type IsWord } from "./game";
 import { IN_ENGLISH, IN_SPANISH, languageOf, type Language } from "./language";
 
@@ -55,7 +57,34 @@ export async function getLanguage(
   lines: { text: string }[]
 ): Promise<Language | null> {
   if (!languages.has(trackId)) {
-    languages.set(trackId, languageOf(lines, (await load()).listsOf));
+    const saved = await savedLanguage(trackId);
+    languages.set(trackId, saved !== undefined ? saved : await work(trackId, lines));
   }
   return languages.get(trackId)!;
+}
+
+/**
+ * In the web version the answer is kept in the database, so a server that
+ * has just woken up doesn't load 11 MB of word lists to work it out again.
+ * Undefined when it isn't saved (or the database didn't answer).
+ */
+async function savedLanguage(trackId: string): Promise<Language | null | undefined> {
+  if (!isWebMode()) return undefined;
+  try {
+    const raw = await getDatabase().get(`language:${trackId}`);
+    return raw === null ? undefined : (JSON.parse(raw) as Language | null);
+  } catch (error) {
+    console.warn("[dictionary] could not read a saved language:", error);
+    return undefined;
+  }
+}
+
+async function work(trackId: string, lines: { text: string }[]): Promise<Language | null> {
+  const language = languageOf(lines, (await load()).listsOf);
+  if (isWebMode()) {
+    await getDatabase()
+      .set(`language:${trackId}`, JSON.stringify(language))
+      .catch((error) => console.warn("[dictionary] could not save a language:", error));
+  }
+  return language;
 }

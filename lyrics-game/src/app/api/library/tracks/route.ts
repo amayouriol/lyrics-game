@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
       );
     } else if (source.startsWith(SOURCE_PREFIX)) {
       // Added from YouTube: kept by the app, no Spotify needed.
-      const own = await getOwnTracks(source.slice(SOURCE_PREFIX.length));
+      const own = await getOwnTracks(await getUserId(), source.slice(SOURCE_PREFIX.length));
       if (!own) return NextResponse.json({ error: "not_found" }, { status: 404 });
       tracks = own;
     } else {

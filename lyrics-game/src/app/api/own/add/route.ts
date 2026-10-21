@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { addOwnSong, addOwnSongs } from "@/lib/own-library";
-import { getSession, hasAccess } from "@/lib/session";
+import { getSession, getUserId, hasAccess } from "@/lib/session";
 import type { Track } from "@/lib/spotify";
 import { ownIdFor } from "@/lib/track-id";
 import { setMatch, setMatchesIfMissing } from "@/lib/video-matches";
@@ -62,10 +62,11 @@ export async function POST(request: Request) {
   }
 
   try {
+    const userId = await getUserId();
     if (playlistId) {
       const playlist = await getPlaylistSongs(playlistId, region);
       const tracks = playlist.songs.map(toTrack);
-      const { added } = await addOwnSongs(tracks, {
+      const { added } = await addOwnSongs(userId, tracks, {
         id: `pl-${playlistId}`,
         name: playlist.name,
         cover: playlist.cover,
@@ -92,7 +93,7 @@ export async function POST(request: Request) {
     if (!song) return NextResponse.json({ error: "video_not_found" }, { status: 404 });
     if (!song.playable) return NextResponse.json({ error: "not_playable" }, { status: 422 });
     const track = toTrack(song);
-    const { added } = await addOwnSong(track);
+    const { added } = await addOwnSong(userId, track);
     await setMatch(track.id, { videoId: song.videoId, title: song.title, channel: song.artist });
     return NextResponse.json({ kind: "song", track, added });
   } catch (error) {

@@ -1,4 +1,4 @@
-import { jsonFile } from "./json-file";
+import { keyedStore } from "./storage.ts";
 
 /** A song you kept, with what's needed to list it without asking Spotify. */
 export interface SavedSong {
@@ -18,13 +18,13 @@ export type SavedListName = "favorites" | "later";
 
 export type SavedLists = Record<SavedListName, SavedSong[]>;
 
-// Favorites and Play later, per Spotify user id. Kept newest first.
-const store = jsonFile<Record<string, SavedLists>>("saved.json", () => ({}));
-
 const emptyLists = (): SavedLists => ({ favorites: [], later: [] });
 
+// Favorites and Play later, per user id. Kept newest first.
+const store = keyedStore<SavedLists>("saved", emptyLists);
+
 export async function getSaved(userId: string): Promise<SavedLists> {
-  return (await store.read())[userId] ?? emptyLists();
+  return store.read(userId);
 }
 
 /**
@@ -37,24 +37,21 @@ export function setSaved(
   song: Omit<SavedSong, "addedAt">,
   on: boolean
 ): Promise<SavedLists> {
-  return store.update((all) => {
-    const lists = all[userId] ?? emptyLists();
+  return store.update(userId, (lists) => {
     const has = lists[list].some((s) => s.id === song.id);
-    if (has === on) return { next: all, result: lists };
+    if (has === on) return { next: lists, result: lists };
     const nextList = on
       ? [{ ...song, addedAt: Date.now() }, ...lists[list]]
       : lists[list].filter((s) => s.id !== song.id);
     const nextLists = { ...lists, [list]: nextList };
-    return { next: { ...all, [userId]: nextLists }, result: nextLists };
+    return { next: nextLists, result: nextLists };
   });
 }
 
 /** Takes a finished song off Play later. */
 export function finishedSong(userId: string, trackId: string): Promise<void> {
-  return store.update((all) => {
-    const lists = all[userId];
-    if (!lists?.later.some((s) => s.id === trackId)) return { next: all, result: undefined };
-    const nextLists = { ...lists, later: lists.later.filter((s) => s.id !== trackId) };
-    return { next: { ...all, [userId]: nextLists }, result: undefined };
+  return store.update(userId, (lists) => {
+    if (!lists.later.some((s) => s.id === trackId)) return { next: lists, result: undefined };
+    return { next: { ...lists, later: lists.later.filter((s) => s.id !== trackId) }, result: undefined };
   });
 }
