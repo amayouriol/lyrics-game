@@ -32,6 +32,8 @@ export const SEARCH_ERRORS: Record<string, string> = {
   no_key: "Add YOUTUBE_API_KEY to .env.local to search for videos.",
   quota: "YouTube's free searches for today are used up. Try again tomorrow.",
   failed: "YouTube didn't answer. Try again.",
+  search_limit: "You've used today's searches. Come back tomorrow.",
+  import_limit: "You've used today's playlist imports. Come back tomorrow.",
 };
 
 /** The browser's language region ("es-ES" → "ES"), a good guess of your country, or null. */

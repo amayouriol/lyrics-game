@@ -9,6 +9,8 @@ export interface Database {
   /** Values in the order of `keys`, null where there is none. */
   getMany(keys: string[]): Promise<(string | null)[]>;
   setMany(entries: [string, string][]): Promise<void>;
+  /** Adds one to a counter (starting at 0) and returns the new count. A new counter disappears after `ttlSeconds`. */
+  increment(key: string, ttlSeconds: number): Promise<number>;
 }
 
 async function command(args: string[]): Promise<unknown> {
@@ -43,6 +45,11 @@ const upstash: Database = {
     if (entries.length === 0) return;
     await command(["MSET", ...entries.flat()]);
   },
+  async increment(key, ttlSeconds) {
+    const count = (await command(["INCR", key])) as number;
+    if (count === 1) await command(["EXPIRE", key, String(ttlSeconds)]);
+    return count;
+  },
 };
 
 /** A database that lives in memory: for the checks, so they need no account. */
@@ -61,6 +68,11 @@ export function memoryDatabase(): Database & { data: Map<string, string> } {
     },
     async setMany(entries) {
       for (const [key, value] of entries) data.set(key, value);
+    },
+    async increment(key) {
+      const count = Number(data.get(key) ?? 0) + 1;
+      data.set(key, String(count));
+      return count;
     },
   };
 }

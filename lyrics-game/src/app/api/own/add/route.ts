@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { checkLimit } from "@/lib/limits";
 import { addOwnSong, addOwnSongs } from "@/lib/own-library";
 import { getSession, getUserId, hasAccess } from "@/lib/session";
 import type { Track } from "@/lib/spotify";
@@ -64,6 +65,8 @@ export async function POST(request: Request) {
   try {
     const userId = await getUserId();
     if (playlistId) {
+      const limited = await checkLimit("import", userId);
+      if (limited) return limited;
       const playlist = await getPlaylistSongs(playlistId, region);
       const tracks = playlist.songs.map(toTrack);
       const { added } = await addOwnSongs(userId, tracks, {

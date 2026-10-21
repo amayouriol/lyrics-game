@@ -29,10 +29,10 @@ A tiny throwaway deploy that proves the four risky things:
 - [x] `npm test`: both backends answer the same way (the database one against a small fake). Done (2026-10-20): `storage.test.ts` runs every check on both; `web-data.test.ts` checks per-person and shared data. 99 checks pass.
 
 ## 3. Person id, gate and fair use
-- [ ] Random person id in a cookie in web mode; every route uses it.
-- [ ] The shared-word gate, with an "Enter the word" page and a "wrong word" message.
-- [ ] Daily caps per person on searches and imports; a clear message when used up ("Come back tomorrow").
-- [ ] `npm test`: the gate and the caps.
+- [x] Random person id in a cookie in web mode; every route uses it. Done (2026-10-20): given at the gate (made again by `getUserId` if cleared); replaces the temporary "web" id.
+- [x] The shared-word gate, with an "Enter the word" page and a "wrong word" message. Done (2026-10-20): `proxy.ts` + `/enter` + `/api/gate`; the cookie holds a fingerprint, not the word; no word set means nothing opens; 10 wrong tries an hour per address. Tried in the browser with a test word.
+- [x] Daily caps per person on searches and imports; a clear message when used up ("Come back tomorrow"). Done (2026-10-20): 10 searches and 3 playlist imports a day per person, plus 80 searches a day for everyone together (my addition, to protect YouTube's 10,000 points). Change the numbers in `limits.ts`.
+- [x] `npm test`: the gate and the caps. Done (2026-10-20): `gate-limits.test.ts`; 113 checks pass.
 
 ## 4. Put it online (you do the accounts)
 - [ ] Steps for Vercel and Upstash in the README, with the three values to paste.

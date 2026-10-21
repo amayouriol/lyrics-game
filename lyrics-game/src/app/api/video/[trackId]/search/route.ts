@@ -1,3 +1,5 @@
+import { checkLimit } from "@/lib/limits";
+import { getUserId } from "@/lib/session";
 import { isTrackId } from "@/lib/track-id";
 import { NextResponse } from "next/server";
 import { searchVideos, YouTubeError } from "@/lib/youtube";
@@ -20,6 +22,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ trac
   if (!title || title.length > 500 || !artist || artist.length > 500 || !(durationMs > 0)) {
     return NextResponse.json({ error: "invalid_query" }, { status: 400 });
   }
+
+  const limited = await checkLimit("search", await getUserId());
+  if (limited) return limited;
 
   try {
     const videos = await searchVideos({ title, primaryArtist: artist, durationMs }, region);

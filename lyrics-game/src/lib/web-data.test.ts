@@ -100,6 +100,7 @@ describe("the web version shares what is the same for everyone", () => {
       set: async () => { throw new Error("down"); },
       getMany: async () => { throw new Error("down"); },
       setMany: async () => { throw new Error("down"); },
+      increment: async () => { throw new Error("down"); },
     });
     const originalWarn = console.warn;
     const originalError = console.error;

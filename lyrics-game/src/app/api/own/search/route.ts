@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getSession, hasAccess } from "@/lib/session";
+import { checkLimit } from "@/lib/limits";
+import { getSession, getUserId, hasAccess } from "@/lib/session";
 import { failureStatus, searchVideos, YouTubeError } from "@/lib/youtube";
 
 /**
@@ -19,6 +20,9 @@ export async function GET(request: Request) {
   if (!title || title.length > 300 || artist.length > 300) {
     return NextResponse.json({ error: "invalid_query" }, { status: 400 });
   }
+
+  const limited = await checkLimit("search", await getUserId());
+  if (limited) return limited;
 
   try {
     // The song's length isn't known yet, so videos aren't compared to it.

@@ -1,6 +1,7 @@
 import { getIronSession, type IronSession, type SessionOptions } from "iron-session";
 import { cookies, headers } from "next/headers";
 import { isWebMode } from "./app-mode";
+import { PERSON_COOKIE } from "./gate";
 import { knownUser, rememberUser } from "./local-user";
 import { getCurrentUser, refreshAccessToken, SpotifySessionExpiredError } from "./spotify";
 
@@ -105,14 +106,13 @@ export async function getValidAccessToken(): Promise<string> {
 }
 
 /**
- * Your Spotify user id, for keeping your games. Stored at login; sessions
+ * Your Spotify user id (in the web version, this browser's random id), for keeping your games. Stored at login; sessions
  * from before that get it from Spotify once and keep it. Route handlers
  * only, since it may save the session. Throws SpotifySessionExpiredError
  * like getValidAccessToken.
  */
 export async function getUserId(): Promise<string> {
-  // Temporary until each person gets an id of their own (Phase 14 step 3).
-  if (isWebMode()) return "web";
+  if (isWebMode()) return personId();
   const session = await getSession();
   if (!hasActiveSession(session) && (await isLocalMode())) return (await knownUser()).id;
   if (session.userId && hasActiveSession(session)) {
@@ -134,6 +134,22 @@ export async function getUserId(): Promise<string> {
   await session.save();
   await rememberUser({ id: me.id, name: me.name ?? null, picture: me.picture ?? null });
   return session.userId;
+}
+
+/** The web version: a random id kept in this browser's cookie (given at the gate; made here if it was cleared). */
+async function personId(): Promise<string> {
+  const store = await cookies();
+  const kept = store.get(PERSON_COOKIE)?.value;
+  if (kept && /^[0-9a-f-]{36}$/.test(kept)) return kept;
+  const id = crypto.randomUUID();
+  store.set(PERSON_COOKIE, id, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 60 * 60 * 24 * 365,
+    path: "/",
+  });
+  return id;
 }
 
 async function validAccessToken(session: IronSession<SessionData>): Promise<string> {

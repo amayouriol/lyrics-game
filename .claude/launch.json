@@ -17,7 +17,7 @@
       "runtimeExecutable": "powershell",
       "runtimeArgs": [
         "-Command",
-        "$env:APP_MODE='web'; npm --prefix lyrics-game run dev -- -p 3100"
+        "$env:APP_MODE='web'; $env:WEB_GATE_WORD='testword'; npm --prefix lyrics-game run dev -- -p 3100"
       ],
       "port": 3100
     }
