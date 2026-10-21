@@ -1,5 +1,6 @@
 import { getIronSession, type IronSession, type SessionOptions } from "iron-session";
 import { cookies, headers } from "next/headers";
+import { isWebMode } from "./app-mode";
 import { knownUser, rememberUser } from "./local-user";
 import { getCurrentUser, refreshAccessToken, SpotifySessionExpiredError } from "./spotify";
 
@@ -23,18 +24,21 @@ export interface Profile {
   picture: string | null;
   /** Logged in to Spotify (false when using the app without it). */
   connected: boolean;
+  /** The web version: no Spotify and no account menu. */
+  web: boolean;
 }
 
 /** Your name and picture as kept at login. No Spotify request: until you log in again, both are null. */
 export function getProfile(session: SessionData): Profile {
-  return { name: session.name ?? null, picture: session.picture ?? null, connected: true };
+  return { name: session.name ?? null, picture: session.picture ?? null, connected: true, web: false };
 }
 
 /** The profile for the top bar: yours from the login, or, without Spotify, the one remembered from the last login. */
 export async function currentProfile(session: SessionData): Promise<Profile> {
+  if (isWebMode()) return { name: null, picture: null, connected: false, web: true };
   if (hasActiveSession(session)) return getProfile(session);
   const { name, picture } = await knownUser();
-  return { name, picture, connected: false };
+  return { name, picture, connected: false, web: false };
 }
 
 const sessionOptions: SessionOptions = {
@@ -50,6 +54,10 @@ const sessionOptions: SessionOptions = {
 };
 
 export async function getSession(): Promise<IronSession<SessionData>> {
+  // The web version keeps no session (and has no SESSION_SECRET): an empty one, so nothing Spotify-shaped can be forged.
+  if (isWebMode()) {
+    return { save: async () => {}, destroy: () => {}, updateConfig: () => {} } as unknown as IronSession<SessionData>;
+  }
   const cookieStore = await cookies();
   return getIronSession<SessionData>(cookieStore, sessionOptions);
 }
@@ -79,6 +87,8 @@ export async function isLocalMode(): Promise<boolean> {
 
 /** Logged in to Spotify, or using the app without it. */
 export async function hasAccess(session: SessionData): Promise<boolean> {
+  // The web version has no login; the shared-word gate (a later step) decides who gets in.
+  if (isWebMode()) return true;
   return hasActiveSession(session) || (await isLocalMode());
 }
 
@@ -101,6 +111,8 @@ export async function getValidAccessToken(): Promise<string> {
  * like getValidAccessToken.
  */
 export async function getUserId(): Promise<string> {
+  // Temporary until each person gets an id of their own (Phase 14 step 3).
+  if (isWebMode()) return "web";
   const session = await getSession();
   if (!hasActiveSession(session) && (await isLocalMode())) return (await knownUser()).id;
   if (session.userId && hasActiveSession(session)) {

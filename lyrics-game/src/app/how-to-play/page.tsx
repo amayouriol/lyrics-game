@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { Header } from "@/components/Header";
+import { isWebMode } from "@/lib/app-mode";
 import { currentProfile, getSession, hasAccess } from "@/lib/session";
 import { HowToPlay } from "./HowToPlay";
 
@@ -13,7 +14,7 @@ export default async function HowToPlayPage() {
   return (
     <>
       <Header profile={profile} />
-      <HowToPlay />
+      <HowToPlay web={isWebMode()} />
     </>
   );
 }

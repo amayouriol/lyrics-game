@@ -19,9 +19,9 @@ A tiny throwaway deploy that proves the four risky things:
 - Report what worked and what each cost in seconds, before Step 1.
 
 ## 1. Web mode
-- [ ] `APP_MODE=web` switch; in web mode, no Spotify on the start page, library tabs, menu, or routes (they answer "not available").
-- [ ] Start page for the web version ("Play", the how-it-plays strip, a YouTube-only note).
-- [ ] Checks: in web mode no Spotify code path runs.
+- [x] `APP_MODE=web` switch; in web mode, no Spotify on the start page, library tabs, menu, or routes (they answer "not available"). Done (2026-10-20): `src/lib/app-mode.ts`; eight Spotify routes answer 404 "not_available"; whole-library search returns only added songs; no session in web mode.
+- [x] Start page for the web version ("Play", the how-it-plays strip, a YouTube-only note). Done (2026-10-20): "/" is the start page, Play leads to the new "/home" (chosen with you); How to play has YouTube wording.
+- [x] Checks: in web mode no Spotify code path runs. Done (2026-10-20): `app-mode.test.ts` (switch, 404 answer, every Spotify route checks it). Also tried by hand with `APP_MODE=web`: pages load, Spotify routes answer 404. A temporary "web" person id stands in until Step 3.
 
 ## 2. Storage layer
 - [ ] Database backend for the saved files (games, saved songs, added songs, saved video choices) behind the same `read` and `update`.

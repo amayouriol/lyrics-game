@@ -1,3 +1,4 @@
+import { notAvailableInWeb } from "@/lib/app-mode";
 import type { NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -5,6 +6,8 @@ import { exchangeCodeForTokens, getCurrentUser } from "@/lib/spotify";
 import { getSession } from "@/lib/session";
 
 export async function GET(request: NextRequest) {
+  const unavailable = notAvailableInWeb();
+  if (unavailable) return unavailable;
   const { searchParams } = request.nextUrl;
   const error = searchParams.get("error");
   const code = searchParams.get("code");

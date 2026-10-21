@@ -35,14 +35,14 @@ const SING_LEVELS: Record<Difficulty, string> = {
 
 type Mode = "type" | "sing";
 
-export function HowToPlay() {
+export function HowToPlay({ web }: { web: boolean }) {
   const [mode, setMode] = useState<Mode>("type");
 
   return (
     <main className={styles.main}>
       <section className={styles.hero}>
         <div className={styles.heading}>
-          <Link href="/" className={styles.back}>
+          <Link href={web ? "/home" : "/"} className={styles.back}>
             <ArrowIcon />
             Back home
           </Link>
@@ -55,15 +55,20 @@ export function HowToPlay() {
         <div className={styles.intro}>
           <strong>Know the song. Fill the gaps.</strong>
           <p>
-            Pick a song from your Spotify library. It plays with the lyrics on screen while some
-            words or lines disappear. Complete them as the song goes.
+            {web ? "Add a song from YouTube" : "Pick a song from your Spotify library"}. It plays with
+            the lyrics on screen while some words or lines disappear. Complete them as the song
+            goes.
           </p>
         </div>
       </section>
 
       <section className={styles.steps}>
         {[
-          ["01", "Pick a song", "Choose any playable song from your library."],
+          [
+            "01",
+            "Pick a song",
+            web ? "Search YouTube, or paste a link or playlist." : "Choose any playable song from your library.",
+          ],
           ["02", "Choose your game", "Type or Sing, then a level."],
           ["03", "Finish the lyrics", "Fill in the hidden words as the song plays."],
         ].map(([number, title, detail]) => (
@@ -83,11 +88,18 @@ export function HowToPlay() {
           <h2>Good to know</h2>
         </div>
         <div className={styles.goodList}>
-          {[
-            "Spotify Premium is required. Play in Chrome, Edge or Firefox.",
-            "Pausing hides the lyrics until you press play again.",
-            "If Spotify starts playing on another device, the game pauses here.",
-          ].map((text, i) => (
+          {(web
+            ? [
+                "Songs play in YouTube's own player, so a short ad can play first. Use Chrome, Edge or Firefox.",
+                "Pausing hides the lyrics until you press play again.",
+                "Wrong video? Choose another one from the song's page.",
+              ]
+            : [
+                "Spotify Premium is required. Play in Chrome, Edge or Firefox.",
+                "Pausing hides the lyrics until you press play again.",
+                "If Spotify starts playing on another device, the game pauses here.",
+              ]
+          ).map((text, i) => (
             <div key={text}>
               <span>{String(i + 1).padStart(2, "0")}</span>
               <p>{text}</p>

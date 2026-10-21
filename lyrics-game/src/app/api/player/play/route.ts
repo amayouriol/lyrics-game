@@ -1,3 +1,4 @@
+import { notAvailableInWeb } from "@/lib/app-mode";
 import { type NextRequest, NextResponse } from "next/server";
 import { getSession, getValidAccessToken } from "@/lib/session";
 import { SpotifyApiError, SpotifySessionExpiredError, startPlayback } from "@/lib/spotify";
@@ -8,6 +9,8 @@ const MAX_POSITION_MS = 3 * 60 * 60 * 1000;
 
 /** Starts a song on this browser's player: `{ deviceId, trackId, positionMs? }`. */
 export async function POST(request: NextRequest) {
+  const unavailable = notAvailableInWeb();
+  if (unavailable) return unavailable;
   let body: Record<string, unknown>;
   try {
     body = await request.json();

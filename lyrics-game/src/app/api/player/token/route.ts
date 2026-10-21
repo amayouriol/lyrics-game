@@ -1,3 +1,4 @@
+import { notAvailableInWeb } from "@/lib/app-mode";
 import { NextResponse } from "next/server";
 import { getSession, getValidAccessToken } from "@/lib/session";
 import { PLAYER_SCOPES, SpotifySessionExpiredError } from "@/lib/spotify";
@@ -7,6 +8,8 @@ import { PLAYER_SCOPES, SpotifySessionExpiredError } from "@/lib/spotify";
  * player needs. The refresh token never leaves the server.
  */
 export async function GET() {
+  const unavailable = notAvailableInWeb();
+  if (unavailable) return unavailable;
   try {
     const accessToken = await getValidAccessToken();
     const session = await getSession();

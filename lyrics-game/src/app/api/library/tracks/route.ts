@@ -1,3 +1,4 @@
+import { notAvailableInWeb } from "@/lib/app-mode";
 import { type NextRequest, NextResponse } from "next/server";
 import { describeTracks, getTracks } from "@/lib/library";
 import { getOwnTracks, SOURCE_PREFIX } from "@/lib/own-library";
@@ -42,6 +43,8 @@ export async function GET(request: NextRequest) {
       if (!own) return NextResponse.json({ error: "not_found" }, { status: 404 });
       tracks = own;
     } else {
+      const unavailable = notAvailableInWeb();
+      if (unavailable) return unavailable;
       // Without Spotify, only the saved copy of the list can be shown.
       const offline = !hasActiveSession(await getSession()) && (await isLocalMode());
       const got = await getTracks(offline ? null : await getValidAccessToken(), source);

@@ -1,3 +1,4 @@
+import { notAvailableInWeb } from "@/lib/app-mode";
 import { type NextRequest, NextResponse } from "next/server";
 import { getSources, markListsOutdated } from "@/lib/library";
 import { getSession, getValidAccessToken, hasActiveSession, isLocalMode } from "@/lib/session";
@@ -9,6 +10,8 @@ import { SpotifyApiError, SpotifySessionExpiredError } from "@/lib/spotify";
  * and marks every list's songs to reload when next opened or searched.
  */
 export async function GET(request: NextRequest) {
+  const unavailable = notAvailableInWeb();
+  if (unavailable) return unavailable;
   try {
     // Without Spotify, only the saved copy of your lists can be shown.
     if (!hasActiveSession(await getSession()) && (await isLocalMode())) {

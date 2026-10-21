@@ -29,7 +29,7 @@ export type LibraryTab = "saved" | "spotify" | "youtube";
  * and two tabs below it, the app's own lists and your Spotify lists.
  * Searching replaces the tabs with the songs found.
  */
-export function LibraryHome({ initialTab }: { initialTab: LibraryTab }) {
+export function LibraryHome({ initialTab, web }: { initialTab: LibraryTab; web: boolean }) {
   const router = useRouter();
   const [tab, setTab] = useState(initialTab);
   const [search, setSearch] = useState("");
@@ -74,16 +74,18 @@ export function LibraryHome({ initialTab }: { initialTab: LibraryTab }) {
               <span>Saved in Lyric Drop</span>
               <small>Your picks and game collections</small>
             </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={tab === "spotify"}
-              className={tab === "spotify" ? styles.tabActive : ""}
-              onClick={() => choose("spotify")}
-            >
-              <span>From Spotify</span>
-              <small>Liked songs and playlists</small>
-            </button>
+            {!web && (
+              <button
+                type="button"
+                role="tab"
+                aria-selected={tab === "spotify"}
+                className={tab === "spotify" ? styles.tabActive : ""}
+                onClick={() => choose("spotify")}
+              >
+                <span>From Spotify</span>
+                <small>Liked songs and playlists</small>
+              </button>
+            )}
             <button
               type="button"
               role="tab"

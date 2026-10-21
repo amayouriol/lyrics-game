@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Lyric Drop",
-  description: "Sing along and fill in the missing words in songs from your Spotify library.",
+  description: "Sing along and fill in the missing words in your favorite songs.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

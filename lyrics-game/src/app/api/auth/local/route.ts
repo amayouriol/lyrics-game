@@ -1,3 +1,4 @@
+import { notAvailableInWeb } from "@/lib/app-mode";
 import { cookies } from "next/headers";
 import { isThisMachine, LOCAL_COOKIE } from "@/lib/session";
 
@@ -7,6 +8,8 @@ import { isThisMachine, LOCAL_COOKIE } from "@/lib/session";
  * Relative Location on purpose, like logout.
  */
 export async function GET() {
+  const unavailable = notAvailableInWeb();
+  if (unavailable) return unavailable;
   if (!(await isThisMachine())) {
     return new Response(null, { status: 303, headers: { Location: "/" } });
   }

@@ -1,3 +1,4 @@
+import { isWebMode } from "@/lib/app-mode";
 import { NextResponse } from "next/server";
 import { describeTracks, getSources, getTracks } from "@/lib/library";
 import { getAllOwnTracks } from "@/lib/own-library";
@@ -13,6 +14,11 @@ const PARALLEL = 2;
  * that fails is named in `failed` rather than failing the whole search.
  */
 export async function GET() {
+  // The web version has only the songs added from YouTube, and no Spotify to ask.
+  if (isWebMode()) {
+    const tracks = await describeTracks(await getAllOwnTracks());
+    return NextResponse.json({ tracks, failed: [], rateLimited: false, blockedUntil: null });
+  }
   try {
     // Without Spotify, search the saved copy of your lists (and the songs added from YouTube).
     const offline = !hasActiveSession(await getSession()) && (await isLocalMode());

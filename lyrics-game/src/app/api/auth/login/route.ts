@@ -1,9 +1,12 @@
+import { notAvailableInWeb } from "@/lib/app-mode";
 import { randomBytes } from "crypto";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { buildAuthorizeUrl } from "@/lib/spotify";
 
 export async function GET() {
+  const unavailable = notAvailableInWeb();
+  if (unavailable) return unavailable;
   // Spotify always returns to the registered redirect URI's host. The state
   // cookie must be set on that same host or the callback can't find it
   // (localhost and 127.0.0.1 are separate sites to the browser), so start

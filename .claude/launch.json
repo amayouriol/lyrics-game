@@ -4,8 +4,22 @@
     {
       "name": "lyrics-game-dev",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "lyrics-game", "run", "dev"],
+      "runtimeArgs": [
+        "--prefix",
+        "lyrics-game",
+        "run",
+        "dev"
+      ],
       "port": 3000
+    },
+    {
+      "name": "lyrics-game-web",
+      "runtimeExecutable": "powershell",
+      "runtimeArgs": [
+        "-Command",
+        "$env:APP_MODE='web'; npm --prefix lyrics-game run dev -- -p 3100"
+      ],
+      "port": 3100
     }
   ]
 }

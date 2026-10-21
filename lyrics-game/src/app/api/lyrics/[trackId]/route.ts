@@ -1,3 +1,4 @@
+import { notAvailableInWeb } from "@/lib/app-mode";
 import { NextResponse } from "next/server";
 import { getDictionary, getLanguage } from "@/lib/dictionary";
 import { DIFFICULTY_ORDER, pickBlanks } from "@/lib/game";
@@ -18,6 +19,12 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tra
   const { trackId } = await params;
   if (!isTrackId(trackId)) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
+  }
+
+  // The web version has no Spotify songs.
+  if (!isOwnId(trackId)) {
+    const unavailable = notAvailableInWeb();
+    if (unavailable) return unavailable;
   }
 
   // A song added from YouTube needs no Spotify, but is still only for the logged-in user.

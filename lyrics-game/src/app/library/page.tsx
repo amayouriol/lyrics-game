@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { isWebMode } from "@/lib/app-mode";
 import { currentProfile, getSession, hasAccess } from "@/lib/session";
 import { Header } from "@/components/Header";
 import { LibraryHome, type LibraryTab } from "./LibraryHome";
@@ -25,7 +26,9 @@ export default async function LibraryPage({
   const profile = await currentProfile(session);
 
   const { source, tab } = await searchParams;
-  const initialTab: LibraryTab = tab === "spotify" || tab === "youtube" ? tab : "saved";
+  const web = isWebMode();
+  const initialTab: LibraryTab =
+    (tab === "spotify" && !web) || tab === "youtube" ? tab : "saved";
 
   return (
     <>
@@ -34,7 +37,7 @@ export default async function LibraryPage({
         {source ? (
           <PlaylistClient key={source} source={source} sidebar={<SavedPanel />} />
         ) : (
-          <LibraryHome initialTab={initialTab} />
+          <LibraryHome initialTab={initialTab} web={web} />
         )}
       </SavedProvider>
     </>

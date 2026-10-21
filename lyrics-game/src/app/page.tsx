@@ -1,4 +1,5 @@
 import { Header } from "@/components/Header";
+import { isWebMode } from "@/lib/app-mode";
 import { currentProfile, getSession, hasAccess, isThisMachine } from "@/lib/session";
 import { HomeClient } from "./HomeClient";
 import styles from "./page.module.css";
@@ -10,8 +11,10 @@ export default async function HomePage({
 }) {
   const session = await getSession();
   const { expired } = await searchParams;
+  const web = isWebMode();
   // A session that ran out sends you here with ?expired, even if you use the app without Spotify.
-  if (!expired && (await hasAccess(session))) {
+  // The web version always shows the start page; its home is /home.
+  if (!web && !expired && (await hasAccess(session))) {
     const profile = await currentProfile(session);
     return (
       <>
@@ -20,7 +23,7 @@ export default async function HomePage({
       </>
     );
   }
-  const canSkipSpotify = await isThisMachine();
+  const canSkipSpotify = !web && (await isThisMachine());
 
   return (
     <main className={styles.main} id="top">
@@ -40,14 +43,14 @@ export default async function HomePage({
         </header>
 
         <div className={styles.heroCopy}>
-          {expired && (
+          {!web && expired && (
             <div className={styles.banner} role="status">
               Your session expired. Reconnect and you&apos;ll land right back on your home page.
             </div>
           )}
 
           <h1 id="welcome-title">
-            Turn your playlist into
+            {web ? "Turn any song into" : "Turn your playlist into"}
             <br />
             <em>karaoke.</em>
           </h1>
@@ -55,16 +58,25 @@ export default async function HomePage({
             The song starts. The lyrics fade. Can you sing the missing words?
           </p>
 
-          {/* Plain link: this starts Spotify auth and should not be prefetched. */}
-          <a className={styles.primaryCta} href="/api/auth/login" aria-describedby="spotify-note">
-            <SpotifyIcon />
-            <span>
-              Connect with Spotify<sup aria-hidden="true">*</sup>
-            </span>
-            <i aria-hidden="true">
-              <ArrowIcon />
-            </i>
-          </a>
+          {web ? (
+            <a className={styles.primaryCta} href="/home" aria-describedby="web-note">
+              <span>Play</span>
+              <i aria-hidden="true">
+                <ArrowIcon />
+              </i>
+            </a>
+          ) : (
+            // Plain link: this starts Spotify auth and should not be prefetched.
+            <a className={styles.primaryCta} href="/api/auth/login" aria-describedby="spotify-note">
+              <SpotifyIcon />
+              <span>
+                Connect with Spotify<sup aria-hidden="true">*</sup>
+              </span>
+              <i aria-hidden="true">
+                <ArrowIcon />
+              </i>
+            </a>
+          )}
 
           {canSkipSpotify && (
             <a className={styles.localLink} href="/api/auth/local">
@@ -72,10 +84,16 @@ export default async function HomePage({
             </a>
           )}
 
-          <p className={styles.disclaimer} id="spotify-note">
-            <span aria-hidden="true">*</span> Spotify Premium is required for playback. We use
-            playlists you own and your Liked Songs, not playlists you follow.
-          </p>
+          {web ? (
+            <p className={styles.disclaimer} id="web-note">
+              Songs play from YouTube, in YouTube&apos;s own player. No account needed.
+            </p>
+          ) : (
+            <p className={styles.disclaimer} id="spotify-note">
+              <span aria-hidden="true">*</span> Spotify Premium is required for playback. We use
+              playlists you own and your Liked Songs, not playlists you follow.
+            </p>
+          )}
         </div>
 
         <div className={styles.musicNotes} aria-hidden="true">
@@ -121,7 +139,7 @@ export default async function HomePage({
         <div className={styles.gameNoise} aria-hidden="true" />
         <div className={styles.gameKicker}>
           <span>How it plays</span>
-          <span>Your library · your lyrics</span>
+          <span>{web ? "YouTube songs · your lyrics" : "Your library · your lyrics"}</span>
         </div>
 
         <div className={styles.gameGrid}>
@@ -138,29 +156,17 @@ export default async function HomePage({
           <div className={styles.stepsCard}>
             <p className={styles.stepsIntro}>Your music takes center stage.</p>
             <ol className={styles.steps}>
-              <li>
-                <span className={styles.stepNumber}>01</span>
-                <span>
-                  <b>Connect Spotify</b>
-                  <small>Sign in with a Premium account.</small>
-                </span>
-              </li>
-              <li>
-                <span className={styles.stepNumber}>02</span>
-                <span>
-                  <b>Pick one of your songs</b>
-                  <small>Choose a playlist you own or a liked song.</small>
-                </span>
-              </li>
-              <li>
-                <span className={styles.stepNumber}>03</span>
-                <span>
-                  <b>Finish the line</b>
-                  <small>Sing along and guess the missing words.</small>
-                </span>
-              </li>
+              {(web ? WEB_STEPS : STEPS).map(([number, title, detail]) => (
+                <li key={number}>
+                  <span className={styles.stepNumber}>{number}</span>
+                  <span>
+                    <b>{title}</b>
+                    <small>{detail}</small>
+                  </span>
+                </li>
+              ))}
             </ol>
-            <a className={styles.cardCta} href="/api/auth/login">
+            <a className={styles.cardCta} href={web ? "/home" : "/api/auth/login"}>
               <span>Get started</span>
               <ArrowIcon />
             </a>
@@ -177,6 +183,18 @@ export default async function HomePage({
     </main>
   );
 }
+
+const STEPS = [
+  ["01", "Connect Spotify", "Sign in with a Premium account."],
+  ["02", "Pick one of your songs", "Choose a playlist you own or a liked song."],
+  ["03", "Finish the line", "Sing along and guess the missing words."],
+];
+
+const WEB_STEPS = [
+  ["01", "Add a song from YouTube", "Search by name, or paste a link or playlist."],
+  ["02", "Pick your game", "Type or Sing, then a level."],
+  ["03", "Finish the line", "Sing along and guess the missing words."],
+];
 
 function ArrowIcon() {
   return (

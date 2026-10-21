@@ -20,8 +20,10 @@ function initials(name: string): string {
 
 export function Header({ profile }: { profile: Profile }) {
   const pathname = usePathname();
+  const homeHref = profile.web ? "/home" : "/";
   const links = [
-    { href: "/", label: "Home", active: pathname === "/" },
+    // The web version's "/" is the start page; its home is "/home".
+    { href: homeHref, label: "Home", active: pathname === homeHref },
     { href: "/library", label: "Library", active: pathname.startsWith("/library") },
     { href: "/how-to-play", label: "How to play", active: pathname === "/how-to-play" },
   ];
@@ -50,7 +52,7 @@ export function Header({ profile }: { profile: Profile }) {
 
   return (
     <header className={styles.header}>
-      <Link href="/" className={styles.brand} aria-label="Lyric Drop home">
+      <Link href={homeHref} className={styles.brand} aria-label="Lyric Drop home">
         <LyricDropLogo />
       </Link>
       <nav className={styles.nav} aria-label="Main navigation">
@@ -65,6 +67,9 @@ export function Header({ profile }: { profile: Profile }) {
           </Link>
         ))}
       </nav>
+      {profile.web ? (
+        <div className={styles.account} />
+      ) : (
       <div className={styles.account} ref={accountRef}>
         <button
           type="button"
@@ -109,6 +114,7 @@ export function Header({ profile }: { profile: Profile }) {
           </div>
         )}
       </div>
+      )}
     </header>
   );
 }
