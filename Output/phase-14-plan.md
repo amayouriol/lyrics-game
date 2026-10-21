@@ -12,10 +12,10 @@ Derived from: Output/phase-14-spec.md. Review before building.
 
 ## 0. Spike (before any change to the app) — one afternoon, stop if something fails
 A tiny throwaway deploy that proves the four risky things:
-- [ ] The word lists load on Vercel (or need `outputFileTracingIncludes`), and how long a cold start takes.
-- [ ] YouTube's player plays from the `*.vercel.app` address (direct, no frame).
-- [ ] The YouTube key works from Vercel's servers, and a search comes back.
-- [ ] A write and a read to Upstash from a Vercel function.
+- [x] The word lists load on Vercel (2026-10-20): yes, no extra setting needed. Both lists loaded and answered ("hello", "corazón" real, a nonsense word not).
+- [x] YouTube's player plays from the `*.vercel.app` address (2026-10-20): the player loaded directly, with no frame, and the timer moved.
+- [x] The YouTube key works from Vercel's servers (2026-10-20): the lookup came back with the right video, embeddable.
+- [x] A write and a read to Upstash from a Vercel function (2026-10-20): the value written was read back, a match.
 - Report what worked and what each cost in seconds, before Step 1.
 
 ## 1. Web mode
