@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Header } from "@/components/Header";
 import { isWebMode } from "@/lib/app-mode";
 import { currentProfile, getSession, hasAccess, isThisMachine } from "@/lib/session";
@@ -174,6 +175,7 @@ export default async function HomePage({
         </div>
 
         <footer className={styles.footer}>
+          {web && <Link href="/about">About and privacy</Link>}
           <a href="#top">
             Back to the top
             <ArrowIcon />

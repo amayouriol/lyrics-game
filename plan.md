@@ -87,11 +87,26 @@ Why: Spotify's limits. Spotify still works next to it; removing it was left for 
 
 ## Phase 14: A web version for friends (YouTube only) — planned 2026-10-15 (Output/phase-14-spec.md, phase-14-plan.md)
 Why: you asked for a public link. Step 0 is a spike on the risky parts before anything is changed.
-- [ ] Spike: word lists, YouTube player, YouTube key and the database all work from a free host
-- [ ] Web mode: no Spotify anywhere in the hosted version
-- [ ] Storage layer: files on your computer, a free database online, same code above it
-- [ ] A person id, a shared-word gate and daily caps on searches
-- [ ] Put it online (Vercel + Upstash, you create the accounts); notes page; play-test
+- [x] Spike: word lists, YouTube player, YouTube key and the database all work from a free host (2026-10-20, all four passed on Vercel + Upstash)
+- [x] Web mode: no Spotify anywhere in the hosted version (2026-10-20)
+- [x] Storage layer: files on your computer, a free database online, same code above it (2026-10-20)
+- [x] A person id, a shared-word gate and daily caps on searches (2026-10-20)
+- [x] Put it online (Vercel + Upstash, you create the accounts); README steps (2026-10-22: the gate page works on a Vercel preview)
+- [x] "About and privacy" page (2026-10-22)
+- [ ] Your full play-test on the preview (word, add a song, play a song, save, reload); then merge into `main` and close
+
+## Phase 15: A library made for YouTube — planned 2026-10-22 (Output/phase-15-spec.md)
+Why: with YouTube as the main source, a new player lands on an empty library and has to click through tabs to add a song.
+- [ ] One add bar at the top of the library (search by name or paste a link, then "Add to your library"); the From YouTube tab goes away
+- [ ] Your library below it: Saved (favorites, play later) and your own lists, which you can create and name
+- [ ] Inside a list: add songs from your library or from the add bar
+- [ ] The library search moves down, to the library section
+
+## Phase 16: Sign in with Google — idea, not planned yet
+Why: so your progress follows you across devices and doesn't vanish with your browser's cookies. Name and email only (no YouTube data). Decide after friends have tried the web version.
+
+## Phase 17: Recommendations from your YouTube likes — idea, not planned yet
+Why: first sign-in shows five songs from your liked music, with Add, Reshuffle and Skip. Reads your likes once and keeps only a list of songs (no permission kept, so nothing expires after 7 days). Needs Google's YouTube permission, which is "sensitive": until Google verifies the app, only friends added by email as test users (up to 100) can use it. YouTube's watch history is not available to apps.
 
 ## Explicitly out of scope for this plan
 Anything from spec.md's V2 list stays out unless you decide otherwise first: sharing with other people or multi-account login, an unsynced-lyrics fallback mode, score history or leaderboards.

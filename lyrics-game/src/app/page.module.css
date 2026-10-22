@@ -567,6 +567,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  gap: 28px;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;

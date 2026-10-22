@@ -58,3 +58,8 @@
   font: 500 16px var(--font-sans);
   color: #b3261e;
 }
+
+.about {
+  font: 500 16px var(--font-sans);
+  color: var(--black);
+}

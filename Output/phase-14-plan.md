@@ -39,7 +39,7 @@ A tiny throwaway deploy that proves the four risky things:
 - [ ] I check the live link with you: start page, the word, a song, the corner player, saving, "Wrong video?".
 
 ## 5. Notes, play-test, close
-- [ ] "About and privacy" page, linked from the footer and the gate page.
+- [x] "About and privacy" page, linked from the footer and the gate page. Done (2026-10-22): `/about`, open without the word (web mode only).
 - [ ] A friend's play-test (or yours from a private window): a full song, a second day.
 - [ ] `npm run lint`, `npm test`, `npm run build` pass; GitHub's check passes.
 - [ ] plan.md gets the Phase 14 result; `Close Phase 14: …` and push.

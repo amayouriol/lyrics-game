@@ -17,7 +17,8 @@ export async function proxy(request: NextRequest) {
   }
 
   const open = await cookieOpensGate(request.cookies.get(GATE_COOKIE)?.value, word);
-  if (pathname === "/api/gate") return NextResponse.next();
+  // The word page, what it sends to, and the notes anyone may read before entering.
+  if (pathname === "/api/gate" || pathname === "/about") return NextResponse.next();
   if (pathname === "/enter") {
     // Already in: nothing to enter.
     return open ? NextResponse.redirect(new URL("/", request.url)) : NextResponse.next();

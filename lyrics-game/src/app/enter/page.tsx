@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isWebMode } from "@/lib/app-mode";
 import styles from "./page.module.css";
@@ -47,6 +48,9 @@ export default async function EnterPage({
           Come in
         </button>
       </form>
+      <Link href="/about" className={styles.about}>
+        About and privacy
+      </Link>
     </main>
   );
 }
