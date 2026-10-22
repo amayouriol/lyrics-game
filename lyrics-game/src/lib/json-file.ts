@@ -1,8 +1,7 @@
 import { promises as fs } from "fs";
 import path from "path";
 
-// The checks point this somewhere else, so they never touch your own data.
-const DATA_DIR = process.env.LYRICS_DATA_DIR ?? path.join(process.cwd(), ".data");
+const DATA_DIR = path.join(process.cwd(), ".data");
 
 /**
  * A JSON file in .data/ holding your own data (games, saved songs). Unlike

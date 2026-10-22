@@ -5,9 +5,10 @@ import os from "node:os";
 import path from "node:path";
 import { after, afterEach, before, beforeEach, describe, it } from "node:test";
 
-// Files go to a temporary folder, never your own .data. Set before the library loads.
+// Files go to a temporary folder, never your own .data: the library keeps its files
+// under the working folder, which is changed before the library loads.
 const folder = await fs.mkdtemp(path.join(os.tmpdir(), "lyric-drop-lists-"));
-process.env.LYRICS_DATA_DIR = folder;
+process.chdir(folder);
 
 const { memoryDatabase, useDatabaseForTests } = await import("./database.ts");
 const lib = await import("./own-library.ts");
@@ -39,6 +40,7 @@ const song = (n: number) => ({
 const originalMode = process.env.APP_MODE;
 
 after(async () => {
+  process.chdir(os.tmpdir());
   await fs.rm(folder, { recursive: true, force: true });
 });
 
@@ -54,7 +56,7 @@ for (const mode of ["files", "database"] as const) {
     });
     beforeEach(async () => {
       useDatabaseForTests(memoryDatabase());
-      if (mode === "files") await fs.rm(path.join(folder, "own-library.json"), { force: true });
+      if (mode === "files") await fs.rm(path.join(folder, ".data", "own-library.json"), { force: true });
       me = `person-${++counter}`;
     });
     afterEach(() => useDatabaseForTests(null));

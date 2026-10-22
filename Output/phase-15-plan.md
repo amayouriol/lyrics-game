@@ -17,7 +17,7 @@ Derived from: Output/phase-15-spec.md (decisions approved 2026-10-22). Review be
 ## 1. The lists, in the data
 - [x] `own-library.ts`: create a list, rename it, delete it (the songs stay in your library), add songs to a list, remove a song from a list. "Added songs" can't be deleted. Done (2026-10-22).
 - [x] Two lists can't share a name for the same person (case doesn't matter); a name is trimmed and at most 60 characters. Done (2026-10-22).
-- [x] `npm test`: each operation, on both backends (files and the fake database); a song in two lists; deleting a list keeps its songs in the library; old saved data still reads. Done (2026-10-22): `own-lists.test.ts`, 20 checks. The checks write to a temporary folder (`LYRICS_DATA_DIR`), never your `.data`.
+- [x] `npm test`: each operation, on both backends (files and the fake database); a song in two lists; deleting a list keeps its songs in the library; old saved data still reads. Done (2026-10-22): `own-lists.test.ts`, 20 checks. The checks work in a temporary folder, never your `.data`.
 
 ## 2. The routes
 - [ ] Create, rename, delete and change a list's songs (`/api/own/lists/...`); `/api/own/add` takes an optional list to add to.
