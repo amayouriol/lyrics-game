@@ -155,11 +155,13 @@ export function AddFromYouTube({
           submit();
         }}
       >
-        <h3>{first ? "Add your first song" : "Add a song"}</h3>
+        <h3>{first ? "Add your first song" : listId ? "Add a song to this list" : "Add a song"}</h3>
         <p>
           {first
             ? "Type a song name, or paste a YouTube link. Pick the video, then play it and fill in the missing words."
-            : "Type a song name (and the artist), or paste a YouTube link. A video adds one song; a public or unlisted playlist adds all its songs, up to 200."}
+            : listId
+              ? "Type a song name (and the artist), or paste a YouTube video link. The song goes into your library and into this list. A playlist link makes its own list instead."
+              : "Type a song name (and the artist), or paste a YouTube link. A video adds one song; a public or unlisted playlist adds all its songs, up to 200."}
         </p>
         <div className={styles.addRow}>
           <input

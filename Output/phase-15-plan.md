@@ -35,8 +35,8 @@ Derived from: Output/phase-15-spec.md (decisions approved 2026-10-22). Review be
 - [x] "New list": a name, then it appears. Rename and delete from the list's page, with a confirmation for delete that says the songs stay. Done (2026-10-22): after "Make list" you land in the new empty list. "Added songs" shows Rename only. Tried on your own copy (make, rename, delete); your library file ended byte-for-byte as before.
 
 ## 5. Inside a list
-- [ ] On a list's page: "Add songs" opens a picker of the songs already in your library (with a filter), and the add bar adds straight to this list.
-- [ ] Remove a song from a list (not from the library).
+- [x] On a list's page: "Add songs" opens a picker of the songs already in your library (with a filter), and the add bar adds straight to this list. Done (2026-10-22): two buttons on the list page, "Add from your songs" (picker with search and ticks; songs already there are marked) and "Add from YouTube" (the same box, adding to this list). New route `/api/own/songs`, which never asks Spotify.
+- [x] Remove a song from a list (not from the library). Done (2026-10-22): a Remove button on each row of your own lists. Tried on your own copy with a throwaway list (add, remove, delete); your library file ended identical to the backup.
 
 ## 6. The library search moves down
 - [ ] The library search sits in the library part, and searches only what you added. The add bar is the only search at the top.

@@ -16,12 +16,28 @@ export function TrackList({
   tracks,
   statusOf,
   from,
+  onRemove,
 }: {
   tracks: LibraryTrack[];
   statusOf: (t: LibraryTrack) => LyricsStatus;
   /** The list these songs came from, so "Back to library" returns to it (null: the main page). */
   from: string | null;
+  /** On one of your own lists: takes a song off that list (it stays in your library). */
+  onRemove?: (track: LibraryTrack) => void;
 }) {
+  const removeButton = (track: LibraryTrack) =>
+    onRemove && (
+      <button
+        type="button"
+        className={styles.removeButton}
+        onClick={() => onRemove(track)}
+        aria-label={`Remove ${track.title} from this list`}
+        title="Remove from this list"
+      >
+        Remove
+      </button>
+    );
+  const rowClass = onRemove ? `${styles.track} ${styles.trackRemovable}` : styles.track;
   return (
     <div className={styles.tracks}>
       <div className={styles.tracksHeading} aria-hidden="true">
@@ -66,22 +82,24 @@ export function TrackList({
 
         if (status !== "unavailable") {
           return (
-            <div key={key} className={styles.track}>
+            <div key={key} className={rowClass}>
               <Link href={songHref(track.id, from)} className={styles.trackMain}>
                 {row}
               </Link>
               {status === "available" ? <SaveButtons song={songToSave(track)} /> : <span />}
+              {removeButton(track)}
             </div>
           );
         }
         return (
           <div
             key={key}
-            className={`${styles.track} ${styles.trackUnavailable}`}
+            className={`${rowClass} ${styles.trackUnavailable}`}
             title="Lyrics not available"
           >
             <div className={styles.trackMain}>{row}</div>
             <span />
+            {removeButton(track)}
           </div>
         );
       })}

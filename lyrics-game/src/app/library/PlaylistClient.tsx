@@ -16,7 +16,10 @@ import {
 } from "./libraryData";
 import { useSaved } from "./SavedProvider";
 import { DEFAULT_FILTERS, Filters, NoFilterMatch, passesFilters } from "./Filters";
+import { AddFromYouTube } from "./AddFromYouTube";
 import { ListActions } from "./ListActions";
+import { listIdOf, sendList } from "./listApi";
+import { ListSongPicker } from "./ListSongPicker";
 import { SearchBox } from "./SearchBox";
 import { TrackList } from "./TrackList";
 import { useLyricsCheck } from "./useLyricsCheck";
@@ -106,6 +109,20 @@ export function PlaylistClient({ source, sidebar }: { source: string; sidebar: R
 
   const saved = source === "favorites" || source === "later";
 
+  // On your own lists: add songs (ones you have, or new from YouTube) and take songs off.
+  const [panel, setPanel] = useState<"library" | "youtube" | null>(null);
+  const [removeProblem, setRemoveProblem] = useState<string | null>(null);
+  const changed = () => {
+    setReloadKey((k) => k + 1);
+    setSourcesKey((k) => k + 1);
+  };
+  const remove = async (track: LibraryTrack) => {
+    setRemoveProblem(null);
+    const answer = await sendList(`/api/own/lists/${listIdOf(source)}/songs/${track.id}`, "DELETE");
+    if (!answer.ok) setRemoveProblem(answer.message);
+    else changed();
+  };
+
   return (
     <main className={styles.screen}>
       <section className={`${styles.top} ${styles.topList}`}>
@@ -138,6 +155,41 @@ export function PlaylistClient({ source, sidebar }: { source: string; sidebar: R
       </section>
 
       <div className={styles.listPage}>
+        {own && (
+          <div className={styles.listAdd}>
+            <div className={styles.addRow}>
+              <button
+                className={styles.smallButton}
+                aria-expanded={panel === "library"}
+                onClick={() => setPanel(panel === "library" ? null : "library")}
+              >
+                Add from your songs
+              </button>
+              <button
+                className={styles.smallButton}
+                aria-expanded={panel === "youtube"}
+                onClick={() => setPanel(panel === "youtube" ? null : "youtube")}
+              >
+                Add from YouTube
+              </button>
+            </div>
+            {panel === "library" && (
+              <ListSongPicker
+                source={source}
+                inList={new Set(tracks?.map((t) => t.id))}
+                onAdded={changed}
+                onClose={() => setPanel(null)}
+              />
+            )}
+            {panel === "youtube" && <AddFromYouTube listId={listIdOf(source)} onAdded={changed} />}
+            {removeProblem && (
+              <p className={styles.addError} role="status">
+                {removeProblem}
+              </p>
+            )}
+          </div>
+        )}
+
         {tracks && tracks.length > 0 && (
           <div className={styles.tools}>
             <SearchBox value={search} onChange={setSearch} placeholder="Search this list" />
@@ -181,7 +233,7 @@ export function PlaylistClient({ source, sidebar }: { source: string; sidebar: R
             )}
 
             {tracks && tracks.length === 0 && (
-              <div className={styles.hint}>{EMPTY[source] ?? (own ? "Nothing in this list yet." : "This playlist has no songs.")}</div>
+              <div className={styles.hint}>{EMPTY[source] ?? (own ? "Nothing in this list yet. Use the buttons above to add songs." : "This playlist has no songs.")}</div>
             )}
 
             {found && tracks!.length > 0 && found.length === 0 && (
@@ -193,7 +245,12 @@ export function PlaylistClient({ source, sidebar }: { source: string; sidebar: R
             )}
 
             {shown && shown.length > 0 && (
-              <TrackList tracks={shown} statusOf={statusOf} from={source} />
+              <TrackList
+                tracks={shown}
+                statusOf={statusOf}
+                from={source}
+                onRemove={own ? remove : undefined}
+              />
             )}
           </section>
           {sidebar}
