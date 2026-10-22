@@ -38,6 +38,26 @@ export async function spendOne(kind: LimitKind, personId: string, now = new Date
   return true;
 }
 
+/**
+ * How many are left today for this person, counting everyone's total too.
+ * Nothing is counted by asking. Null in your own copy, which has no limits.
+ */
+export async function remaining(
+  kind: LimitKind,
+  personId: string,
+  now = new Date()
+): Promise<number | null> {
+  if (!isWebMode()) return null;
+  const day = today(now);
+  const all = EVERYONE[kind];
+  const keys = [`cap:${kind}:${personId}:${day}`];
+  if (all !== undefined) keys.push(`cap:${kind}:everyone:${day}`);
+  const [mine, everyone] = await getDatabase().getMany(keys);
+  const left = PER_PERSON[kind] - Number(mine ?? 0);
+  const leftForAll = all === undefined ? Infinity : all - Number(everyone ?? 0);
+  return Math.max(0, Math.min(left, leftForAll));
+}
+
 /** The answer for a route when a limit is used up, or null to carry on. */
 export async function checkLimit(kind: LimitKind, personId: string): Promise<Response | null> {
   if (await spendOne(kind, personId)) return null;

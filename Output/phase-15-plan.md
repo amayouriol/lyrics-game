@@ -20,9 +20,9 @@ Derived from: Output/phase-15-spec.md (decisions approved 2026-10-22). Review be
 - [x] `npm test`: each operation, on both backends (files and the fake database); a song in two lists; deleting a list keeps its songs in the library; old saved data still reads. Done (2026-10-22): `own-lists.test.ts`, 20 checks. The checks work in a temporary folder, never your `.data`.
 
 ## 2. The routes
-- [ ] Create, rename, delete and change a list's songs (`/api/own/lists/...`); `/api/own/add` takes an optional list to add to.
-- [ ] How many searches are left today (web version), for the add bar.
-- [ ] `npm test`: the answers for a bad name, a list that isn't yours, a song that isn't in your library.
+- [x] Create, rename, delete and change a list's songs (`/api/own/lists/...`); `/api/own/add` takes an optional list to add to. Done (2026-10-22): a single song goes into the list as well; a playlist always becomes its own list and ignores it. A wrong list is refused before any YouTube request.
+- [x] How many searches are left today (web version), for the add bar. Done (2026-10-22): `/api/own/limits`; reading never uses one up; null in your own copy.
+- [x] `npm test`: the answers for a bad name, a list that isn't yours, a song that isn't in your library. Done (2026-10-22): `list-http.test.ts`; 143 checks pass. Tried by hand on your own copy with calls that write nothing (bad names, the default list, unknown lists, a Spotify id).
 
 ## 3. The library page: add bar first
 - [ ] The add bar at the top of the library: one box for a name or a link, the three videos to pick from, "Add to your library". The From YouTube tab is removed; old `?tab=youtube` links open Your lists.

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
+import { isListId } from "@/lib/list-http";
 import { checkLimit } from "@/lib/limits";
-import { addOwnSong, addOwnSongs } from "@/lib/own-library";
+import { addOwnSong, addOwnSongs, addToOwnList, getOwnSources } from "@/lib/own-library";
 import { getSession, getUserId, hasAccess } from "@/lib/session";
 import type { Track } from "@/lib/spotify";
 import { ownIdFor } from "@/lib/track-id";
@@ -34,6 +35,8 @@ function toTrack(song: VideoSong): Track {
  * Adds songs from YouTube to the library. The body is one of:
  * - `{ link }`: a pasted address of a video (one song) or a playlist (all its songs);
  * - `{ videoId }`: a video you picked from a search.
+ * A single song can also say `listId`, a list of yours to put it in as well. A
+ * playlist always becomes its own list, so it ignores `listId`.
  * The song's details come from YouTube here, not from the browser.
  */
 export async function POST(request: Request) {
@@ -44,6 +47,10 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
+    return NextResponse.json({ error: "invalid_body" }, { status: 400 });
+  }
+  const listId = body.listId;
+  if (listId !== undefined && !isListId(listId)) {
     return NextResponse.json({ error: "invalid_body" }, { status: 400 });
   }
   const regionParam = typeof body.region === "string" ? body.region : "";
@@ -92,13 +99,19 @@ export async function POST(request: Request) {
       });
     }
 
+    // Check the list first, so a wrong one doesn't cost a YouTube request.
+    if (listId && !(await getOwnSources(userId)).some((l) => l.id === `own:${listId}`)) {
+      return NextResponse.json({ error: "list_not_found" }, { status: 404 });
+    }
+
     const [song] = await getVideoSongs([videoId!], region);
     if (!song) return NextResponse.json({ error: "video_not_found" }, { status: 404 });
     if (!song.playable) return NextResponse.json({ error: "not_playable" }, { status: 422 });
     const track = toTrack(song);
     const { added } = await addOwnSong(userId, track);
     await setMatch(track.id, { videoId: song.videoId, title: song.title, channel: song.artist });
-    return NextResponse.json({ kind: "song", track, added });
+    const inList = listId ? (await addToOwnList(userId, listId, [track.id])).ok : false;
+    return NextResponse.json({ kind: "song", track, added, inList });
   } catch (error) {
     if (error instanceof YouTubeError) {
       return NextResponse.json({ error: error.code }, { status: failureStatus(error.code) });
