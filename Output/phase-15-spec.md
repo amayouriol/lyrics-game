@@ -26,10 +26,10 @@ You asked for this on 2026-10-22 after trying the web version.
 - Changes to the game screens, the song page or how songs play.
 - More YouTube searches: the daily limits (web version) stay as they are; the bar shows how many are left.
 
-## Decisions to confirm
-1. **Same layout on your own computer too?** Recommended: yes, with the Spotify tab kept next to Saved and Your lists. One layout means less to maintain. (The alternative is a separate layout only for the web version.)
-2. **Where does "Added songs" go?** Recommended: it becomes one of Your lists, the default one new songs go to, so nothing is lost for you or your friends.
-3. **Can one song be in several lists?** Recommended: yes. A list holds references to songs, like the Spotify lists do.
+## Decisions (approved 2026-10-22)
+1. **Same layout on your own computer too?** Yes, with the Spotify tab kept next to Saved and Your lists. One layout means less to maintain. (The alternative is a separate layout only for the web version.)
+2. **Where does "Added songs" go?** It becomes one of Your lists, the default one new songs go to, so nothing is lost for you or your friends.
+3. **Can one song be in several lists?** Yes. A list holds references to songs, like the Spotify lists do.
 
 ## Limits to know
 - The search bar still costs part of YouTube's free daily allowance (web version: 10 searches a day per person). Pasting a link doesn't.
