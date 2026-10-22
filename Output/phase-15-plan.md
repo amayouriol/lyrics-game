@@ -40,7 +40,7 @@ Derived from: Output/phase-15-spec.md (decisions approved 2026-10-22). Review be
 
 ## 6. The library search moves down
 - [x] The library search sits in the library part, and searches only what you added. The add bar is the only search at the top. Done (2026-10-22): it sits under the add bar. In the web version it searches the songs you added (its wording says so, and an error no longer mentions Spotify); in your own copy it still searches your whole library, Spotify included, so nothing you could do before is lost. Tried on your own copy.
-- [x] `npm run lint`, `npm test`, `npm run build` pass (2026-10-22: 143 checks, no build warnings). GitHub's check: see the push below.
+- [x] `npm run lint`, `npm test`, `npm run build` pass (2026-10-22: 143 checks, no build warnings). GitHub's check runs only on `main` and on pull requests, not on these branches, so it will run when the work is merged.
 
 ## 7. Play-test and close
 - [ ] Your play-test, own copy: nothing you had disappeared (favorites, Play later, Added songs, imported playlists, Spotify tab).
