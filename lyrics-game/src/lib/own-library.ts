@@ -126,3 +126,113 @@ export function addOwnSongs(
     return { next: { songs: nextSongs, lists }, result: { added: fresh.length } };
   });
 }
+
+/** The longest name a list can have. */
+export const MAX_LIST_NAME = 60;
+
+/** A list name as it is kept: spaces trimmed and squeezed; null if empty or too long. */
+export function cleanListName(name: string): string | null {
+  const clean = name.replace(/\s+/g, " ").trim();
+  return clean.length >= 1 && clean.length <= MAX_LIST_NAME ? clean : null;
+}
+
+export type ListFailure = "invalid_name" | "name_taken" | "not_found" | "default_list";
+
+/** What a list change answers: done (with details), or why not. */
+export type ListResult<Done extends object = object> =
+  | ({ ok: true } & Done)
+  | { ok: false; reason: ListFailure };
+
+const sameName = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
+
+/** Makes an empty list of your own. */
+export function createOwnList(
+  userId: string,
+  name: string
+): Promise<ListResult<{ id: string }>> {
+  const clean = cleanListName(name);
+  if (!clean) return Promise.resolve({ ok: false, reason: "invalid_name" });
+  return store.update<ListResult<{ id: string }>>(userId, (data) => {
+    if (data.lists.some((l) => sameName(l.name, clean))) {
+      return { next: data, result: { ok: false, reason: "name_taken" } };
+    }
+    const id = `my-${crypto.randomUUID().slice(0, 8)}`;
+    const list: OwnList = { id, name: clean, cover: null, songIds: [], addedAt: Date.now() };
+    return { next: { ...data, lists: [list, ...data.lists] }, result: { ok: true, id } };
+  });
+}
+
+/** Gives a list a new name. "Added songs" can be renamed too. */
+export function renameOwnList(
+  userId: string,
+  listId: string,
+  name: string
+): Promise<ListResult> {
+  const clean = cleanListName(name);
+  if (!clean) return Promise.resolve({ ok: false, reason: "invalid_name" });
+  return store.update<ListResult>(userId, (data) => {
+    if (!data.lists.some((l) => l.id === listId)) {
+      return { next: data, result: { ok: false, reason: "not_found" } };
+    }
+    if (data.lists.some((l) => l.id !== listId && sameName(l.name, clean))) {
+      return { next: data, result: { ok: false, reason: "name_taken" } };
+    }
+    const lists = data.lists.map((l) => (l.id === listId ? { ...l, name: clean } : l));
+    return { next: { ...data, lists }, result: { ok: true } };
+  });
+}
+
+/** Deletes a list. Its songs stay in your library. "Added songs" is the default list and stays. */
+export function deleteOwnList(
+  userId: string,
+  listId: string
+): Promise<ListResult> {
+  if (listId === ADDED_LIST) return Promise.resolve({ ok: false, reason: "default_list" });
+  return store.update<ListResult>(userId, (data) => {
+    if (!data.lists.some((l) => l.id === listId)) {
+      return { next: data, result: { ok: false, reason: "not_found" } };
+    }
+    return { next: { ...data, lists: data.lists.filter((l) => l.id !== listId) }, result: { ok: true } };
+  });
+}
+
+/**
+ * Puts songs you already have into a list (newest first), skipping any that
+ * are there. A song that isn't in your library is left out and counted in `missing`.
+ */
+export function addToOwnList(
+  userId: string,
+  listId: string,
+  songIds: string[]
+): Promise<ListResult<{ added: number; missing: number }>> {
+  return store.update<ListResult<{ added: number; missing: number }>>(userId, (data) => {
+    const list = data.lists.find((l) => l.id === listId);
+    if (!list) return { next: data, result: { ok: false, reason: "not_found" } };
+    const unique = [...new Set(songIds)];
+    const missing = unique.filter((id) => !data.songs[id]).length;
+    const there = new Set(list.songIds);
+    const fresh = unique.filter((id) => data.songs[id] && !there.has(id));
+    if (fresh.length === 0) return { next: data, result: { ok: true, added: 0, missing } };
+    const lists = data.lists.map((l) =>
+      l.id === listId ? { ...l, songIds: [...fresh, ...l.songIds] } : l
+    );
+    return { next: { ...data, lists }, result: { ok: true, added: fresh.length, missing } };
+  });
+}
+
+/** Takes a song off one list. It stays in your library and in your other lists. */
+export function removeFromOwnList(
+  userId: string,
+  listId: string,
+  songId: string
+): Promise<ListResult> {
+  return store.update<ListResult>(userId, (data) => {
+    const list = data.lists.find((l) => l.id === listId);
+    if (!list) return { next: data, result: { ok: false, reason: "not_found" } };
+    if (!list.songIds.includes(songId)) return { next: data, result: { ok: true } };
+    const lists = data.lists.map((l) =>
+      l.id === listId ? { ...l, songIds: l.songIds.filter((id) => id !== songId) } : l
+    );
+    return { next: { ...data, lists }, result: { ok: true } };
+  });
+}
