@@ -25,10 +25,10 @@ Derived from: Output/phase-15-spec.md (decisions approved 2026-10-22). Review be
 - [x] `npm test`: the answers for a bad name, a list that isn't yours, a song that isn't in your library. Done (2026-10-22): `list-http.test.ts`; 143 checks pass. Tried by hand on your own copy with calls that write nothing (bad names, the default list, unknown lists, a Spotify id).
 
 ## 3. The library page: add bar first
-- [ ] The add bar at the top of the library: one box for a name or a link, the three videos to pick from, "Add to your library". The From YouTube tab is removed; old `?tab=youtube` links open Your lists.
-- [ ] First visit, empty library: a big "Add your first song" with the one-line steps.
-- [ ] Web version: "N searches left today" under the bar; a clear message when it's zero.
-- [ ] Checked by hand in both modes (own copy with Spotify, and the web version).
+- [x] The add bar at the top of the library: one box for a name or a link, the three videos to pick from, "Add to your library". The From YouTube tab is removed; old `?tab=youtube` links open Your lists. Done (2026-10-22): the box tells a link from words by itself (a link adds, words search). The tabs are now Your lists (the default, in both modes), Saved in Lyric Drop and, in your own copy, From Spotify. The library search already sits below the add bar (it moved here early; step 6 only has to check it).
+- [x] First visit, empty library: a big "Add your first song" with the one-line steps. Done (2026-10-22): web version only, shown while Your lists is empty. Not seen locally (it needs the real database); to check on the Vercel preview.
+- [x] Web version: "N searches left today" under the bar; a clear message when it's zero. Done (2026-10-22): at zero, searching is disabled and the box says pasting a video link still works. To check on the Vercel preview.
+- [ ] Checked by hand in both modes (own copy with Spotify, and the web version). Own copy checked 2026-10-22 (the page, the tabs, the old `?tab=youtube` link); the web version waits for the Vercel preview.
 
 ## 4. Your lists
 - [ ] A tab "Your lists" (default, with Saved) showing "Added songs", imported playlists and your own lists as cards.

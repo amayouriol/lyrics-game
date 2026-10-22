@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { VideoCandidate } from "@/lib/youtube";
 import { VideoChoices } from "./song/[trackId]/VideoChoices";
 import { guessRegion, SEARCH_ERRORS } from "./song/[trackId]/VideoPicker";
@@ -12,6 +12,7 @@ const ADD_ERRORS: Record<string, string> = {
   not_found: "We couldn't find that. A playlist has to be public or unlisted.",
   video_not_found: "We couldn't find that video.",
   not_playable: "YouTube won't let this video play here. Try another one.",
+  list_not_found: "That list isn't there any more. Reload the page.",
   session_expired: "Your session ended. Log in again.",
 };
 
@@ -29,7 +30,7 @@ interface AddAnswer {
 function describe(answer: AddAnswer): string {
   if (answer.kind === "song") {
     const who = `“${answer.track?.title}” by ${answer.track?.artist}`;
-    return answer.added ? `Added ${who}.` : `${who} was already in your list.`;
+    return answer.added ? `Added ${who}.` : `${who} was already in your library.`;
   }
   const count = Number(answer.added);
   const parts = [
@@ -43,25 +44,51 @@ function describe(answer: AddAnswer): string {
   return parts.join(" ");
 }
 
+/** Whether what was typed is a YouTube address (to add) rather than words to search for. */
+export function looksLikeLink(text: string): boolean {
+  return /^\s*(https?:\/\/|www\.)|youtu\.be\/|youtube\.com\//i.test(text);
+}
+
 type Message = { kind: "ok" | "error"; text: string } | null;
 
 /**
- * Two ways to add songs from YouTube: paste an address (one video, or a whole
- * public or unlisted playlist), or type a title and artist and pick a video.
+ * The one place to add songs: type a song (and artist) to search YouTube and
+ * pick one of three videos, or paste a YouTube address (a video adds one song,
+ * a public or unlisted playlist adds all its songs). `listId` puts a single
+ * song in that list too. `first` is the bigger welcome for an empty library.
  */
-export function AddFromYouTube({ onAdded }: { onAdded: () => void }) {
-  const [link, setLink] = useState("");
-  const [title, setTitle] = useState("");
-  const [artist, setArtist] = useState("");
+export function AddFromYouTube({
+  onAdded,
+  listId,
+  first = false,
+}: {
+  onAdded: () => void;
+  listId?: string;
+  first?: boolean;
+}) {
+  const [text, setText] = useState("");
   const [busy, setBusy] = useState<"link" | "search" | null>(null);
   const [message, setMessage] = useState<Message>(null);
   const [videos, setVideos] = useState<VideoCandidate[] | null>(null);
+  /** Searches left today in the web version; null when there is no limit or it isn't known. */
+  const [left, setLeft] = useState<number | null>(null);
+
+  const refreshLeft = useCallback(() => {
+    fetch("/api/own/limits")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((body) => setLeft(typeof body?.search === "number" ? body.search : null))
+      .catch(() => {});
+  }, []);
+  useEffect(refreshLeft, [refreshLeft]);
+
+  const isLink = looksLikeLink(text);
+  const outOfSearches = left === 0;
 
   const send = async (body: Record<string, unknown>): Promise<AddAnswer> => {
     const res = await fetch("/api/own/add", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...body, region: guessRegion() }),
+      body: JSON.stringify({ ...body, region: guessRegion(), ...(listId ? { listId } : {}) }),
     });
     const answer = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(ADD_ERRORS[answer.error] ?? "Something went wrong. Try again.");
@@ -69,27 +96,27 @@ export function AddFromYouTube({ onAdded }: { onAdded: () => void }) {
   };
 
   const addLink = async () => {
-    if (!link.trim() || busy) return;
     setBusy("link");
     setMessage(null);
+    setVideos(null);
     try {
-      const answer = await send({ link: link.trim() });
+      const answer = await send({ link: text.trim() });
       setMessage({ kind: "ok", text: describe(answer) });
-      setLink("");
+      setText("");
       onAdded();
     } catch (error) {
       setMessage({ kind: "error", text: (error as Error).message });
     } finally {
       setBusy(null);
+      refreshLeft();
     }
   };
 
   const search = async () => {
-    if (!title.trim() || busy) return;
     setBusy("search");
     setMessage(null);
     setVideos(null);
-    const query = new URLSearchParams({ title: title.trim(), artist: artist.trim() });
+    const query = new URLSearchParams({ title: text.trim(), artist: "" });
     const region = guessRegion();
     if (region) query.set("region", region);
     try {
@@ -101,7 +128,14 @@ export function AddFromYouTube({ onAdded }: { onAdded: () => void }) {
       setMessage({ kind: "error", text: (error as Error).message });
     } finally {
       setBusy(null);
+      refreshLeft();
     }
+  };
+
+  const submit = () => {
+    if (!text.trim() || busy) return;
+    if (isLink) addLink();
+    else if (!outOfSearches) search();
   };
 
   // Called by the list once the video has been checked to play here.
@@ -109,62 +143,48 @@ export function AddFromYouTube({ onAdded }: { onAdded: () => void }) {
     const answer = await send({ videoId: video.videoId });
     setMessage({ kind: "ok", text: describe(answer) });
     setVideos(null);
-    setTitle("");
-    setArtist("");
+    setText("");
     onAdded();
   };
 
   return (
-    <div className={styles.addBox}>
+    <div className={`${styles.addBox} ${first ? styles.addFirst : ""}`}>
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          addLink();
+          submit();
         }}
       >
-        <h3>Paste a YouTube link</h3>
-        <p>A video adds one song. A public or unlisted playlist adds all its songs (up to 200).</p>
+        <h3>{first ? "Add your first song" : "Add a song"}</h3>
+        <p>
+          {first
+            ? "Type a song name, or paste a YouTube link. Pick the video, then play it and fill in the missing words."
+            : "Type a song name (and the artist), or paste a YouTube link. A video adds one song; a public or unlisted playlist adds all its songs, up to 200."}
+        </p>
         <div className={styles.addRow}>
           <input
             className={styles.addInput}
-            value={link}
-            onChange={(e) => setLink(e.target.value)}
-            placeholder="https://www.youtube.com/watch?v=…"
-            aria-label="YouTube link"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Song name and artist, or a YouTube link"
+            aria-label="Song name and artist, or a YouTube link"
+            autoComplete="off"
           />
-          <button className={styles.smallButton} type="submit" disabled={busy !== null || !link.trim()}>
-            {busy === "link" ? "Adding…" : "Add"}
+          <button
+            className={styles.smallButton}
+            type="submit"
+            disabled={busy !== null || !text.trim() || (!isLink && outOfSearches)}
+          >
+            {busy === "link" ? "Adding…" : busy === "search" ? "Searching…" : isLink ? "Add" : "Find videos"}
           </button>
         </div>
-      </form>
-
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          search();
-        }}
-      >
-        <h3>Or search by title and artist</h3>
-        <p>You pick the video from three results. It&apos;s checked before it&apos;s added.</p>
-        <div className={styles.addRow}>
-          <input
-            className={styles.addInput}
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Song title"
-            aria-label="Song title"
-          />
-          <input
-            className={styles.addInput}
-            value={artist}
-            onChange={(e) => setArtist(e.target.value)}
-            placeholder="Artist"
-            aria-label="Artist"
-          />
-          <button className={styles.smallButton} type="submit" disabled={busy !== null || !title.trim()}>
-            {busy === "search" ? "Searching…" : "Find videos"}
-          </button>
-        </div>
+        {left !== null && (
+          <small className={styles.addLeft}>
+            {left === 0
+              ? "You've used today's searches. Come back tomorrow, or paste a video link, which doesn't use one."
+              : `${left} ${left === 1 ? "search" : "searches"} left today. Pasting a video link doesn't use one.`}
+          </small>
+        )}
       </form>
 
       {videos && (

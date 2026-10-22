@@ -1135,14 +1135,49 @@
   }
 }
 
-/* Adding songs from YouTube: a link, or a title and artist. */
+/* Adding songs from YouTube: one box, a song name or a link. */
+.addSection {
+  padding: 40px clamp(24px, 5.5vw, 88px) 8px;
+}
+
 .addBox {
   display: grid;
-  gap: 28px;
-  margin: 0 0 40px;
+  gap: 18px;
+  margin: 0;
   padding: 26px;
   border: 1px solid #c4bec6;
   background: #fff;
+}
+
+/* The welcome for an empty library: bigger, with a violet edge. */
+.addFirst {
+  padding: 36px;
+  border: 2px solid var(--violet);
+}
+
+.addFirst h3 {
+  font-size: 28px;
+}
+
+.addFirst p {
+  font-size: 16px;
+}
+
+.addFirst .addInput {
+  min-height: 56px;
+  font-size: 17px;
+}
+
+.addLeft {
+  display: block;
+  margin-top: 12px;
+  color: #6f6872;
+  font-size: 13px;
+}
+
+/* The search of what you added, above the tabs. */
+.libraryTools {
+  padding: 24px clamp(24px, 5.5vw, 88px) 28px;
 }
 
 .addBox h3 {

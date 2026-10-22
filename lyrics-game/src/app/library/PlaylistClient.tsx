@@ -109,11 +109,11 @@ export function PlaylistClient({ source, sidebar }: { source: string; sidebar: R
       <section className={`${styles.top} ${styles.topList}`}>
         <div className={styles.title}>
           <Link
-            href={saved ? "/library" : own ? "/library?tab=youtube" : "/library?tab=spotify"}
+            href={saved ? "/library?tab=saved" : own ? "/library" : "/library?tab=spotify"}
             className={styles.back}
           >
             <ArrowIcon />
-            {saved ? "Back to library" : own ? "All YouTube songs" : "All playlists"}
+            {saved ? "Back to library" : own ? "Your lists" : "All playlists"}
           </Link>
           <p>{saved ? "Saved in Lyric Drop" : own ? "From YouTube" : "From Spotify"}</p>
           <h1>{SAVED_NAMES[source] ?? info?.name ?? (sources ? "Playlist" : "")}</h1>

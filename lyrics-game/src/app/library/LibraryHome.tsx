@@ -19,30 +19,40 @@ import { LibrarySearch } from "./LibrarySearch";
 import { SearchBox } from "./SearchBox";
 import { useSaved } from "./SavedProvider";
 import { songHref } from "./song/[trackId]/loadSong";
-import { YouTubeTab } from "./YouTubeTab";
+import { AddFromYouTube } from "./AddFromYouTube";
+import { useOwnLists } from "./useOwnLists";
+import { YourListsTab } from "./YourListsTab";
 import styles from "./library.module.css";
 
-export type LibraryTab = "saved" | "spotify" | "youtube";
+export type LibraryTab = "saved" | "lists" | "spotify";
 
 /**
- * The library's main page: a search across your whole library at the top,
- * and two tabs below it, the app's own lists and your Spotify lists.
- * Searching replaces the tabs with the songs found.
+ * The library's main page: the box for adding songs first, then a search
+ * across what you have, and the tabs below it: your lists (what you added
+ * from YouTube), what you saved in the game, and, with Spotify, your Spotify
+ * lists. Searching replaces the tabs with the songs found.
  */
 export function LibraryHome({ initialTab, web }: { initialTab: LibraryTab; web: boolean }) {
   const router = useRouter();
   const [tab, setTab] = useState(initialTab);
   const [search, setSearch] = useState("");
+  const lists = useOwnLists();
 
   // The tab is kept in the address, so coming back from a playlist returns to it.
   const choose = (next: LibraryTab) => {
     setTab(next);
-    router.replace(next === "saved" ? "/library" : `/library?tab=${next}`, { scroll: false });
+    router.replace(next === "lists" ? "/library" : `/library?tab=${next}`, { scroll: false });
   };
+
+  const tabs: { id: LibraryTab; name: string; about: string }[] = [
+    { id: "lists", name: "Your lists", about: "Songs and playlists you added" },
+    { id: "saved", name: "Saved in Lyric Drop", about: "Your picks and game collections" },
+    ...(web ? [] : [{ id: "spotify" as const, name: "From Spotify", about: "Liked songs and playlists" }]),
+  ];
 
   return (
     <main className={styles.screen}>
-      <section className={styles.top}>
+      <section className={`${styles.top} ${styles.topList}`}>
         <div className={styles.title}>
           <p>Your music</p>
           <h1>
@@ -51,53 +61,53 @@ export function LibraryHome({ initialTab, web }: { initialTab: LibraryTab; web: 
             <em>next song.</em>
           </h1>
         </div>
+      </section>
+
+      <section className={styles.addSection}>
+        {/* Only a web friend starts with nothing; on your own computer the library is rarely empty. */}
+        <AddFromYouTube onAdded={lists.reload} first={web && lists.status === "ready" && lists.sources.length === 0} />
+      </section>
+
+      <div className={styles.libraryTools}>
         <SearchBox
           value={search}
           onChange={setSearch}
-          placeholder="Search your whole library"
-          tone="dark"
+          placeholder="Search the songs you added"
+          tone="light"
         />
-      </section>
+      </div>
 
       {search.trim() !== "" ? (
         <LibrarySearch search={search} />
       ) : (
         <>
-          <div className={styles.tabs} role="tablist" aria-label="Library source">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={tab === "saved"}
-              className={tab === "saved" ? styles.tabActive : ""}
-              onClick={() => choose("saved")}
-            >
-              <span>Saved in Lyric Drop</span>
-              <small>Your picks and game collections</small>
-            </button>
-            {!web && (
+          <div
+            className={styles.tabs}
+            style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}
+            role="tablist"
+            aria-label="Library source"
+          >
+            {tabs.map((t) => (
               <button
+                key={t.id}
                 type="button"
                 role="tab"
-                aria-selected={tab === "spotify"}
-                className={tab === "spotify" ? styles.tabActive : ""}
-                onClick={() => choose("spotify")}
+                aria-selected={tab === t.id}
+                className={tab === t.id ? styles.tabActive : ""}
+                onClick={() => choose(t.id)}
               >
-                <span>From Spotify</span>
-                <small>Liked songs and playlists</small>
+                <span>{t.name}</span>
+                <small>{t.about}</small>
               </button>
-            )}
-            <button
-              type="button"
-              role="tab"
-              aria-selected={tab === "youtube"}
-              className={tab === "youtube" ? styles.tabActive : ""}
-              onClick={() => choose("youtube")}
-            >
-              <span>From YouTube</span>
-              <small>Songs and playlists you add</small>
-            </button>
+            ))}
           </div>
-          {tab === "saved" ? <SavedTab /> : tab === "spotify" ? <SpotifyTab /> : <YouTubeTab />}
+          {tab === "saved" ? (
+            <SavedTab />
+          ) : tab === "spotify" ? (
+            <SpotifyTab />
+          ) : (
+            <YourListsTab lists={lists} />
+          )}
         </>
       )}
     </main>
