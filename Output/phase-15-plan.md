@@ -31,8 +31,8 @@ Derived from: Output/phase-15-spec.md (decisions approved 2026-10-22). Review be
 - [ ] Checked by hand in both modes (own copy with Spotify, and the web version). Own copy checked 2026-10-22 (the page, the tabs, the old `?tab=youtube` link); the web version waits for the Vercel preview.
 
 ## 4. Your lists
-- [ ] A tab "Your lists" (default, with Saved) showing "Added songs", imported playlists and your own lists as cards.
-- [ ] "New list": a name, then it appears. Rename and delete from the list's page, with a confirmation for delete that says the songs stay.
+- [x] A tab "Your lists" (default, with Saved) showing "Added songs", imported playlists and your own lists as cards. Done (2026-10-22, in step 3).
+- [x] "New list": a name, then it appears. Rename and delete from the list's page, with a confirmation for delete that says the songs stay. Done (2026-10-22): after "Make list" you land in the new empty list. "Added songs" shows Rename only. Tried on your own copy (make, rename, delete); your library file ended byte-for-byte as before.
 
 ## 5. Inside a list
 - [ ] On a list's page: "Add songs" opens a picker of the songs already in your library (with a filter), and the add bar adds straight to this list.

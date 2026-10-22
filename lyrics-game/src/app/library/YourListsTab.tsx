@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowIcon, NoteIcon } from "@/components/icons";
 import { playlistHref } from "./libraryData";
+import { NewListForm } from "./NewListForm";
 import type { OwnLists } from "./useOwnLists";
 import styles from "./library.module.css";
 
@@ -15,6 +16,7 @@ export function YourListsTab({ lists }: { lists: OwnLists }) {
           <p>Added by you</p>
           <h2>Your lists</h2>
         </div>
+        <NewListForm onMade={lists.reload} />
       </div>
 
       {lists.status === "loading" && <p className={styles.hint}>Loading your lists…</p>}

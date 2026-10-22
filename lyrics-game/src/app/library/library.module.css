@@ -1243,3 +1243,66 @@
 .addBox .addError {
   color: #9a4a1f;
 }
+
+/* Making, renaming and deleting your own lists. */
+.listForm {
+  display: grid;
+  gap: 8px;
+  min-width: min(100%, 460px);
+}
+
+.listActions {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.ghostButton {
+  padding: 8px 14px;
+  border: 1px solid #a6a1aa;
+  background: transparent;
+  color: var(--paper);
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ghostButton:hover {
+  border-color: var(--violet-light);
+  color: var(--violet-light);
+}
+
+.ghostLink {
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  background: none;
+  color: var(--paper);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.listProblem {
+  flex-basis: 100%;
+  margin: 0;
+  color: #ffb98f;
+  font-size: 14px;
+  font-weight: 600;
+}

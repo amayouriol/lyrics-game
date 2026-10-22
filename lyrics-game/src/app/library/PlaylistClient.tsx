@@ -16,6 +16,7 @@ import {
 } from "./libraryData";
 import { useSaved } from "./SavedProvider";
 import { DEFAULT_FILTERS, Filters, NoFilterMatch, passesFilters } from "./Filters";
+import { ListActions } from "./ListActions";
 import { SearchBox } from "./SearchBox";
 import { TrackList } from "./TrackList";
 import { useLyricsCheck } from "./useLyricsCheck";
@@ -39,6 +40,7 @@ export function PlaylistClient({ source, sidebar }: { source: string; sidebar: R
 
   // The list's name and count, from the same list as the cards page.
   const [sources, setSources] = useState<Pick<Source, "id" | "name" | "count">[] | null>(null);
+  const [sourcesKey, setSourcesKey] = useState(0);
   useEffect(() => {
     let ignore = false;
     fetchJson<{ sources: Pick<Source, "id" | "name" | "count">[] }>(
@@ -49,7 +51,7 @@ export function PlaylistClient({ source, sidebar }: { source: string; sidebar: R
     return () => {
       ignore = true;
     };
-  }, [own]);
+  }, [own, sourcesKey]);
   const info = sources?.find((s) => s.id === source);
 
   const [reloadKey, setReloadKey] = useState(0);
@@ -115,7 +117,7 @@ export function PlaylistClient({ source, sidebar }: { source: string; sidebar: R
             <ArrowIcon />
             {saved ? "Back to library" : own ? "Your lists" : "All playlists"}
           </Link>
-          <p>{saved ? "Saved in Lyric Drop" : own ? "From YouTube" : "From Spotify"}</p>
+          <p>{saved ? "Saved in Lyric Drop" : own ? "Your lists" : "From Spotify"}</p>
           <h1>{SAVED_NAMES[source] ?? info?.name ?? (sources ? "Playlist" : "")}</h1>
           <span>
             {count !== undefined &&
@@ -124,6 +126,14 @@ export function PlaylistClient({ source, sidebar }: { source: string; sidebar: R
                 : `${count} ${count === 1 ? "song" : "songs"} · `)}
             Pick a song. Anything without synced lyrics stays greyed out.
           </span>
+          {own && info && (
+            <ListActions
+              key={info.name}
+              source={source}
+              name={info.name}
+              onRenamed={() => setSourcesKey((k) => k + 1)}
+            />
+          )}
         </div>
       </section>
 
@@ -171,7 +181,7 @@ export function PlaylistClient({ source, sidebar }: { source: string; sidebar: R
             )}
 
             {tracks && tracks.length === 0 && (
-              <div className={styles.hint}>{EMPTY[source] ?? "This playlist has no songs."}</div>
+              <div className={styles.hint}>{EMPTY[source] ?? (own ? "Nothing in this list yet." : "This playlist has no songs.")}</div>
             )}
 
             {found && tracks!.length > 0 && found.length === 0 && (
