@@ -72,13 +72,13 @@ export function LibraryHome({ initialTab, web }: { initialTab: LibraryTab; web: 
         <SearchBox
           value={search}
           onChange={setSearch}
-          placeholder="Search the songs you added"
+          placeholder={web ? "Search the songs you added" : "Search your whole library"}
           tone="light"
         />
       </div>
 
       {search.trim() !== "" ? (
-        <LibrarySearch search={search} />
+        <LibrarySearch search={search} web={web} />
       ) : (
         <>
           <div

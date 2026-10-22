@@ -12,10 +12,11 @@ import styles from "./library.module.css";
 const SEARCH_DELAY_MS = 250;
 
 /**
- * Songs found across your whole library, with filters, shown in place of the
- * tabs while you type in the library's search box.
+ * Songs found across your whole library (in the web version, the songs you
+ * added), with filters, shown in place of the tabs while you type in the
+ * library's search box.
  */
-export function LibrarySearch({ search }: { search: string }) {
+export function LibrarySearch({ search, web }: { search: string; web: boolean }) {
   const [query, setQuery] = useState(search);
   useEffect(() => {
     const t = setTimeout(() => setQuery(search), SEARCH_DELAY_MS);
@@ -43,14 +44,15 @@ export function LibrarySearch({ search }: { search: string }) {
       </div>
 
       {active && state === "loading" && (
-        <div className={styles.hint}>Loading your whole library…</div>
+        <div className={styles.hint}>{web ? "Loading your songs…" : "Loading your whole library…"}</div>
       )}
 
       {active && state === "error" && (
         <div className={styles.notice}>
           <span>
-            {spotifyTrouble(rateLimited, retryAt).title} Your library couldn&apos;t be loaded to
-            search it. {spotifyTrouble(rateLimited, retryAt).body}
+            {web
+              ? "Your songs couldn't be loaded to search them. It's probably a blip."
+              : `${spotifyTrouble(rateLimited, retryAt).title} Your library couldn't be loaded to search it. ${spotifyTrouble(rateLimited, retryAt).body}`}
           </span>
           <button className={styles.smallButton} onClick={reload}>
             Retry

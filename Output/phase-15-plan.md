@@ -39,8 +39,8 @@ Derived from: Output/phase-15-spec.md (decisions approved 2026-10-22). Review be
 - [x] Remove a song from a list (not from the library). Done (2026-10-22): a Remove button on each row of your own lists. Tried on your own copy with a throwaway list (add, remove, delete); your library file ended identical to the backup.
 
 ## 6. The library search moves down
-- [ ] The library search sits in the library part, and searches only what you added. The add bar is the only search at the top.
-- [ ] `npm run lint`, `npm test`, `npm run build` pass; GitHub's check passes.
+- [x] The library search sits in the library part, and searches only what you added. The add bar is the only search at the top. Done (2026-10-22): it sits under the add bar. In the web version it searches the songs you added (its wording says so, and an error no longer mentions Spotify); in your own copy it still searches your whole library, Spotify included, so nothing you could do before is lost. Tried on your own copy.
+- [x] `npm run lint`, `npm test`, `npm run build` pass (2026-10-22: 143 checks, no build warnings). GitHub's check: see the push below.
 
 ## 7. Play-test and close
 - [ ] Your play-test, own copy: nothing you had disappeared (favorites, Play later, Added songs, imported playlists, Spotify tab).
