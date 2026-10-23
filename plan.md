@@ -93,7 +93,8 @@ Why: you asked for a public link. Step 0 is a spike on the risky parts before an
 - [x] A person id, a shared-word gate and daily caps on searches (2026-10-20)
 - [x] Put it online (Vercel + Upstash, you create the accounts); README steps (2026-10-22: the gate page works on a Vercel preview)
 - [x] "About and privacy" page (2026-10-22)
-- [ ] Your full play-test on the preview (word, add a song, play a song, save, reload); then merge into `main` and close
+- [x] Your play-test on the Vercel preview: the word, adding songs, lists, playing a song (2026-10-23, all good)
+Result: a web version for friends, YouTube only, behind a shared word, free to run (Vercel + Upstash). Your own copy is unchanged.
 
 ## Phase 15: A library made for YouTube — planned 2026-10-22 (Output/phase-15-spec.md)
 Why: with YouTube as the main source, a new player lands on an empty library and has to click through tabs to add a song.
