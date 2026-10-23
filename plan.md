@@ -96,12 +96,14 @@ Why: you asked for a public link. Step 0 is a spike on the risky parts before an
 - [x] Your play-test on the Vercel preview: the word, adding songs, lists, playing a song (2026-10-23, all good)
 Result: a web version for friends, YouTube only, behind a shared word, free to run (Vercel + Upstash). Your own copy is unchanged.
 
-## Phase 15: A library made for YouTube — planned 2026-10-22 (Output/phase-15-spec.md)
+## Phase 15: A library made for YouTube — closed 2026-10-23 (Output/phase-15-spec.md, phase-15-plan.md)
 Why: with YouTube as the main source, a new player lands on an empty library and has to click through tabs to add a song.
-- [ ] One add bar at the top of the library (search by name or paste a link, then "Add to your library"); the From YouTube tab goes away
-- [ ] Your library below it: Saved (favorites, play later) and your own lists, which you can create and name
-- [ ] Inside a list: add songs from your library or from the add bar
-- [ ] The library search moves down, to the library section
+- [x] One add box at the top of the library (words search, a link adds; "N searches left today" in the web version); the From YouTube tab is gone
+- [x] Your library below it: Your lists (Added songs, imported playlists and lists you make: new, rename, delete) and Saved
+- [x] Inside a list: add songs from your library (a picker) or from YouTube, and remove them
+- [x] The library search sits under the add box
+- [x] Your play-test: your own copy (nothing lost) and the web version on a private window (2026-10-23, all good)
+Result: the library opens with the add box first. The same layout is used in your own copy (with the From Spotify tab) and in the web version.
 
 ## Phase 16: Sign in with Google — idea, not planned yet
 Why: so your progress follows you across devices and doesn't vanish with your browser's cookies. Name and email only (no YouTube data). Decide after friends have tried the web version.

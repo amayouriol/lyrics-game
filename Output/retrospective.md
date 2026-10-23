@@ -87,3 +87,15 @@ Every problem below was found by playing on a real screen, none by lint or tests
 | Lists of songs from music videos have swapped names | "Song - Artist" and "Artist - Song" look the same | Topic uploads are clean; a swap button could come later |
 
 What worked: building in small steps (player layer first, then one hard-coded video), a temporary test page for each risky piece (deleted afterwards), and asking for a screenshot at every failure.
+
+## Phases 14 and 15 (web version, YouTube-first library) — what went wrong, and what to do next time
+| What happened | Cause | Habit to keep |
+|---|---|---|
+| The web link showed "This page couldn't load", then a 404 on the word page | Two settings were never added in Vercel, and a variable only reaches builds made after it was added | Before testing a deploy, list the variables it needs and check each one is there and ticked for Preview; redeploy after any change |
+| Friends could not have used the preview link | Vercel keeps branch deployments private to the owner | Say early which address is public, and test the real one before announcing |
+| The spike page looked empty | I made its text white on a white page | Look at the page before asking you to test it |
+| A change to make tests safer made the build trace the whole project | A path built from an environment variable; my search for "error" in the build output missed a warning | Read the warnings too; keep file paths static |
+| One command in a row failed twice to even start | A long shell command mixing quotes | Write files with the file tools, not a shell here-document |
+| The first library layout felt wrong to a new player | It was built for one person with a full library | Try the first visit in a private window, as someone with nothing |
+
+What worked: a spike first (all four risks passed in one afternoon), the same storage code over files and a database with every check run on both, a throwaway list on the real copy with a backup compared at the end, and turning your feedback after the first friend-style visit into a whole phase (15).

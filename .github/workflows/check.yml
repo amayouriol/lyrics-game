@@ -1,10 +1,9 @@
-# On every push to main and every pull request: lint, rule checks, build.
+# On every push (any branch) and every pull request: lint, rule checks, build.
 # No Spotify keys needed; they're only read when the app runs.
 name: Check
 
 on:
   push:
-    branches: [main]
   pull_request:
 
 jobs:

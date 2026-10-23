@@ -43,9 +43,9 @@ Derived from: Output/phase-15-spec.md (decisions approved 2026-10-22). Review be
 - [x] `npm run lint`, `npm test`, `npm run build` pass (2026-10-22: 143 checks, no build warnings). GitHub's check runs only on `main` and on pull requests, not on these branches, so it will run when the work is merged.
 
 ## 7. Play-test and close
-- [ ] Your play-test, own copy: nothing you had disappeared (favorites, Play later, Added songs, imported playlists, Spotify tab).
-- [ ] Your play-test, web version: a new player adds a first song in two clicks; makes a list, adds three songs, renames it, deletes it.
-- [ ] plan.md gets the Phase 15 result; `Close Phase 15: …` and push.
+- [x] Your play-test, own copy: nothing you had disappeared (favorites, Play later, Added songs, imported playlists, Spotify tab). Done (2026-10-23, all good).
+- [x] Your play-test, web version: a new player adds a first song in two clicks; makes a list, adds three songs, renames it, deletes it. Done (2026-10-23, private window on the Vercel preview, all good).
+- [x] plan.md gets the Phase 15 result; `Close Phase 15: …` and push.
 
 ## Not in this phase
 Sign-in, recommendations, sharing a list, and any change to the game screens (Phases 16 and 17, and later).
