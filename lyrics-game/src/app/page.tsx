@@ -60,7 +60,11 @@ export default async function HomePage({
           </p>
 
           {web ? (
-            <a className={styles.primaryCta} href="/home" aria-describedby="web-note">
+            <a
+              className={`${styles.primaryCta} ${styles.primaryCtaWhite}`}
+              href="/home"
+              aria-describedby="web-note"
+            >
               <span>Play</span>
               <i aria-hidden="true">
                 <ArrowIcon />

@@ -187,6 +187,21 @@
   transform: translateY(-2px);
 }
 
+/* The web version's Play button: white, since green is Spotify's color and the web version has no Spotify. */
+.primaryCtaWhite {
+  border-color: #fff;
+  background: #fff;
+}
+
+.primaryCtaWhite > i {
+  color: #fff;
+}
+
+.primaryCtaWhite:hover {
+  background: var(--paper);
+  box-shadow: 0 9px 32px rgb(255 255 255 / 18%);
+}
+
 .primaryCta sup { margin-left: 2px; font-size: 9px; vertical-align: super; }
 .spotifyIcon { width: 26px; height: 26px; flex: 0 0 auto; }
 
