@@ -1,7 +1,7 @@
 /** Sign in with Google (Phase 16): run with `npm test`. Google is faked; nothing leaves this computer. */
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { authUrl, exchangeCode, GoogleSignInError, newLoginStart, readIdToken, sameState } from "./google-auth.ts";
+import { authUrl, callbackUrl, exchangeCode, GoogleSignInError, newLoginStart, readIdToken, sameState } from "./google-auth.ts";
 import { readLogin, readUser, sealLogin, sealUser } from "./web-user.ts";
 
 const CLIENT = "client-123.apps.googleusercontent.com";
@@ -80,6 +80,19 @@ describe("starting a sign-in", () => {
     assert.equal(url.searchParams.get("code_challenge"), "C");
     assert.equal(url.searchParams.get("code_challenge_method"), "S256");
     assert.equal(url.searchParams.get("redirect_uri"), "https://app.example/api/auth/google/callback");
+  });
+
+  it("sends people back to this site's own address, using the forwarded host behind Vercel", () => {
+    assert.equal(
+      callbackUrl("http://localhost:3000/api/auth/google", null, null),
+      "http://localhost:3000/api/auth/google/callback"
+    );
+    assert.equal(
+      callbackUrl("http://internal:3000/x", "friends.example.com", "https"),
+      "https://friends.example.com/api/auth/google/callback"
+    );
+    // Anything but a plain "http" is treated as https, so an odd header can't downgrade it to something else.
+    assert.equal(callbackUrl("http://a/x", "b.example", "ftp"), "https://b.example/api/auth/google/callback");
   });
 
   it("compares the state, and a missing one never matches", () => {

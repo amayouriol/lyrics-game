@@ -20,8 +20,8 @@ Derived from: Output/phase-16-spec.md (draft). Review before building.
 - [x] `google-auth.ts`: login address, state + PKCE check, code swap, reading the user. `npm test`: state mismatch refused, expired state refused, missing fields refused (Google faked, no network). Done (2026-10-30): also `web-user.ts` (the signed cookies, key `AUTH_SECRET`, at least 32 characters) and `google-auth.test.ts`, 14 checks.
 
 ## 2. The routes and cookie
-- [ ] `/api/auth/google` (start), `/api/auth/google/callback`, `/api/auth/signout`. `getUserId()` uses the cookie in the web version.
-- [ ] `npm test`: signed in gets `g-<sub>`, no cookie gets refused, tampered cookie refused.
+- [x] `/api/auth/google` (start), `/api/auth/google/callback`, `/api/auth/signout`. `getUserId()` uses the cookie in the web version. Done (2026-10-30): signed out answers the same "session expired" 401 the routes already handle; if the Google keys or `AUTH_SECRET` are missing, sign-in is off (back to the start page), never open.
+- [x] `npm test`: signed in gets `g-<sub>`, no cookie gets refused, tampered cookie refused. Done (2026-10-30): covered by the cookie checks in `google-auth.test.ts` (15 checks); `getUserId` itself needs Next's cookies, so it is tried by hand in step 3. Lint and types pass.
 
 ## 3. The pages
 - [ ] `PlayButton` and its pop-up (word step, then Google step; keyboard and screen-reader friendly; works at phone width). Both Play buttons on the start page use it.

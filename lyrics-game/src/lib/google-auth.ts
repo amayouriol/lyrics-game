@@ -22,6 +22,16 @@ export interface GoogleConfig {
   clientSecret: string;
 }
 
+export const CALLBACK_PATH = "/api/auth/google/callback";
+
+/** Where Google sends people back to: this site's own address (behind Vercel, the forwarded host). */
+export function callbackUrl(requestUrl: string, forwardedHost: string | null, forwardedProto: string | null): string {
+  const own = new URL(requestUrl);
+  const host = forwardedHost?.split(",")[0].trim() || own.host;
+  const proto = forwardedProto?.split(",")[0].trim() || own.protocol.replace(":", "");
+  return `${proto === "http" ? "http" : "https"}://${host}${CALLBACK_PATH}`;
+}
+
 /** The keys from the settings, or null when they aren't set (then sign-in is off, not open). */
 export function googleConfig(): GoogleConfig | null {
   const clientId = process.env.GOOGLE_CLIENT_ID?.trim();

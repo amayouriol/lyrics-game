@@ -1,9 +1,9 @@
 import { getIronSession, type IronSession, type SessionOptions } from "iron-session";
 import { cookies, headers } from "next/headers";
 import { isWebMode } from "./app-mode";
-import { PERSON_COOKIE } from "./gate";
 import { knownUser, rememberUser } from "./local-user";
 import { getCurrentUser, refreshAccessToken, SpotifySessionExpiredError } from "./spotify";
+import { authSecret, readUser, USER_COOKIE, type WebUser } from "./web-user";
 
 export interface SessionData {
   accessToken?: string;
@@ -36,7 +36,11 @@ export function getProfile(session: SessionData): Profile {
 
 /** The profile for the top bar: yours from the login, or, without Spotify, the one remembered from the last login. */
 export async function currentProfile(session: SessionData): Promise<Profile> {
-  if (isWebMode()) return { name: null, picture: null, connected: false, web: true };
+  if (isWebMode()) {
+    // Shown in the top bar; the page is behind the sign-in, so this is normally someone.
+    const user = await readUser((await cookies()).get(USER_COOKIE)?.value, authSecret());
+    return { name: user?.name ?? null, picture: user?.picture ?? null, connected: false, web: true };
+  }
   if (hasActiveSession(session)) return getProfile(session);
   const { name, picture } = await knownUser();
   return { name, picture, connected: false, web: false };
@@ -136,20 +140,15 @@ export async function getUserId(): Promise<string> {
   return session.userId;
 }
 
-/** The web version: a random id kept in this browser's cookie (given at the gate; made here if it was cleared). */
+/** The web version: who signed in with Google on this browser. Not signed in is the same "sign in again" answer as a lost Spotify session. */
+export async function webUser(): Promise<WebUser> {
+  const user = await readUser((await cookies()).get(USER_COOKIE)?.value, authSecret());
+  if (!user) throw new SpotifySessionExpiredError("Not signed in");
+  return user;
+}
+
 async function personId(): Promise<string> {
-  const store = await cookies();
-  const kept = store.get(PERSON_COOKIE)?.value;
-  if (kept && /^[0-9a-f-]{36}$/.test(kept)) return kept;
-  const id = crypto.randomUUID();
-  store.set(PERSON_COOKIE, id, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 60 * 60 * 24 * 365,
-    path: "/",
-  });
-  return id;
+  return (await webUser()).id;
 }
 
 async function validAccessToken(session: IronSession<SessionData>): Promise<string> {
