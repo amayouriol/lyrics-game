@@ -30,9 +30,9 @@ Derived from: Output/phase-16-spec.md (draft). Review before building.
 - [x] Name + picture + Sign out in the header. Done (2026-10-30): the account menu now shows in the web version too ("Signed in with Google", Sign out). The About page now says what is kept about a Google account.
 
 ## 4. Carry old data over
-- [ ] `adoptPerson` on first sign-in when the old random-id cookie exists. `npm test` on both backends (files, fake database): moved once, never overwrites an account that already has data.
+- [x] `adoptPerson` on first sign-in when the old random-id cookie exists. `npm test` on both backends (files, fake database): moved once, never overwrites an account that already has data. Done (2026-10-30): only the web version has old random ids, and it keeps everything in the database, so the checks use the fake database (`adopt-person.test.ts`, 6 checks). Copied (the old entries stay), marked as taken after the copy so a second person on the same browser can't claim it, and the old cookie is removed.
 
 ## 5. Check and close
-- [ ] `npm run lint`, `npm test`, `npm run build` (read the whole build output for warnings).
+- [x] `npm run lint`, `npm test`, `npm run build` (read the whole build output for warnings). Done (2026-10-30): 164 checks pass, lint clean, build with no warnings.
 - [ ] Your play-test: sign in on two browsers, clear cookies and come back, your own copy untouched.
 - [ ] Close Phase 16, push, update `CLAUDE.md`, `plan.md` and the retrospective.

@@ -1,5 +1,7 @@
 import { cookies, headers } from "next/headers";
 import { isWebMode } from "@/lib/app-mode";
+import { adoptPerson } from "@/lib/adopt-person";
+import { PERSON_COOKIE } from "@/lib/gate";
 import { callbackUrl, exchangeCode, googleConfig, sameState } from "@/lib/google-auth";
 import {
   authSecret,
@@ -42,6 +44,12 @@ export async function GET(request: Request) {
       maxAge: USER_COOKIE_AGE,
       path: "/",
     });
+    // A friend from before Google sign-in brings their songs and games along, once.
+    const oldId = store.get(PERSON_COOKIE)?.value;
+    if (oldId) {
+      await adoptPerson(oldId, user.id).catch((error) => console.error("[adoptPerson]", error));
+      store.delete(PERSON_COOKIE);
+    }
     return to("/home");
   } catch (error) {
     console.error("[/api/auth/google/callback]", error instanceof Error ? error.message : error);
