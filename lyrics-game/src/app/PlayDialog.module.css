@@ -1,0 +1,90 @@
+/* The pop-up that opens over the start page when you press Play. Light card on the dark page. */
+.dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(92vw, 420px);
+  padding: 32px 28px 28px;
+  border: 0;
+  border-radius: 16px;
+  background: #fff;
+  color: var(--black);
+  box-shadow: 0 24px 80px rgb(0 0 0 / 45%);
+}
+
+.dialog::backdrop {
+  background: rgb(0 0 0 / 62%);
+}
+
+.close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--black);
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.close:hover {
+  background: var(--grey-100);
+}
+
+.title {
+  margin: 0 0 12px;
+  font: 500 32px/1.2 var(--font-sans);
+  letter-spacing: -0.8px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form label {
+  font: 500 16px var(--font-sans);
+}
+
+.form input {
+  padding: 14px 16px;
+  font: 400 18px var(--font-sans);
+  border: 1.5px solid var(--black);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--black);
+}
+
+.text {
+  margin: 0;
+  font: 400 16px/24px var(--font-sans);
+  color: var(--text-body);
+}
+
+.fine {
+  margin: 0;
+  font: 400 14px/20px var(--font-sans);
+  color: var(--grey-500);
+  text-align: center;
+}
+
+.problem {
+  margin: 0;
+  font: 500 16px var(--font-sans);
+  color: #b3261e;
+}
+
+.googleIcon {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  flex: 0 0 auto;
+  background: #fff;
+  border-radius: 50%;
+  padding: 2px;
+}

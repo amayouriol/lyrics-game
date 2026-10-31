@@ -651,3 +651,19 @@
   .primaryCta,
   .stepsCard { transition: none; }
 }
+
+/* The Play buttons are real buttons in the web version (they open the sign-in pop-up). */
+button.primaryCta,
+button.cardCta {
+  border: 0;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+button.primaryCtaWhite {
+  border: 1px solid #fff;
+}
+
+button.cardCta {
+  width: 100%;
+}

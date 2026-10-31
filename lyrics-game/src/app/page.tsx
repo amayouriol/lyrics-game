@@ -1,18 +1,35 @@
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { isWebMode } from "@/lib/app-mode";
+import { cookies } from "next/headers";
+import { cookieOpensGate, GATE_COOKIE } from "@/lib/gate";
 import { currentProfile, getSession, hasAccess, isThisMachine } from "@/lib/session";
+import { authSecret, readUser, USER_COOKIE } from "@/lib/web-user";
 import { HomeClient } from "./HomeClient";
 import styles from "./page.module.css";
+import { PlayButton } from "./PlayButton";
+
+export const dynamic = "force-dynamic";
+
+/** What the Play pop-up needs to know: signed in already, and whether this browser gave the shared word. */
+async function playState(): Promise<{ signedIn: boolean; wordOk: boolean }> {
+  const store = await cookies();
+  const signedIn = Boolean(await readUser(store.get(USER_COOKIE)?.value, authSecret()));
+  const wordOk = await cookieOpensGate(store.get(GATE_COOKIE)?.value, process.env.WEB_GATE_WORD ?? "");
+  return { signedIn: signedIn && wordOk, wordOk };
+}
 
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ expired?: string }>;
+  searchParams: Promise<{ expired?: string; signin?: string }>;
 }) {
   const session = await getSession();
-  const { expired } = await searchParams;
+  const { expired, signin } = await searchParams;
   const web = isWebMode();
+  // The web version's Play button: signed in goes home, otherwise it opens the word + Google pop-up.
+  const play = web ? await playState() : null;
+  const notice = signin === "failed" || signin === "unavailable" ? signin : undefined;
   // A session that ran out sends you here with ?expired, even if you use the app without Spotify.
   // The web version always shows the start page; its home is /home.
   if (!web && !expired && (await hasAccess(session))) {
@@ -59,17 +76,18 @@ export default async function HomePage({
             The song starts. The lyrics fade. Can you sing the missing words?
           </p>
 
-          {web ? (
-            <a
+          {web && play ? (
+            <PlayButton
               className={`${styles.primaryCta} ${styles.primaryCtaWhite}`}
-              href="/home"
-              aria-describedby="web-note"
+              {...play}
+              notice={notice}
+              openOnLoad
             >
               <span>Play</span>
               <i aria-hidden="true">
                 <ArrowIcon />
               </i>
-            </a>
+            </PlayButton>
           ) : (
             // Plain link: this starts Spotify auth and should not be prefetched.
             <a className={styles.primaryCta} href="/api/auth/login" aria-describedby="spotify-note">
@@ -91,7 +109,7 @@ export default async function HomePage({
 
           {web ? (
             <p className={styles.disclaimer} id="web-note">
-              Songs play from YouTube, in YouTube&apos;s own player. No account needed.
+              Songs play from YouTube, in YouTube&apos;s own player. Sign in with Google to keep your songs.
             </p>
           ) : (
             <p className={styles.disclaimer} id="spotify-note">
@@ -171,10 +189,17 @@ export default async function HomePage({
                 </li>
               ))}
             </ol>
-            <a className={styles.cardCta} href={web ? "/home" : "/api/auth/login"}>
-              <span>Get started</span>
-              <ArrowIcon />
-            </a>
+            {web && play ? (
+              <PlayButton className={styles.cardCta} {...play}>
+                <span>Get started</span>
+                <ArrowIcon />
+              </PlayButton>
+            ) : (
+              <a className={styles.cardCta} href="/api/auth/login">
+                <span>Get started</span>
+                <ArrowIcon />
+              </a>
+            )}
           </div>
         </div>
 

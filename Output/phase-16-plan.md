@@ -24,10 +24,10 @@ Derived from: Output/phase-16-spec.md (draft). Review before building.
 - [x] `npm test`: signed in gets `g-<sub>`, no cookie gets refused, tampered cookie refused. Done (2026-10-30): covered by the cookie checks in `google-auth.test.ts` (15 checks); `getUserId` itself needs Next's cookies, so it is tried by hand in step 3. Lint and types pass.
 
 ## 3. The pages
-- [ ] `PlayButton` and its pop-up (word step, then Google step; keyboard and screen-reader friendly; works at phone width). Both Play buttons on the start page use it.
-- [ ] `/api/gate` answers JSON for the pop-up; the `/enter` page is removed.
-- [ ] `proxy.ts` as described above; the API answers 401 `session_expired`.
-- [ ] Name + picture + Sign out in the header.
+- [x] `PlayButton` and its pop-up (word step, then Google step; keyboard and screen-reader friendly; works at phone width). Both Play buttons on the start page use it. Done (2026-10-30): built on the native dialog (Esc closes, focus stays inside). Tried in the browser: wrong word, right word, then the Google step. Not yet tried at phone width.
+- [x] `/api/gate` answers JSON for the pop-up; the `/enter` page is removed. Done (2026-10-30): old `/enter` links go to the start page. The gate no longer hands out a random id.
+- [x] `proxy.ts` as described above; the API answers 401 `session_expired`. Done (2026-10-30): tried with curl: no cookies, word only, a made-up user cookie and a bad sign-in return all end at the start page or 401; a signed cookie opens `/home` with the name in it.
+- [x] Name + picture + Sign out in the header. Done (2026-10-30): the account menu now shows in the web version too ("Signed in with Google", Sign out). The About page now says what is kept about a Google account.
 
 ## 4. Carry old data over
 - [ ] `adoptPerson` on first sign-in when the old random-id cookie exists. `npm test` on both backends (files, fake database): moved once, never overwrites an account that already has data.

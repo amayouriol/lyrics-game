@@ -24,15 +24,17 @@ export default function AboutPage() {
         <h2>What is kept about you</h2>
         <ul>
           <li>
-            <b>A random id</b> in a cookie in your browser. It is not your name or your email,
-            and nobody asked you for either.
+            <b>Your Google account</b>, when you sign in: its number, your name, your email and
+            your picture, as Google gives them. Nothing else from Google, and nothing from your
+            YouTube account. They are kept in a cookie in your browser, and the number is the key
+            your data is saved under.
           </li>
           <li>
-            <b>Under that id:</b> the songs and lists you add, the songs you save, and your
+            <b>Under that number:</b> the songs and lists you add, the songs you save, and your
             finished games (the score and the words you missed).
           </li>
           <li>
-            <b>A second cookie</b> that remembers you typed the shared word, so you aren&apos;t
+            <b>Another cookie</b> that remembers you typed the shared word, so you aren&apos;t
             asked again.
           </li>
           <li>
@@ -43,8 +45,8 @@ export default function AboutPage() {
         <p>
           There are no ads, no analytics and no trackers of its own. Nothing is sold or shared. The
           hosts (Vercel and Upstash) keep the usual server records of requests. If you
-          clear your browser&apos;s cookies, you start from zero, and the old id can no longer be
-          reached.
+          clear your browser&apos;s cookies, you only have to sign in again: your songs and games
+          come back.
         </p>
       </section>
 
@@ -89,12 +91,11 @@ export default function AboutPage() {
         <h2>Questions or removal</h2>
         <p>
           Ask whoever sent you the link. They can remove a song or its lyrics for everyone. Your
-          own games and songs are only reachable from this browser, so clearing its cookies is
-          how you leave nothing reachable behind.
+          own games and songs are reachable only when you sign in with your Google account.
         </p>
       </section>
 
-      <Link href="/enter" className={styles.back}>
+      <Link href="/" className={styles.back}>
         Back
       </Link>
     </main>

@@ -67,9 +67,6 @@ export function Header({ profile }: { profile: Profile }) {
           </Link>
         ))}
       </nav>
-      {profile.web ? (
-        <div className={styles.account} />
-      ) : (
       <div className={styles.account} ref={accountRef}>
         <button
           type="button"
@@ -94,10 +91,14 @@ export function Header({ profile }: { profile: Profile }) {
             <div className={styles.who}>
               {name && <span className={styles.name}>{name}</span>}
               <span className={styles.plan}>
-                {profile.connected ? "Spotify Premium" : "Not connected to Spotify"}
+                {profile.web
+                  ? "Signed in with Google"
+                  : profile.connected
+                    ? "Spotify Premium"
+                    : "Not connected to Spotify"}
               </span>
             </div>
-            {!profile.connected && (
+            {!profile.connected && !profile.web && (
               // Plain link: this starts Spotify auth and should not be prefetched.
               <a href="/api/auth/login" role="menuitem" className={styles.menuItem}>
                 Connect Spotify
@@ -105,16 +106,15 @@ export function Header({ profile }: { profile: Profile }) {
               </a>
             )}
             {/* Also when not connected: it leaves "use without Spotify" and returns to the start page. */}
-            <form action="/api/auth/logout" method="POST">
+            <form action={profile.web ? "/api/auth/signout" : "/api/auth/logout"} method="POST">
               <button type="submit" role="menuitem" className={styles.menuItem}>
-                Log out
+                {profile.web ? "Sign out" : "Log out"}
                 <ArrowIcon />
               </button>
             </form>
           </div>
         )}
       </div>
-      )}
     </header>
   );
 }
