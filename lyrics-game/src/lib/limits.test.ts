@@ -1,44 +1,8 @@
-/** The shared-word gate and the daily limits of the web version: run with `npm test`. */
+/** The daily limits of the web version: run with `npm test`. */
 import assert from "node:assert/strict";
 import { afterEach, beforeEach, describe, it } from "node:test";
 import { memoryDatabase, useDatabaseForTests } from "./database.ts";
-import { cookieOpensGate, gateToken, wordOpensGate } from "./gate.ts";
 import { checkLimit, EVERYONE, PER_PERSON, today, spendOne } from "./limits.ts";
-
-describe("the gate", () => {
-  it("opens for the right word, whatever its case or spaces", async () => {
-    assert.equal(await wordOpensGate("banana", "banana"), true);
-    assert.equal(await wordOpensGate("  Banana ", "banana"), true);
-  });
-
-  it("stays shut for a wrong word", async () => {
-    assert.equal(await wordOpensGate("bananas", "banana"), false);
-    assert.equal(await wordOpensGate("", "banana"), false);
-  });
-
-  it("stays shut when no word is set up, even for an empty try", async () => {
-    assert.equal(await wordOpensGate("", ""), false);
-    assert.equal(await wordOpensGate("  ", "  "), false);
-    assert.equal(await cookieOpensGate(await gateToken(""), ""), false);
-  });
-
-  it("the cookie holds a fingerprint, not the word", async () => {
-    const token = await gateToken("banana");
-    assert.ok(!token.includes("banana"));
-    assert.equal(await cookieOpensGate(token, "banana"), true);
-  });
-
-  it("changing the word locks out the old cookies", async () => {
-    const token = await gateToken("banana");
-    assert.equal(await cookieOpensGate(token, "mango"), false);
-  });
-
-  it("no cookie, or a made-up one, doesn't open it", async () => {
-    assert.equal(await cookieOpensGate(undefined, "banana"), false);
-    assert.equal(await cookieOpensGate("banana", "banana"), false);
-    assert.equal(await cookieOpensGate("", "banana"), false);
-  });
-});
 
 describe("daily limits", () => {
   const before = process.env.APP_MODE;

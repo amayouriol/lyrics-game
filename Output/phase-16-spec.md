@@ -1,6 +1,8 @@
 # Spec: Phase 16 — Sign in with Google
 Date: 2026-10-30
-Status: draft, for you to approve before building.
+Status: closed 2026-11-08 (approved 2026-10-30; the shared word dropped 2026-11-08).
+
+> **Change, 2026-11-08 (your request):** the shared word is dropped. Nobody else is going to find the link, and two steps were one too many. Play now opens a pop-up with only "Sign in with Google". The daily limits (10 searches per person, 80 for everyone) are what protect YouTube's allowance. Decision 1 below and the word step in "What changes for a friend" no longer apply; `WEB_GATE_WORD` is no longer used.
 
 ## What and why
 In the web version, friends are told apart by a random id in a cookie. Clear the cookies, or open another browser, and their games and lists are gone. With Google sign-in, a friend's data is kept under their Google account, so it follows them to any device.

@@ -92,7 +92,7 @@ export async function isLocalMode(): Promise<boolean> {
 
 /** Logged in to Spotify, or using the app without it. */
 export async function hasAccess(session: SessionData): Promise<boolean> {
-  // The web version has no login; the shared-word gate (a later step) decides who gets in.
+  // The web version has no Spotify login; the proxy lets in only people signed in with Google.
   if (isWebMode()) return true;
   return hasActiveSession(session) || (await isLocalMode());
 }

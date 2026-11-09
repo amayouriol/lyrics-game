@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Header } from "@/components/Header";
 import { isWebMode } from "@/lib/app-mode";
 import { cookies } from "next/headers";
-import { cookieOpensGate, GATE_COOKIE } from "@/lib/gate";
 import { currentProfile, getSession, hasAccess, isThisMachine } from "@/lib/session";
 import { authSecret, readUser, USER_COOKIE } from "@/lib/web-user";
 import { HomeClient } from "./HomeClient";
@@ -11,12 +10,9 @@ import { PlayButton } from "./PlayButton";
 
 export const dynamic = "force-dynamic";
 
-/** What the Play pop-up needs to know: signed in already, and whether this browser gave the shared word. */
-async function playState(): Promise<{ signedIn: boolean; wordOk: boolean }> {
-  const store = await cookies();
-  const signedIn = Boolean(await readUser(store.get(USER_COOKIE)?.value, authSecret()));
-  const wordOk = await cookieOpensGate(store.get(GATE_COOKIE)?.value, process.env.WEB_GATE_WORD ?? "");
-  return { signedIn: signedIn && wordOk, wordOk };
+/** Whether this browser is already signed in with Google (the Play button then goes straight home). */
+async function isSignedIn(): Promise<boolean> {
+  return Boolean(await readUser((await cookies()).get(USER_COOKIE)?.value, authSecret()));
 }
 
 export default async function HomePage({
@@ -27,8 +23,8 @@ export default async function HomePage({
   const session = await getSession();
   const { expired, signin } = await searchParams;
   const web = isWebMode();
-  // The web version's Play button: signed in goes home, otherwise it opens the word + Google pop-up.
-  const play = web ? await playState() : null;
+  // The web version's Play button: signed in goes home, otherwise it opens the Google sign-in pop-up.
+  const signedIn = web ? await isSignedIn() : false;
   const notice = signin === "failed" || signin === "unavailable" ? signin : undefined;
   // A session that ran out sends you here with ?expired, even if you use the app without Spotify.
   // The web version always shows the start page; its home is /home.
@@ -76,10 +72,10 @@ export default async function HomePage({
             The song starts. The lyrics fade. Can you sing the missing words?
           </p>
 
-          {web && play ? (
+          {web ? (
             <PlayButton
               className={`${styles.primaryCta} ${styles.primaryCtaWhite}`}
-              {...play}
+              signedIn={signedIn}
               notice={notice}
               openOnLoad
             >
@@ -189,8 +185,8 @@ export default async function HomePage({
                 </li>
               ))}
             </ol>
-            {web && play ? (
-              <PlayButton className={styles.cardCta} {...play}>
+            {web ? (
+              <PlayButton className={styles.cardCta} signedIn={signedIn}>
                 <span>Get started</span>
                 <ArrowIcon />
               </PlayButton>

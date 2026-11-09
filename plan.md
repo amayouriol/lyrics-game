@@ -105,8 +105,15 @@ Why: with YouTube as the main source, a new player lands on an empty library and
 - [x] Your play-test: your own copy (nothing lost) and the web version on a private window (2026-10-23, all good)
 Result: the library opens with the add box first. The same layout is used in your own copy (with the From Spotify tab) and in the web version.
 
-## Phase 16: Sign in with Google — idea, not planned yet
-Why: so your progress follows you across devices and doesn't vanish with your browser's cookies. Name and email only (no YouTube data). Decide after friends have tried the web version.
+## Phase 16: Sign in with Google — closed 2026-11-08 (Output/phase-16-spec.md, phase-16-plan.md)
+Why: so your progress follows you across devices and doesn't vanish with your browser's cookies. Name, email and picture only (no YouTube data).
+- [x] Sign-in written by hand (no new package): Google address with state and PKCE, code swap, a signed cookie (`AUTH_SECRET`); 15 checks
+- [x] The Play button opens a pop-up with "Sign in with Google"; the account menu shows your name and Sign out
+- [x] The proxy lets in only people who are signed in (the start page and About stay open)
+- [x] Old random-id data moves to the Google account once, the first time
+- [x] The shared word is dropped (2026-11-08, your request): sign-in is the only lock; the daily limits protect YouTube's allowance
+- [x] Your play-test on the production address: sign in, save a song, a second browser, cookies cleared (2026-11-08, all good)
+Result: friends sign in with Google and their songs and games follow them to any device. Google's consent screen is published, so any Google account can sign in.
 
 ## Phase 17: Recommendations from your YouTube likes — idea, not planned yet
 Why: first sign-in shows five songs from your liked music, with Add, Reshuffle and Skip. Reads your likes once and keeps only a list of songs (no permission kept, so nothing expires after 7 days). Needs Google's YouTube permission, which is "sensitive": until Google verifies the app, only friends added by email as test users (up to 100) can use it. YouTube's watch history is not available to apps.

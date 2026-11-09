@@ -5,7 +5,7 @@ import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
 
-/** What the web version keeps and where things come from. Open without the shared word. */
+/** What the web version keeps and where things come from. Open without signing in. */
 export default function AboutPage() {
   if (!isWebMode()) notFound();
 
@@ -32,10 +32,6 @@ export default function AboutPage() {
           <li>
             <b>Under that number:</b> the songs and lists you add, the songs you save, and your
             finished games (the score and the words you missed).
-          </li>
-          <li>
-            <b>Another cookie</b> that remembers you typed the shared word, so you aren&apos;t
-            asked again.
           </li>
           <li>
             <b>A daily count</b> of your searches and playlist imports, so YouTube&apos;s free

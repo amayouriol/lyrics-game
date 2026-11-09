@@ -15,7 +15,7 @@ Lyrics come from [LRCLIB](https://lrclib.net), a free lyrics service. Songs with
 
 ## Three ways to use it
 
-1. **Open the web version.** A copy for friends runs at [lyrics-game-two.vercel.app](https://lyrics-game-two.vercel.app). It asks for a shared word: ask whoever sent you the link. It plays YouTube songs only.
+1. **Open the web version.** A copy for friends runs at [lyrics-game-two.vercel.app](https://lyrics-game-two.vercel.app). Press Play and sign in with Google. It plays YouTube songs only.
 2. **Run it on your computer.** Free, about 20 minutes to set up. YouTube songs need a free YouTube key; Spotify is optional. See [Setup](#setup-once).
 3. **Put your own web version online** for your own friends, free. See [A web version for friends](#a-web-version-for-friends-optional).
 
@@ -126,7 +126,7 @@ Leave the terminal open while you play. To stop, press `Ctrl + C` in it. Next ti
 
 ## A web version for friends (optional)
 
-You can put a copy online that your friends open from a link. It is **YouTube only**, it asks for a **shared word** you give your friends, and each friend's games and songs are kept apart under a random id in their browser. Your own copy on your computer stays as it is.
+You can put a copy online that your friends open from a link. It is **YouTube only**, each friend signs in with **Google** (name, email and picture only), and their games and songs are kept under their Google account, so they follow them to any device. Your own copy on your computer stays as it is.
 
 It runs free on two services. You create the accounts yourself; nothing is paid.
 
@@ -140,23 +140,26 @@ It runs free on two services. You create the accounts yourself; nothing is paid.
 
 1. Sign up at [vercel.com](https://vercel.com) with GitHub and choose the free **Hobby** plan (for personal, non-commercial use).
 2. **Add New → Project**, pick this repository, and set **Root Directory** to `lyrics-game`.
-3. Before the first deploy, open **Environment Variables** and add these five, ticked for **Production** and **Preview**. Type them yourself; never put them in the code or in git:
+3. Before the first deploy, open **Environment Variables** and add these seven, ticked for **Production** and **Preview**. Type them yourself; never put them in the code or in git:
 
 | Name | Value |
 | --- | --- |
 | `APP_MODE` | `web` |
-| `WEB_GATE_WORD` | the shared word you choose (case doesn't matter) |
+| `GOOGLE_CLIENT_ID` | from Google Cloud (see below) |
+| `GOOGLE_CLIENT_SECRET` | from Google Cloud (see below) |
+| `AUTH_SECRET` | any random text of 32 or more characters; it signs the "who is signed in" cookie |
 | `YOUTUBE_API_KEY` | your YouTube key (step 2 of the setup above) |
 | `UPSTASH_REDIS_REST_URL` | from Upstash |
 | `UPSTASH_REDIS_REST_TOKEN` | from Upstash |
 
-4. Click **Deploy**. Vercel gives you an address like `your-project.vercel.app`. Open it: you should see **Enter the word**. Send friends the link and the word, separately.
+4. Click **Deploy**. Vercel gives you an address like `your-project.vercel.app`. Open it, press **Play** and sign in with Google. Then send friends the link.
 
 ### Good to know about the web version
 
-- **Without the word nothing opens.** If `WEB_GATE_WORD` is missing, the site stays locked. To lock everyone out and ask for a new word, change it in Vercel (**Settings → Environment Variables**) and redeploy. Changes to a variable only apply to the next deploy.
+- **Without sign-in nothing opens.** If `AUTH_SECRET` is missing, nobody can sign in. To sign everyone out, change `AUTH_SECRET` in Vercel (**Settings → Environment Variables**) and redeploy. Changes to a variable only apply to the next deploy.
+- **Anyone with a Google account can sign in** once Google's consent screen is published, so share the link only with people you want. The daily limits below keep a stranger from using up the YouTube allowance.
 - **Daily limits keep YouTube's free allowance safe.** Each person gets 10 searches and 3 playlist imports a day, and all friends together get 80 searches. Pasting a link to one video isn't limited. The numbers are at the top of `lyrics-game/src/lib/limits.ts`.
-- **Friends' data** is a random id in a cookie. Clearing the browser's cookies starts that person from zero, and there is no sync between devices. Lyrics and the video chosen for each song are shared, so a song one friend added is quick for the next.
+- **Friends' data** is kept under their Google account, so clearing cookies or changing device loses nothing. Lyrics and the video chosen for each song are shared, so a song one friend added is quick for the next.
 - **Previews are private.** Vercel puts every non-`main` branch on its own address that only you can open while logged in to Vercel. Friends use the main address.
 - **Free-plan limits.** The first visit after a quiet spell can take a few seconds. Upstash's free plan has a monthly allowance that is plenty for a few friends.
 - **Lyrics** come from LRCLIB, a community service, and aren't licensed for public use. That is why the link is behind a word and shared only with friends. The web version has an **About and privacy** page that says what it keeps.

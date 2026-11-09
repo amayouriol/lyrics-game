@@ -1,36 +1,28 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, type ReactNode } from "react";
 import styles from "./PlayDialog.module.css";
 
 /**
  * The web version's Play button. Signed in, it is a plain link to your home.
- * Otherwise it opens a pop-up: the shared word first (skipped if this browser
- * already gave it), then "Sign in with Google".
+ * Otherwise it opens a pop-up with "Sign in with Google".
  */
 export function PlayButton({
   className,
   children,
   signedIn,
-  wordOk,
   notice,
   openOnLoad = false,
 }: {
   className: string;
   children: ReactNode;
   signedIn: boolean;
-  wordOk: boolean;
   /** Why the last sign-in did not work, when Google sent you back with a problem. */
   notice?: "failed" | "unavailable";
   /** Only one button on the page opens the pop-up by itself after a failed sign-in. */
   openOnLoad?: boolean;
 }) {
-  const router = useRouter();
   const dialog = useRef<HTMLDialogElement>(null);
-  const [gaveWord, setGaveWord] = useState(false);
-  const [problem, setProblem] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     if (openOnLoad && notice && !signedIn) dialog.current?.showModal();
@@ -44,38 +36,10 @@ export function PlayButton({
     );
   }
 
-  const step = wordOk || gaveWord ? "google" : "word";
-
-  async function sendWord(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (busy) return;
-    setBusy(true);
-    setProblem(null);
-    try {
-      const response = await fetch("/api/gate", { method: "POST", body: new FormData(event.currentTarget) });
-      const body = (await response.json().catch(() => ({}))) as { error?: string };
-      if (response.ok) {
-        setGaveWord(true);
-        // Both Play buttons learn that the word was given.
-        router.refresh();
-      } else if (body.error === "wait") {
-        setProblem("Too many tries. Wait an hour and try again.");
-      } else if (body.error === "wrong") {
-        setProblem("That's not the word. Try again.");
-      } else {
-        setProblem("Something went wrong. Try again.");
-      }
-    } catch {
-      setProblem("Something went wrong. Try again.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
   const message =
-    step === "google" && notice === "failed"
+    notice === "failed"
       ? "The sign-in didn't finish. Try again."
-      : step === "google" && notice === "unavailable"
+      : notice === "unavailable"
         ? "Sign-in isn't set up yet. Tell whoever runs this game."
         : null;
 
@@ -97,53 +61,24 @@ export function PlayButton({
           ×
         </button>
         <h2 id="play-dialog-title" className={styles.title}>
-          {step === "word" ? "Enter the word." : "Sign in to play."}
+          Sign in to play.
         </h2>
-
-        {step === "word" ? (
-          <form className={styles.form} onSubmit={sendWord}>
-            <p className={styles.text}>
-              This is a small game for friends. Ask whoever sent you the link for the word.
+        <div className={styles.form}>
+          <p className={styles.text}>
+            Your songs and games are kept with your Google account, so they follow you to any device.
+          </p>
+          {message && (
+            <p className={styles.problem} role="alert">
+              {message}
             </p>
-            <label htmlFor="play-word">The word</label>
-            <input
-              id="play-word"
-              name="word"
-              type="password"
-              autoComplete="off"
-              autoCapitalize="none"
-              maxLength={200}
-              required
-              autoFocus
-              aria-describedby={problem ? "play-problem" : undefined}
-            />
-            {problem && (
-              <p id="play-problem" className={styles.problem} role="alert">
-                {problem}
-              </p>
-            )}
-            <button type="submit" className="btn btn--lg" disabled={busy}>
-              Continue
-            </button>
-          </form>
-        ) : (
-          <div className={styles.form}>
-            <p className={styles.text}>
-              Your songs and games are kept with your Google account, so they follow you to any device.
-            </p>
-            {message && (
-              <p className={styles.problem} role="alert">
-                {message}
-              </p>
-            )}
-            {/* Plain link: this leaves for Google and should not be prefetched. */}
-            <a className="btn btn--lg" href="/api/auth/google">
-              <GoogleIcon />
-              Sign in with Google
-            </a>
-            <p className={styles.fine}>We only see your name, email and picture.</p>
-          </div>
-        )}
+          )}
+          {/* Plain link: this leaves for Google and should not be prefetched. */}
+          <a className="btn btn--lg" href="/api/auth/google">
+            <GoogleIcon />
+            Sign in with Google
+          </a>
+          <p className={styles.fine}>We only see your name, email and picture.</p>
+        </div>
       </dialog>
     </>
   );

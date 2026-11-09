@@ -7,6 +7,8 @@ import { sealData, unsealData } from "iron-session";
  */
 export const USER_COOKIE = "lyric_drop_user";
 export const LOGIN_COOKIE = "lyric_drop_login";
+/** The random id cookie of before Google sign-in; read once to carry old data over (see adopt-person.ts). */
+export const PERSON_COOKIE = "lyric_drop_person";
 
 const YEAR = 60 * 60 * 24 * 365;
 const TEN_MINUTES = 60 * 10;

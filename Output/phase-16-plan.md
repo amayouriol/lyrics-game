@@ -12,9 +12,11 @@ Derived from: Output/phase-16-spec.md (draft). Review before building.
 - **Moving old data.** A one-time `adoptPerson(oldId, newId)` that copies keys from the random id to the Google id in the storage layer (files and Upstash), skipping if the new id already has data.
 - **Branch.** `phase-16` from `main`.
 
+> **Change, 2026-11-08:** the shared word was removed (code, pop-up step, `/api/gate`, `gate.ts`, its checks, README and CLAUDE.md). The proxy now checks only the Google sign-in cookie.
+
 ## 0. Before building
 - [ ] You approve this plan and the five decisions in the spec.
-- [ ] You create the Google OAuth client and give me nothing but the names of the variables set (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`) in `.env.local` and Vercel.
+- [x] You create the Google OAuth client and give me nothing but the names of the variables set (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`) in `.env.local` and Vercel. Done (2026-11-08): the client exists, the app is published ("In production", External) with `lyrics-game-two.vercel.app` as its authorized domain, and `.env.local` is set. The same three variables (with `AUTH_SECRET`) still have to go into Vercel.
 
 ## 1. The sign-in logic
 - [x] `google-auth.ts`: login address, state + PKCE check, code swap, reading the user. `npm test`: state mismatch refused, expired state refused, missing fields refused (Google faked, no network). Done (2026-10-30): also `web-user.ts` (the signed cookies, key `AUTH_SECRET`, at least 32 characters) and `google-auth.test.ts`, 14 checks.
@@ -34,5 +36,5 @@ Derived from: Output/phase-16-spec.md (draft). Review before building.
 
 ## 5. Check and close
 - [x] `npm run lint`, `npm test`, `npm run build` (read the whole build output for warnings). Done (2026-10-30): 164 checks pass, lint clean, build with no warnings.
-- [ ] Your play-test: sign in on two browsers, clear cookies and come back, your own copy untouched.
-- [ ] Close Phase 16, push, update `CLAUDE.md`, `plan.md` and the retrospective.
+- [x] Your play-test: sign in on two browsers, clear cookies and come back, your own copy untouched. Done (2026-11-08): the real Google sign-in worked on localhost first; then on production (lyrics-game-two.vercel.app) you signed in, saved a song, saw it in a second browser and after clearing cookies. All good.
+- [x] Close Phase 16, push, update `CLAUDE.md`, `plan.md` and the retrospective. Done (2026-11-08).

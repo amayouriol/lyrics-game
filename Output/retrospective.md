@@ -99,3 +99,14 @@ What worked: building in small steps (player layer first, then one hard-coded vi
 | The first library layout felt wrong to a new player | It was built for one person with a full library | Try the first visit in a private window, as someone with nothing |
 
 What worked: a spike first (all four risks passed in one afternoon), the same storage code over files and a database with every check run on both, a throwaway list on the real copy with a backup compared at the end, and turning your feedback after the first friend-style visit into a whole phase (15).
+
+## Phase 16 (sign in with Google) — what went wrong, and what to do next time
+| What happened | Cause | Habit to keep |
+|---|---|---|
+| The live site said "Sign-in isn't set up yet" | The three new variables were in `.env.local` but never added in Vercel (same lesson as Phase 14) | Before testing a deploy, write down every variable it needs and tick each one off in Vercel; redeploy after adding them |
+| Google refused the redirect addresses on the first try | They were typed into "JavaScript origins" instead of "Redirect URIs", with a letter cut off | Name the exact field and give the full address to copy |
+| `redirect_uri_mismatch` on the live site | The address Google had saved did not match the one the site sent | Compare the two addresses letter by letter; the error page shows the one that was sent |
+| `openssl` was not found when making the secret | It is not installed on Windows | Give a command that works on the user's machine (Node is always there) |
+| Two locks (a shared word, then Google) felt like one too many | The word came from Phase 14, before sign-in existed | When a new lock arrives, ask whether the old one is still needed; it was dropped the same day |
+
+What worked: writing the sign-in by hand with a fake Google in the checks (no new package), putting the new lock at one place (`getUserId` and the proxy) so the rest of the app did not change, copying old data once with a "taken" mark so a second person on the same browser cannot claim it, and testing the real sign-in on localhost before production.

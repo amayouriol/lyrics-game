@@ -1,11 +1,11 @@
 import { cookies, headers } from "next/headers";
 import { isWebMode } from "@/lib/app-mode";
 import { adoptPerson } from "@/lib/adopt-person";
-import { PERSON_COOKIE } from "@/lib/gate";
 import { callbackUrl, exchangeCode, googleConfig, sameState } from "@/lib/google-auth";
 import {
   authSecret,
   LOGIN_COOKIE,
+  PERSON_COOKIE,
   readLogin,
   sealUser,
   USER_COOKIE,
