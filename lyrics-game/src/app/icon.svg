@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- vinyl record -->
+  <circle cx="32" cy="32" r="32" fill="#0c0c0f"/>
+  <circle cx="32" cy="32" r="29" fill="none" stroke="#25232a" stroke-width="1"/>
+  <circle cx="32" cy="32" r="26" fill="none" stroke="#25232a" stroke-width="1"/>
+  <!-- violet label -->
+  <circle cx="32" cy="32" r="22" fill="#9573ff"/>
+  <!-- L in paper white, D in ink, and the dropped _ -->
+  <path d="M16 20h6v13h8v5.500H16z" fill="#f2f0eb"/>
+  <path d="M33 26h6c6 0 10 3.500 10 9.250S45 44.500 39 44.500h-6zm5.500 5v8.500h1c3 0 5-1.700 5-4.250S42.500 31 39.500 31z" fill="#0c0c0f" fill-rule="evenodd"/>
+  <rect x="16" y="46" width="14" height="3" rx="1.500" fill="#e4dcff"/>
+</svg>
